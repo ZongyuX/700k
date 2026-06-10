@@ -327,15 +327,11 @@ var EN = {
   'pricing.feat.nosub': 'No subscription ever',
 
   /* ---- Footer ---- */
-  'footer.tagline': 'PromptRunic — AI prompt template library',
-  'footer.stats': '700,000+ templates · 1,600+ categories',
-  'footer.builtby': 'Maintained by Z. Xie',
+  'footer.tagline': 'PromptRunic — an AI prompt launchpad with 700,000+ templates across 1,684 categories.',
+  'footer.builtby': 'Built by Zongyu Xie',
   'footer.privacy': 'Privacy Policy',
   'footer.terms': 'Terms of Service',
-  'footer.disclaimer': 'PromptRunic provides access to third-party AI models for informational purposes only. We do not own, operate, or control any underlying AI model. All AI-generated outputs may be inaccurate, incomplete, or biased. You are solely responsible for verifying any information before relying on it.',
-  'footer.affiliation': 'PromptRunic is not affiliated with OpenAI, Anthropic, Microsoft, Google, DeepSeek, or any other model provider.',
-  'footer.accuracy': 'Data accuracy: Prompt counts and category numbers are approximate and updated regularly. Actual numbers may vary slightly.',
-  'footer.prohibited': 'You agree not to use this site to generate: harmful, illegal, or unethical content; content that infringes third-party rights; or misinformation, harassment, or malicious code.',
+  'footer.disclaimer': 'PromptRunic is an independent product and is not affiliated with, endorsed by, or sponsored by OpenAI, Anthropic, Microsoft, Google, or DeepSeek. All product names and trademarks are the property of their respective owners. AI-generated answers may be inaccurate — please verify before relying on them.',
   'footer.rights': 'All rights reserved.',
 
   /* ---- Toast messages ---- */
@@ -356,7 +352,7 @@ var EN = {
   'bg.choose': 'Choose a background',
   'bg.title': 'Backgrounds',
   'bg.desc.pro': 'Pick any animated background - your choice is saved on this device.',
-  'bg.desc.free': '3 backgrounds are free (PromptRunic, Constellation & Live Coder). The other 9 are a Pro feature - activate Pro to unlock them.',
+  'bg.desc.free': '5 backgrounds are free (PromptRunic AI, Cyber Network, Quantum Realm, Constellation & Live Coder). The other 9 are a Pro feature - activate Pro to unlock them.',
   'bg.pro.only': 'That background is a Pro feature - activate Pro to use it',
   'bg.set': 'Background set to {name}',
 

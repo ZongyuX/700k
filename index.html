@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+  if (window.location.hostname === 'promptpilot.bbroot.com') {
+    window.location.href = 'https://promptrunic.bbroot.com' + window.location.pathname + window.location.search;
+  }
+</script>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
@@ -116,19 +121,35 @@
   ::-webkit-scrollbar-thumb{background:var(--panel3);border-radius:6px}
   button{font-family:inherit;cursor:pointer}
 
-  header{padding:20px 6vw 20px 10px;display:flex;justify-content:space-between;align-items:center;position:fixed;top:0;left:0;right:0;z-index:50;background:rgba(11,15,26,.78);backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);border-bottom:1px solid rgba(124,92,255,.10);transition:transform .35s cubic-bezier(.4,0,.2,1);will-change:transform;overflow:visible}
-  .logo{font-weight:800;font-size:20px;text-decoration:none;cursor:pointer;letter-spacing:.01em;margin-left:0;padding-left:0}
+  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Orbitron:wght@700;900&display=swap');
+  header{padding:20px 6vw 20px 10px;display:flex;justify-content:space-between;align-items:center;position:fixed;top:0;left:0;right:0;z-index:50;background:rgba(11,15,26,.78);backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);border-bottom:1px solid rgba(124,92,255,.10);transition:transform .35s cubic-bezier(.4,0,.2,1);will-change:transform;overflow:visible;gap:12px}
+  .logo{font-weight:700;font-size:20px;text-decoration:none;cursor:pointer;letter-spacing:.04em;margin-left:0;padding-left:0;display:inline-flex;align-items:center;gap:10px;flex-shrink:0;z-index:2;position:relative;overflow:visible}
+  .logo-icon{height:36px;width:auto;vertical-align:middle;filter:none;transition:filter .4s}
+  .logo:hover .logo-icon{filter:drop-shadow(0 0 12px rgba(168,85,247,.7)) drop-shadow(0 0 24px rgba(124,92,255,.4))}
+  .logo-text{display:inline-flex;align-items:baseline;white-space:nowrap;font-family:'Orbitron',sans-serif;font-weight:900;letter-spacing:.06em}
+  .logo-text .prompt-part{background:linear-gradient(90deg,#22d3ee,#7c5cff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:none;text-shadow:none}
+  .logo-text .runic-part{background:linear-gradient(90deg,#7c5cff,#c084fc,#e879f9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:none;text-shadow:none}
+  .logo::after{content:'';position:absolute;top:50%;left:50%;width:0;height:0;border-radius:50%;background:radial-gradient(circle,rgba(168,85,247,.35) 0%,rgba(124,92,255,.15) 40%,transparent 70%);transform:translate(-50%,-50%);opacity:0;transition:width .6s ease,height .6s ease,opacity .5s ease;pointer-events:none;z-index:-1}
+  .logo:hover::after{width:180px;height:80px;opacity:1;animation:magicHalo 3s linear infinite}
+  @keyframes magicHalo{
+    0%{transform:translate(-50%,-50%) rotate(0deg);border-radius:50% 50% 50% 50%}
+    25%{transform:translate(-50%,-50%) rotate(90deg);border-radius:60% 40% 60% 40%}
+    50%{transform:translate(-50%,-50%) rotate(180deg);border-radius:40% 60% 40% 60%}
+    75%{transform:translate(-50%,-50%) rotate(270deg);border-radius:60% 40% 60% 40%}
+    100%{transform:translate(-50%,-50%) rotate(360deg);border-radius:50% 50% 50% 50%}
+  }
   header.pp-hide{transform:translateY(-100%)}
-  .hbtns{display:flex;gap:6px;align-items:center;overflow:visible}
-  .hbtns a,.hbtns button{color:var(--muted);text-decoration:none;font-size:13px;background:none;border:none;padding:6px 10px;border-radius:8px;transition:background .15s,color .15s;white-space:nowrap;font-weight:600}
+  .hbtns{display:flex;gap:6px;align-items:center;overflow:hidden;flex-shrink:1;min-width:0;flex-wrap:nowrap;justify-content:flex-end}
+  .hbtns a,.hbtns button{color:var(--muted);text-decoration:none;font-size:13px;background:none;border:none;padding:6px 10px;border-radius:8px;transition:background .15s,color .15s;white-space:nowrap;font-weight:600;flex-shrink:0}
   .hbtns a:hover,.hbtns button:hover{color:var(--text);background:rgba(255,255,255,.06)}
-  .logo span{background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:pp-shine 5s ease-in-out infinite}
-  @keyframes pp-shine{0%,100%{filter:brightness(1)}50%{filter:brightness(1.25) drop-shadow(0 0 8px rgba(124,92,255,.6))}}
   .badge{font-size:10px;padding:3px 8px;border-radius:20px;font-weight:700;background:var(--panel3);color:var(--muted);flex-shrink:0}
+  .icon-only-sm{display:none}
   .badge.on{background:linear-gradient(90deg,var(--gold),#ffd279);color:#1a1205}
   .hbtn-gold{background:linear-gradient(90deg,var(--gold),#ffce6b)!important;color:#1a1205!important;border-radius:8px;font-weight:700!important}
   .hbtn-user{background:var(--panel2)!important;color:var(--text)!important;border:1px solid var(--border)!important;border-radius:8px;font-weight:600!important}
   .hbtn-user:hover{border-color:var(--accent)!important}
+  .hbtn-game{background:linear-gradient(135deg,#22d3ee,#7c5cff)!important;color:#fff!important;border-radius:8px!important;font-weight:700!important;font-size:13px!important;padding:6px 10px!important;border:none!important;cursor:pointer;transition:transform .18s,box-shadow .22s,filter .18s}
+  .hbtn-game:hover{transform:translateY(-2px) scale(1.04);filter:brightness(1.1) drop-shadow(0 4px 14px rgba(34,211,238,.5));box-shadow:0 8px 22px rgba(124,92,255,.45)}
 
   /* Language Switch Button */
   .lang-switch-btn{display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,var(--accent),var(--accent2))!important;border:none!important;color:#fff!important;border-radius:8px!important;font-weight:700!important;font-size:13px!important;padding:6px 14px!important;cursor:pointer;transition:all .2s ease!important;letter-spacing:.02em!important;white-space:nowrap!important}
@@ -155,6 +176,14 @@
   .ai-strip span{display:flex;align-items:center;gap:6px}
   .ai-strip .dot{width:9px;height:9px;border-radius:50%}
   .cta-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:16px}
+  .cta-hook{text-align:center;margin:-6px auto 18px;max-width:720px;padding:0 12px}
+  .cta-hook p{font-size:15px;line-height:1.8;margin:0 0 6px;color:var(--muted);opacity:0}
+  .cta-hook .hook-line1{animation:hookTypeReveal 6s ease-in-out infinite}
+  .cta-hook .hook-line2{animation:hookTypeReveal 6s ease-in-out 1.2s infinite}
+  .cta-hook .hook-pro-btn{display:inline-block;margin-top:6px;padding:10px 26px;border-radius:10px;background:linear-gradient(135deg,#22d3ee,#7c5cff);color:#fff;font-weight:700;font-size:15px;text-decoration:none;letter-spacing:.02em;box-shadow:0 0 16px rgba(34,211,238,.25),0 0 32px rgba(124,92,255,.15);animation:hookBtnPulse 3s ease-in-out infinite;transition:transform .18s,box-shadow .22s}
+  .cta-hook .hook-pro-btn:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 0 24px rgba(34,211,238,.45),0 0 48px rgba(124,92,255,.3)}
+  @keyframes hookTypeReveal{0%{opacity:0;transform:translateY(8px);filter:blur(4px)}15%{opacity:1;transform:translateY(0);filter:blur(0)}70%{opacity:1;transform:translateY(0);filter:blur(0)}85%{opacity:.6;transform:translateY(-4px);filter:blur(2px)}100%{opacity:0;transform:translateY(-8px);filter:blur(4px)}}
+  @keyframes hookBtnPulse{0%,100%{box-shadow:0 0 16px rgba(34,211,238,.25),0 0 32px rgba(124,92,255,.15)}50%{box-shadow:0 0 24px rgba(34,211,238,.5),0 0 48px rgba(124,92,255,.35),0 4px 20px rgba(34,211,238,.2)}}
   .btn{display:inline-block;padding:12px 22px;border-radius:10px;font-weight:700;text-decoration:none;border:none;font-size:15px;cursor:pointer}
   .btn-primary{background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff}
   .btn-gold{background:linear-gradient(90deg,var(--gold),#ffce6b);color:#1a1205}
@@ -962,19 +991,55 @@
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   .toast.info{background:var(--accent);color:#fff}
 
+  /* ---------- tablet / medium screens ---------- */
+  @media(max-width:900px){
+    header{padding:12px 2vw 12px 8px;gap:6px}
+    .logo{font-size:16px;gap:6px}
+    .logo-icon{height:28px!important}
+    .logo-text{font-size:16px}
+    .hbtns{gap:3px;flex-wrap:nowrap}
+    .hbtns a,.hbtns button{font-size:11px;padding:4px 7px}
+    .hbtn-gold,.hbtn-user,.hbtn-game{padding:4px 8px!important;font-size:11px!important}
+    .pp-chip .xpmini{display:none}
+    .pp-chip{padding:3px 6px!important;font-size:11px!important}
+    .pp-chip .lv{font-size:11px!important}
+    .btn-hide-sm{display:none}
+    .icon-only-sm{display:inline}
+    .lang-switch-btn .lang-text,.lang-switch-btn .lang-arrow{display:none}
+    .lang-switch-btn{padding:4px 6px!important;font-size:11px!important}
+    .lang-switch-btn .lang-icon{width:18px;height:18px;font-size:10px}
+    .badge{font-size:9px;padding:2px 6px}
+  }
+
   /* ---------- mobile / small screens ---------- */
   @media(max-width:680px){
-    header{flex-direction:column;gap:6px;padding:10px 14px;overflow:visible}
-    .logo{font-size:17px}
-    .hbtns{flex-wrap:wrap;justify-content:center;gap:4px;overflow:visible}
-    .hbtns a,.hbtns button{font-size:12px;padding:4px 7px}
-    .hbtn-gold,.hbtn-user{padding:5px 9px!important}
+    header{flex-direction:row;gap:4px;padding:8px 8px;flex-wrap:nowrap;overflow:hidden}
+    .logo{font-size:13px;gap:4px;flex-shrink:0;min-width:0}
+    .logo-icon{height:20px!important}
+    .logo-text{font-size:13px}
+    .hbtns{flex-wrap:nowrap;justify-content:flex-end;gap:1px;overflow:hidden;min-width:0}
+    .hbtns a,.hbtns button{font-size:9px;padding:2px 4px;border-radius:5px}
+    .hbtn-gold,.hbtn-user,.hbtn-game{padding:2px 5px!important;font-size:9px!important}
+    .lang-switch-btn{font-size:9px!important;padding:2px 4px!important}
+    .lang-switch-btn .lang-text,.lang-switch-btn .lang-arrow{display:none}
+    .lang-switch-btn .lang-icon{width:16px;height:16px;font-size:9px}
+    .pp-chip .xpmini{display:none}
+    .pp-chip{padding:2px 4px!important;font-size:9px!important}
+    .pp-chip .lv{font-size:9px!important}
+    .btn-hide-sm{display:none}
+    .icon-only-sm{display:inline}
+    .badge{font-size:8px;padding:1px 4px}
+    .hbtns a[href="#guide"]{display:none}
+    .hbtns a[href="#templates"]{display:none}
 
     .hero{padding:70px 12px 10px}
     .hero h1{font-size:22px;margin-bottom:16px;line-height:1.25}
     .hero p{font-size:13.5px;margin-bottom:20px;line-height:1.55}
     .ai-strip{gap:8px 10px;margin-bottom:24px;font-size:12px}
     .cta-row{gap:6px}
+    .cta-hook p{font-size:12px}
+    .cta-hook .hook-pro-btn{font-size:13px;padding:8px 18px}
+    .cta-hook{margin:-4px auto 12px}
     .btn{font-size:13px;padding:9px 14px;border-radius:8px}
     .stat-strip{gap:10px 16px;margin-top:24px}
     .stat b{font-size:16px}
@@ -1289,6 +1354,9 @@
   }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4" defer></script>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png"/>
+<link rel="icon" type="image/x-icon" href="favicon.ico"/>
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png"/>
 </head>
 <body>
 
@@ -1299,12 +1367,15 @@
   #pp-boot video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;will-change:transform;transform:translateZ(0)}
   #pp-boot .boot-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(11,15,26,0) 50%,rgba(11,15,26,.9) 100%);pointer-events:none}
   #pp-boot .boot-bottom{position:absolute;bottom:0;left:0;right:0;padding:28px 5vw 36px;display:flex;flex-direction:column;align-items:center;gap:10px;z-index:2}
-  #pp-boot .boot-logo{font-weight:800;font-size:26px;color:#fff;text-shadow:0 2px 20px rgba(124,92,255,.5)}
-  #pp-boot .boot-logo span{background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:none}
+  #pp-boot .boot-logo{font-weight:800;font-size:26px;color:#fff;display:inline-flex;align-items:center;gap:12px;font-family:'Orbitron',sans-serif;letter-spacing:.06em}
+  #pp-boot .boot-logo .prompt-part{background:linear-gradient(90deg,#22d3ee,#7c5cff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:none}
+  #pp-boot .boot-logo .runic-part{background:linear-gradient(90deg,#7c5cff,#c084fc,#e879f9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:none}
+  #pp-boot .boot-logo img{filter:none;transition:filter .4s}
   #pp-boot .boot-skip{position:absolute;top:20px;right:24px;padding:8px 18px;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:rgba(0,0,0,.4);color:rgba(255,255,255,.6);font-size:12px;font-weight:600;cursor:pointer;z-index:3;transition:all .2s;backdrop-filter:blur(8px)}
   #pp-boot .boot-skip:hover{border-color:rgba(255,255,255,.4);color:#fff;background:rgba(0,0,0,.6)}
   #pp-boot .boot-logo-anim{animation:bootLogoIn .6s ease-out both}
   @keyframes bootLogoIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes bootIconGlow{0%,100%{filter:drop-shadow(0 0 6px rgba(168,85,247,.3))}50%{filter:drop-shadow(0 0 12px rgba(168,85,247,.6)) drop-shadow(0 0 24px rgba(124,92,255,.3))}}
   @media(max-width:680px){
     #pp-boot .boot-logo{font-size:20px}
     #pp-boot .boot-bottom{padding:20px 5vw 28px}
@@ -1315,7 +1386,7 @@
   <div class="boot-overlay"></div>
   <button class="boot-skip" id="bootSkip">Skip</button>
   <div class="boot-bottom">
-    <div class="boot-logo boot-logo-anim"><span>Prompt</span>Runic</div>
+    <div class="boot-logo boot-logo-anim"><img src="logo-boot.png" alt="" style="height:48px;width:auto;vertical-align:middle"/><span class="logo-text"><span class="prompt-part">Prompt</span><span class="runic-part">Runic</span></span></div>
   </div>
 </div>
 <script>
@@ -1328,8 +1399,8 @@
   var videoPlayed=false;
   var playAttempts=0;
 
-  /* Random opening video — pick one of the 4 opening animations each visit */
-  var bootVideos=['opening.mp4','opening2.mp4','opening3.mp4','opening4.mp4'];
+  /* Random opening video — pick one of the 10 opening animations each visit */
+  var bootVideos=['videos/openings/opening.mp4','videos/openings/opening2.mp4','videos/openings/opening3.mp4','videos/openings/opening4.mp4','videos/openings/opening5.mp4','videos/openings/opening6.mp4','videos/openings/opening7.mp4','videos/openings/opening8.mp4','videos/openings/opening9.mp4','videos/openings/opening10.mp4'];
   var pick=bootVideos[Math.floor(Math.random()*bootVideos.length)];
 
   function tryPlay(){
@@ -1468,16 +1539,16 @@
 </script>
 
 <header>
-  <a href="javascript:void(0)" class="logo" onclick="window.scrollTo({top:0,behavior:'smooth'})"><span>Prompt</span>Runic</a>
+  <a href="javascript:void(0)" class="logo" onclick="window.scrollTo({top:0,behavior:'smooth'})"><img src="logo-header.png" alt="PromptRunic" class="logo-icon"/><span class="logo-text"><span class="prompt-part">Prompt</span><span class="runic-part">Runic</span></span></a>
   <div class="hbtns">
     <span id="langSwitcher"></span>
     <a href="#templates" data-i18n="header.prompts">Prompts</a>
     <a href="#guide" data-i18n="header.guide">Beginner Guide</a>
-    <button class="pp-chip" id="communityBtn" data-i18n="header.community" title="Leaderboards & Mood Wall">🏆 Community</button>
-    <button id="gameBtn" data-i18n="header.game" style="background:linear-gradient(135deg,#22d3ee,#7c5cff);color:#fff;border-radius:8px;font-weight:700;font-size:13px;padding:6px 10px;border:none">🎮 Game</button>
+    <button class="pp-chip" id="communityBtn" title="Leaderboards & Mood Wall">🏆<span class="btn-hide-sm"> Community</span></button>
+    <button class="hbtn-game" id="gameBtn">🎮<span class="btn-hide-sm"> Game</span></button>
     <span class="badge" id="planBadge">FREE</span>
-    <button class="hbtn-user" id="authBtn" data-i18n="header.signin">Sign in</button>
-    <a href="#pro" class="hbtn-gold" style="padding:8px 14px" data-i18n="header.getpro">Get Pro</a>
+    <button class="hbtn-user" id="authBtn" data-i18n="header.signin">👤<span class="btn-hide-sm"> Sign in</span></button>
+    <a href="#pro" class="hbtn-gold" data-i18n="header.getpro">Get Pro</a>
   </div>
 </header>
 
@@ -1497,6 +1568,11 @@
       <a href="#templates" class="btn btn-primary" data-i18n="cta.browse">Browse Prompts</a>
       <a href="#pro" class="btn btn-gold" data-i18n="cta.unlock">Get Pro Membership — from $7.99/mo</a>
       <a href="javascript:void(0)" onclick="openGameOverlay()" class="btn btn-ghost" data-i18n="cta.play">🎮 Play Game</a>
+    </div>
+    <div class="cta-hook">
+      <p class="hook-line1">Still struggling with how to give instructions to your AI?</p>
+      <p class="hook-line2">Can't get the result you want from your prompts?</p>
+      <a href="#pro" class="hook-pro-btn">PromptRunic Pro!</a>
     </div>
     <div class="stat-strip">
       <div class="stat"><b id="statPrompts">700,000</b><span data-i18n="stat.prompts">ready-to-use prompts</span></div>
@@ -1776,14 +1852,10 @@
 </section>
 
 <footer id="about">
-  <div data-i18n="footer.tagline">PromptRunic — AI prompt template library</div>
-  <div style="margin-top:4px;font-style:italic;opacity:.85" data-i18n="footer.stats">700,000+ templates · 1,600+ categories</div>
-  <div style="margin-top:8px" data-i18n="footer.builtby">Maintained by Z. Xie</div>
+  <div data-i18n="footer.tagline">PromptRunic — an AI prompt launchpad with 700,000+ templates across 1,600+ categories.</div>
+  <div style="margin-top:8px" data-i18n="footer.builtby">Built by Zongyu Xie</div>
   <div style="margin-top:8px"><a href="privacy.html" data-i18n="footer.privacy">Privacy Policy</a> &nbsp;·&nbsp; <a href="terms.html" data-i18n="footer.terms">Terms of Service</a></div>
-  <div style="margin-top:10px;font-size:11.5px;max-width:660px;margin-left:auto;margin-right:auto;opacity:.78" data-i18n="footer.disclaimer">PromptRunic provides access to third-party AI models for informational purposes only. We do not own, operate, or control any underlying AI model. All AI-generated outputs may be inaccurate, incomplete, or biased. You are solely responsible for verifying any information before relying on it.</div>
-  <div style="margin-top:6px;font-size:11.5px;max-width:660px;margin-left:auto;margin-right:auto;opacity:.78" data-i18n="footer.affiliation">PromptRunic is not affiliated with OpenAI, Anthropic, Microsoft, Google, DeepSeek, or any other model provider.</div>
-  <div style="margin-top:6px;font-size:11.5px;max-width:660px;margin-left:auto;margin-right:auto;opacity:.78" data-i18n="footer.accuracy">Data accuracy: Prompt counts and category numbers are approximate and updated regularly. Actual numbers may vary slightly.</div>
-  <div style="margin-top:6px;font-size:11.5px;max-width:660px;margin-left:auto;margin-right:auto;opacity:.78" data-i18n="footer.prohibited">You agree not to use this site to generate: harmful, illegal, or unethical content; content that infringes third-party rights; or misinformation, harassment, or malicious code.</div>
+  <div style="margin-top:10px;font-size:11.5px;max-width:660px;margin-left:auto;margin-right:auto;opacity:.78" data-i18n="footer.disclaimer">PromptRunic is an independent product and is not affiliated with, endorsed by, or sponsored by OpenAI, Anthropic, Microsoft, Google, or DeepSeek. All product names and trademarks are the property of their respective owners. AI-generated answers may be inaccurate — please verify before relying on them.</div>
   <div style="margin-top:8px">© <span id="year"></span> PromptRunic. <span data-i18n="footer.rights">All rights reserved.</span></div>
 </footer>
 
@@ -2642,12 +2714,12 @@ function saveAccountSettings(){
 function refreshAuthUI(){
   const b=document.getElementById('authBtn');
   b.style.display='';
-  if(!fbReady){ b.textContent=PPI18n.t('header.signin'); return; }
+  if(!fbReady){ b.innerHTML='👤<span class="btn-hide-sm"> '+PPI18n.t('header.signin')+'</span>'; return; }
   if(currentUser){
     const nm=currentUser.displayName||((currentUser.email||'Account').split('@')[0]);
-    b.textContent='👤 '+nm;
+    b.innerHTML='👤<span class="btn-hide-sm"> '+nm+'</span>';
   }else{
-    b.textContent=PPI18n.t('header.signin');
+    b.innerHTML='👤<span class="btn-hide-sm"> '+PPI18n.t('header.signin')+'</span>';
   }
 }
 

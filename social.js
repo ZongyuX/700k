@@ -223,7 +223,7 @@ function buildComBtn(){
   comBtn.id = 'communityBtn';
   comBtn.title = 'Leaderboards & Mood Wall';
   comBtn.setAttribute('data-i18n','header.community');
-  comBtn.innerHTML = '🏆 Community';
+  comBtn.innerHTML = '🏆<span class="btn-hide-sm"> Community</span>';
   comBtn.addEventListener('click', openCommunity);
   bar.insertBefore(comBtn, bar.firstChild);
 }

@@ -443,13 +443,13 @@ var bgC, bgX, bgDef, bgS, bgReduce=false;
 try{ bgReduce = matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){}
 function rnd(a,b){ return a + Math.random()*(b-a); }
 
-/* 13 backgrounds. Constellation + AI1 + AI2 + AI3 + Live are free; the rest are a Pro feature. */
+/* 15 backgrounds. Constellation + AI1 + AI2 + AI3 + AI4 + AI5 + Live are free; the rest are a Pro feature. */
 var bgVideo=null, bgDim=null, bgVig=null, bgFade=null;
 var bgScrollListener=false;
-var ZH_BG_NAMES={constellation:'星座',drift:'星尘漂流',aurora:'极光',coderain:'代码雨',starfield:'超空间',neural:'神经脉冲',bubbles:'气泡',waves:'波浪',orbits:'轨道',grid:'霓虹网格',ai1:'PromptRunic AI',ai2:'数字流光',ai3:'梦境神经',live:'实时编码'};
-var ZH_BG_DESCS={constellation:'飘移的光点连线',drift:'柔和上升的光点',aurora:'缓慢流动的彩色云',coderain:'下落的字符流',starfield:'星星从身旁掠过',neural:'呼吸的网络节点',bubbles:'平静上升的圆圈',waves:'层叠流动的线条',orbits:'静静旋转的粒子',grid:'复古地平线网格',ai1:'电影级 AI 视频背景',ai2:'流动的 AI 动态背景',ai3:'梦幻 AI 氛围背景',live:'真实的人在工作'};
-var ES_BG_NAMES={constellation:'Constelación',drift:'Deriva estelar',aurora:'Aurora',coderain:'Lluvia de código',starfield:'Hiperespacio',neural:'Pulso neuronal',bubbles:'Burbujas',waves:'Ondas',orbits:'Órbitas',grid:'Cuadrícula neón',ai1:'PromptRunic AI',ai2:'Flujo Digital',ai3:'Sueño Neural',live:'Código en vivo'};
-var ES_BG_DESCS={constellation:'Nodos flotantes unidos por luz',drift:'Partículas brillantes ascendiendo',aurora:'Nubes de color fluyendo',coderain:'Flujo de caracteres cayendo',starfield:'Estrellas pasando a gran velocidad',neural:'Red de nodos pulsante',bubbles:'Círculos ascendentes calmados',waves:'Líneas fluidas superpuestas',orbits:'Partículas orbitando',grid:'Cuadrícula de horizonte retro',ai1:'Fondo de video IA cinematográfico',ai2:'Fondo de video IA fluido',ai3:'Fondo de video IA onírico',live:'Persona real trabajando'};
+var ZH_BG_NAMES={constellation:'星座',drift:'星尘漂流',aurora:'极光',coderain:'代码雨',starfield:'超空间',neural:'神经脉冲',bubbles:'气泡',waves:'波浪',orbits:'轨道',grid:'霓虹网格',ai1:'PromptRunic AI',ai2:'数字流光',ai3:'梦境神经',ai4:'赛博网络',ai5:'量子领域',ai6:'暗黑仪式',ai7:'血月',ai8:'冰霜洞穴',ai9:'暗影领域',ai10:'虚空风暴',live:'实时编码'};
+var ZH_BG_DESCS={constellation:'飘移的光点连线',drift:'柔和上升的光点',aurora:'缓慢流动的彩色云',coderain:'下落的字符流',starfield:'星星从身旁掠过',neural:'呼吸的网络节点',bubbles:'平静上升的圆圈',waves:'层叠流动的线条',orbits:'静静旋转的粒子',grid:'复古地平线网格',ai1:'电影级 AI 视频背景',ai2:'流动的 AI 动态背景',ai3:'梦幻 AI 氛围背景',ai4:'赛博神经网络 AI 背景',ai5:'量子计算 AI 梦境背景',ai6:'暗黑紫魔法 AI 背景',ai7:'深红炼狱 AI 背景',ai8:'冰蓝霜冻 AI 背景',ai9:'暗绿矩阵 AI 背景',ai10:'深紫虚空 AI 背景',live:'真实的人在工作'};
+var ES_BG_NAMES={constellation:'Constelación',drift:'Deriva estelar',aurora:'Aurora',coderain:'Lluvia de código',starfield:'Hiperespacio',neural:'Pulso neuronal',bubbles:'Burbujas',waves:'Ondas',orbits:'Órbitas',grid:'Cuadrícula neón',ai1:'PromptRunic AI',ai2:'Flujo Digital',ai3:'Sueño Neural',ai4:'Red Cibernética',ai5:'Reino Cuántico',ai6:'Ritual Oscuro',ai7:'Luna de Sangre',ai8:'Caverna Helada',ai9:'Reino de Sombras',ai10:'Tormenta del Vacío',live:'Código en vivo'};
+var ES_BG_DESCS={constellation:'Nodos flotantes unidos por luz',drift:'Partículas brillantes ascendiendo',aurora:'Nubes de color fluyendo',coderain:'Flujo de caracteres cayendo',starfield:'Estrellas pasando a gran velocidad',neural:'Red de nodos pulsante',bubbles:'Círculos ascendentes calmados',waves:'Líneas fluidas superpuestas',orbits:'Partículas orbitando',grid:'Cuadrícula de horizonte retro',ai1:'Fondo de video IA cinematográfico',ai2:'Fondo de video IA fluido',ai3:'Fondo de video IA onírico',ai4:'Fondo de video IA red neuronal cibernética',ai5:'Fondo de video IA computing cuántico',ai6:'Fondo de video IA magia oscura púrpura',ai7:'Fondo de video IA infierno carmesí',ai8:'Fondo de video IA hielo teal',ai9:'Fondo de video IA matriz esmeralda',ai10:'Fondo de video IA vacío violeta',live:'Persona real trabajando'};
 function getBgName(b){ var lang=(typeof PPI18n!=='undefined')?PPI18n.getLang():'en'; if(lang==='zh') return ZH_BG_NAMES[b.id]||b.name; if(lang==='es') return ES_BG_NAMES[b.id]||b.name; return b.name; }
 function getBgDesc(b){ var lang=(typeof PPI18n!=='undefined')?PPI18n.getLang():'en'; if(lang==='zh') return ZH_BG_DESCS[b.id]||b.desc; if(lang==='es') return ES_BG_DESCS[b.id]||b.desc; return b.desc; }
 
@@ -614,6 +614,300 @@ var BGS = [
       return {};
     },
     step:function(x,w,h,s,t){ /* video plays automatically */ } },
+  { id:'ai4', name:'Cyber Network', desc:'Cybernetic neural network AI background', free:true, isVideo:true,
+    init:function(w,h){
+      if(!bgVideo){
+        bgVideo=D.createElement('video'); bgVideo.className='ppbg-live';
+        bgVideo.setAttribute('autoplay',''); bgVideo.setAttribute('muted','');
+        bgVideo.setAttribute('loop',''); bgVideo.setAttribute('playsinline','');
+        bgVideo.setAttribute('preload','auto'); bgVideo.setAttribute('type','video/mp4');
+        bgVideo.setAttribute('webkit-playsinline','');
+        bgVideo.setAttribute('x5-video-player-type','h5');
+        bgVideo.muted=true; bgVideo.playsInline=true; bgVideo.autoplay=true; bgVideo.volume=0;
+        bgVideo.src='videos/AI4.mp4';
+        D.body.insertBefore(bgVideo, D.body.firstChild);
+        bgDim=D.createElement('div'); bgDim.className='ppbg-live-dim';
+        D.body.insertBefore(bgDim, D.body.firstChild);
+        bgVig=D.createElement('div'); bgVig.className='ppbg-live-vig';
+        D.body.insertBefore(bgVig, D.body.firstChild);
+        bgFade=D.createElement('div'); bgFade.className='ppbg-live-fade';
+        D.body.insertBefore(bgFade, D.body.firstChild);
+        initScrollFade();
+        bgVideo.addEventListener('canplay',function(){ tryPlayBgVideo(); },{once:true});
+        bgVideo.addEventListener('loadeddata',function(){ tryPlayBgVideo(); },{once:true});
+        bgVideo.addEventListener('canplaythrough',function(){ tryPlayBgVideo(); },{once:true});
+        bgVideo.addEventListener('error',function(){
+          bgVideo.style.display='none';
+          if(bgDim){bgDim.style.display='none';}
+          if(bgVig){bgVig.style.display='none';}
+          applyBg('constellation',true);
+        },{once:true});
+        if(bgVideo.readyState>=3) tryPlayBgVideo();
+        setTimeout(function(){ tryPlayBgVideo(); },100);
+        setTimeout(function(){ tryPlayBgVideo(); },500);
+        setTimeout(function(){ tryPlayBgVideo(); },1500);
+        setTimeout(function(){ tryPlayBgVideo(); },3000);
+      } else {
+        bgVideo.src='videos/AI4.mp4';
+        bgVideo.muted=true; bgVideo.playsInline=true; bgVideo.volume=0;
+        try{ bgVideo.load(); tryPlayBgVideo(); }catch(e){}
+        setTimeout(function(){ tryPlayBgVideo(); },500);
+      }
+      return {};
+    },
+    step:function(x,w,h,s,t){ /* video plays automatically */ } },
+  { id:'ai5', name:'Quantum Realm', desc:'Quantum computing AI dreamscape background', free:true, isVideo:true,
+    init:function(w,h){
+      if(!bgVideo){
+        bgVideo=D.createElement('video'); bgVideo.className='ppbg-live';
+        bgVideo.setAttribute('autoplay',''); bgVideo.setAttribute('muted','');
+        bgVideo.setAttribute('loop',''); bgVideo.setAttribute('playsinline','');
+        bgVideo.setAttribute('preload','auto'); bgVideo.setAttribute('type','video/mp4');
+        bgVideo.setAttribute('webkit-playsinline','');
+        bgVideo.setAttribute('x5-video-player-type','h5');
+        bgVideo.muted=true; bgVideo.playsInline=true; bgVideo.autoplay=true; bgVideo.volume=0;
+        bgVideo.src='videos/AI5.mp4';
+        D.body.insertBefore(bgVideo, D.body.firstChild);
+        bgDim=D.createElement('div'); bgDim.className='ppbg-live-dim';
+        D.body.insertBefore(bgDim, D.body.firstChild);
+        bgVig=D.createElement('div'); bgVig.className='ppbg-live-vig';
+        D.body.insertBefore(bgVig, D.body.firstChild);
+        bgFade=D.createElement('div'); bgFade.className='ppbg-live-fade';
+        D.body.insertBefore(bgFade, D.body.firstChild);
+        initScrollFade();
+        bgVideo.addEventListener('canplay',function(){ tryPlayBgVideo(); },{once:true});
+        bgVideo.addEventListener('loadeddata',function(){ tryPlayBgVideo(); },{once:true});
+        bgVideo.addEventListener('canplaythrough',function(){ tryPlayBgVideo(); },{once:true});
+        bgVideo.addEventListener('error',function(){
+          bgVideo.style.display='none';
+          if(bgDim){bgDim.style.display='none';}
+          if(bgVig){bgVig.style.display='none';}
+          applyBg('constellation',true);
+        },{once:true});
+        if(bgVideo.readyState>=3) tryPlayBgVideo();
+        setTimeout(function(){ tryPlayBgVideo(); },100);
+        setTimeout(function(){ tryPlayBgVideo(); },500);
+        setTimeout(function(){ tryPlayBgVideo(); },1500);
+        setTimeout(function(){ tryPlayBgVideo(); },3000);
+      } else {
+        bgVideo.src='videos/AI5.mp4';
+        bgVideo.muted=true; bgVideo.playsInline=true; bgVideo.volume=0;
+        try{ bgVideo.load(); tryPlayBgVideo(); }catch(e){}
+        setTimeout(function(){ tryPlayBgVideo(); },500);
+      }
+      return {};
+    },
+    step:function(x,w,h,s,t){ /* video plays automatically */ } },
+  { id:'ai6', name:'Dark Ritual', desc:'Dark arcane purple magic background', free:true, isVideo:true,
+    init:function(w,h){
+      if(!bgVideo){
+        bgVideo=D.createElement('video'); bgVideo.className='ppbg-live';
+        bgVideo.setAttribute('autoplay',''); bgVideo.setAttribute('muted','');
+        bgVideo.setAttribute('loop',''); bgVideo.setAttribute('playsinline','');
+        bgVideo.setAttribute('preload','auto'); bgVideo.setAttribute('type','video/mp4');
+        bgVideo.setAttribute('webkit-playsinline','');
+        bgVideo.setAttribute('x5-video-player-type','h5');
+        bgVideo.muted=true; bgVideo.playsInline=true; bgVideo.autoplay=true; bgVideo.volume=0;
+        bgVideo.src='videos/AI6.mp4';
+        D.body.insertBefore(bgVideo, D.body.firstChild);
+        bgDim=D.createElement('div'); bgDim.className='ppbg-live-dim';
+        D.body.insertBefore(bgDim, D.body.firstChild);
+        bgVig=D.createElement('div'); bgVig.className='ppbg-live-vig';
+        D.body.insertBefore(bgVig, D.body.firstChild);
+        bgFade=D.createElement('div'); bgFade.className='ppbg-live-fade';
+        D.body.insertBefore(bgFade, D.body.firstChild);
+        initScrollFade();
+        bgVideo.addEventListener('canplay',function(){ tryPlayBgVideo(); },{once:true});
+        bgVideo.addEventListener('loadeddata',function(){ tryPlayBgVideo(); },{once:true});
+        bgVideo.addEventListener('canplaythrough',function(){ tryPlayBgVideo(); },{once:true});
+        bgVideo.addEventListener('error',function(){
+          bgVideo.style.display='none';
+          if(bgDim){bgDim.style.display='none';}
+          if(bgVig){bgVig.style.display='none';}
+          applyBg('constellation',true);
+        },{once:true});
+        if(bgVideo.readyState>=3) tryPlayBgVideo();
+        setTimeout(function(){ tryPlayBgVideo(); },100);
+        setTimeout(function(){ tryPlayBgVideo(); },500);
+        setTimeout(function(){ tryPlayBgVideo(); },1500);
+        setTimeout(function(){ tryPlayBgVideo(); },3000);
+      } else {
+        bgVideo.src='videos/AI6.mp4';
+        bgVideo.muted=true; bgVideo.playsInline=true; bgVideo.volume=0;
+        try{ bgVideo.load(); tryPlayBgVideo(); }catch(e){}
+        setTimeout(function(){ tryPlayBgVideo(); },500);
+      }
+      return {};
+    },
+    step:function(x,w,h,s,t){ /* video plays automatically */ } },
+  { id:'ai7', name:'Blood Moon', desc:'Crimson red inferno AI background', free:true, isVideo:true,
+    init:function(w,h){
+      if(!bgVideo){
+        bgVideo=D.createElement('video'); bgVideo.className='ppbg-live';
+        bgVideo.setAttribute('autoplay',''); bgVideo.setAttribute('muted','');
+        bgVideo.setAttribute('loop',''); bgVideo.setAttribute('playsinline','');
+        bgVideo.setAttribute('preload','auto'); bgVideo.setAttribute('type','video/mp4');
+        bgVideo.setAttribute('webkit-playsinline','');
+        bgVideo.setAttribute('x5-video-player-type','h5');
+        bgVideo.muted=true; bgVideo.playsInline=true; bgVideo.autoplay=true; bgVideo.volume=0;
+        bgVideo.src='videos/AI7.mp4';
+        D.body.insertBefore(bgVideo, D.body.firstChild);
+        bgDim=D.createElement('div'); bgDim.className='ppbg-live-dim';
+        D.body.insertBefore(bgDim, D.body.firstChild);
+        bgVig=D.createElement('div'); bgVig.className='ppbg-live-vig';
+        D.body.insertBefore(bgVig, D.body.firstChild);
+        bgFade=D.createElement('div'); bgFade.className='ppbg-live-fade';
+        D.body.insertBefore(bgFade, D.body.firstChild);
+        initScrollFade();
+        bgVideo.addEventListener('canplay',function(){ tryPlayBgVideo(); },{once:true});
+        bgVideo.addEventListener('loadeddata',function(){ tryPlayBgVideo(); },{once:true});
+        bgVideo.addEventListener('canplaythrough',function(){ tryPlayBgVideo(); },{once:true});
+        bgVideo.addEventListener('error',function(){
+          bgVideo.style.display='none';
+          if(bgDim){bgDim.style.display='none';}
+          if(bgVig){bgVig.style.display='none';}
+          applyBg('constellation',true);
+        },{once:true});
+        if(bgVideo.readyState>=3) tryPlayBgVideo();
+        setTimeout(function(){ tryPlayBgVideo(); },100);
+        setTimeout(function(){ tryPlayBgVideo(); },500);
+        setTimeout(function(){ tryPlayBgVideo(); },1500);
+        setTimeout(function(){ tryPlayBgVideo(); },3000);
+      } else {
+        bgVideo.src='videos/AI7.mp4';
+        bgVideo.muted=true; bgVideo.playsInline=true; bgVideo.volume=0;
+        try{ bgVideo.load(); tryPlayBgVideo(); }catch(e){}
+        setTimeout(function(){ tryPlayBgVideo(); },500);
+      }
+      return {};
+    },
+    step:function(x,w,h,s,t){ /* video plays automatically */ } },
+  { id:'ai8', name:'Frost Cavern', desc:'Icy teal frozen AI background', free:true, isVideo:true,
+    init:function(w,h){
+      if(!bgVideo){
+        bgVideo=D.createElement('video'); bgVideo.className='ppbg-live';
+        bgVideo.setAttribute('autoplay',''); bgVideo.setAttribute('muted','');
+        bgVideo.setAttribute('loop',''); bgVideo.setAttribute('playsinline','');
+        bgVideo.setAttribute('preload','auto'); bgVideo.setAttribute('type','video/mp4');
+        bgVideo.setAttribute('webkit-playsinline','');
+        bgVideo.setAttribute('x5-video-player-type','h5');
+        bgVideo.muted=true; bgVideo.playsInline=true; bgVideo.autoplay=true; bgVideo.volume=0;
+        bgVideo.src='videos/AI8.mp4';
+        D.body.insertBefore(bgVideo, D.body.firstChild);
+        bgDim=D.createElement('div'); bgDim.className='ppbg-live-dim';
+        D.body.insertBefore(bgDim, D.body.firstChild);
+        bgVig=D.createElement('div'); bgVig.className='ppbg-live-vig';
+        D.body.insertBefore(bgVig, D.body.firstChild);
+        bgFade=D.createElement('div'); bgFade.className='ppbg-live-fade';
+        D.body.insertBefore(bgFade, D.body.firstChild);
+        initScrollFade();
+        bgVideo.addEventListener('canplay',function(){ tryPlayBgVideo(); },{once:true});
+        bgVideo.addEventListener('loadeddata',function(){ tryPlayBgVideo(); },{once:true});
+        bgVideo.addEventListener('canplaythrough',function(){ tryPlayBgVideo(); },{once:true});
+        bgVideo.addEventListener('error',function(){
+          bgVideo.style.display='none';
+          if(bgDim){bgDim.style.display='none';}
+          if(bgVig){bgVig.style.display='none';}
+          applyBg('constellation',true);
+        },{once:true});
+        if(bgVideo.readyState>=3) tryPlayBgVideo();
+        setTimeout(function(){ tryPlayBgVideo(); },100);
+        setTimeout(function(){ tryPlayBgVideo(); },500);
+        setTimeout(function(){ tryPlayBgVideo(); },1500);
+        setTimeout(function(){ tryPlayBgVideo(); },3000);
+      } else {
+        bgVideo.src='videos/AI8.mp4';
+        bgVideo.muted=true; bgVideo.playsInline=true; bgVideo.volume=0;
+        try{ bgVideo.load(); tryPlayBgVideo(); }catch(e){}
+        setTimeout(function(){ tryPlayBgVideo(); },500);
+      }
+      return {};
+    },
+    step:function(x,w,h,s,t){ /* video plays automatically */ } },
+  { id:'ai9', name:'Shadow Realm', desc:'Dark emerald matrix AI background', free:true, isVideo:true,
+    init:function(w,h){
+      if(!bgVideo){
+        bgVideo=D.createElement('video'); bgVideo.className='ppbg-live';
+        bgVideo.setAttribute('autoplay',''); bgVideo.setAttribute('muted','');
+        bgVideo.setAttribute('loop',''); bgVideo.setAttribute('playsinline','');
+        bgVideo.setAttribute('preload','auto'); bgVideo.setAttribute('type','video/mp4');
+        bgVideo.setAttribute('webkit-playsinline','');
+        bgVideo.setAttribute('x5-video-player-type','h5');
+        bgVideo.muted=true; bgVideo.playsInline=true; bgVideo.autoplay=true; bgVideo.volume=0;
+        bgVideo.src='videos/AI9.mp4';
+        D.body.insertBefore(bgVideo, D.body.firstChild);
+        bgDim=D.createElement('div'); bgDim.className='ppbg-live-dim';
+        D.body.insertBefore(bgDim, D.body.firstChild);
+        bgVig=D.createElement('div'); bgVig.className='ppbg-live-vig';
+        D.body.insertBefore(bgVig, D.body.firstChild);
+        bgFade=D.createElement('div'); bgFade.className='ppbg-live-fade';
+        D.body.insertBefore(bgFade, D.body.firstChild);
+        initScrollFade();
+        bgVideo.addEventListener('canplay',function(){ tryPlayBgVideo(); },{once:true});
+        bgVideo.addEventListener('loadeddata',function(){ tryPlayBgVideo(); },{once:true});
+        bgVideo.addEventListener('canplaythrough',function(){ tryPlayBgVideo(); },{once:true});
+        bgVideo.addEventListener('error',function(){
+          bgVideo.style.display='none';
+          if(bgDim){bgDim.style.display='none';}
+          if(bgVig){bgVig.style.display='none';}
+          applyBg('constellation',true);
+        },{once:true});
+        if(bgVideo.readyState>=3) tryPlayBgVideo();
+        setTimeout(function(){ tryPlayBgVideo(); },100);
+        setTimeout(function(){ tryPlayBgVideo(); },500);
+        setTimeout(function(){ tryPlayBgVideo(); },1500);
+        setTimeout(function(){ tryPlayBgVideo(); },3000);
+      } else {
+        bgVideo.src='videos/AI9.mp4';
+        bgVideo.muted=true; bgVideo.playsInline=true; bgVideo.volume=0;
+        try{ bgVideo.load(); tryPlayBgVideo(); }catch(e){}
+        setTimeout(function(){ tryPlayBgVideo(); },500);
+      }
+      return {};
+    },
+    step:function(x,w,h,s,t){ /* video plays automatically */ } },
+  { id:'ai10', name:'Void Storm', desc:'Deep violet void AI background', free:true, isVideo:true,
+    init:function(w,h){
+      if(!bgVideo){
+        bgVideo=D.createElement('video'); bgVideo.className='ppbg-live';
+        bgVideo.setAttribute('autoplay',''); bgVideo.setAttribute('muted','');
+        bgVideo.setAttribute('loop',''); bgVideo.setAttribute('playsinline','');
+        bgVideo.setAttribute('preload','auto'); bgVideo.setAttribute('type','video/mp4');
+        bgVideo.setAttribute('webkit-playsinline','');
+        bgVideo.setAttribute('x5-video-player-type','h5');
+        bgVideo.muted=true; bgVideo.playsInline=true; bgVideo.autoplay=true; bgVideo.volume=0;
+        bgVideo.src='videos/AI10.mp4';
+        D.body.insertBefore(bgVideo, D.body.firstChild);
+        bgDim=D.createElement('div'); bgDim.className='ppbg-live-dim';
+        D.body.insertBefore(bgDim, D.body.firstChild);
+        bgVig=D.createElement('div'); bgVig.className='ppbg-live-vig';
+        D.body.insertBefore(bgVig, D.body.firstChild);
+        bgFade=D.createElement('div'); bgFade.className='ppbg-live-fade';
+        D.body.insertBefore(bgFade, D.body.firstChild);
+        initScrollFade();
+        bgVideo.addEventListener('canplay',function(){ tryPlayBgVideo(); },{once:true});
+        bgVideo.addEventListener('loadeddata',function(){ tryPlayBgVideo(); },{once:true});
+        bgVideo.addEventListener('canplaythrough',function(){ tryPlayBgVideo(); },{once:true});
+        bgVideo.addEventListener('error',function(){
+          bgVideo.style.display='none';
+          if(bgDim){bgDim.style.display='none';}
+          if(bgVig){bgVig.style.display='none';}
+          applyBg('constellation',true);
+        },{once:true});
+        if(bgVideo.readyState>=3) tryPlayBgVideo();
+        setTimeout(function(){ tryPlayBgVideo(); },100);
+        setTimeout(function(){ tryPlayBgVideo(); },500);
+        setTimeout(function(){ tryPlayBgVideo(); },1500);
+        setTimeout(function(){ tryPlayBgVideo(); },3000);
+      } else {
+        bgVideo.src='videos/AI10.mp4';
+        bgVideo.muted=true; bgVideo.playsInline=true; bgVideo.volume=0;
+        try{ bgVideo.load(); tryPlayBgVideo(); }catch(e){}
+        setTimeout(function(){ tryPlayBgVideo(); },500);
+      }
+      return {};
+    },
+    step:function(x,w,h,s,t){ /* video plays automatically */ } },
   { id:'live', name:'Live Coder', desc:'Real person at work on a laptop', free:true, isVideo:true,
     init:function(w,h){
       if(!bgVideo){
@@ -705,7 +999,8 @@ function startBg(){
   bgX = bgC.getContext('2d');
   sizeBg();
   addEventListener('resize', function(){ sizeBg(); if(bgDef) bgS = bgDef.init(bgC.width,bgC.height); });
-  applyBg(lg('pp_bg') || ['ai1','ai2','ai3'][Math.floor(Math.random()*3)], true);
+  /* Every visit: randomly pick from AI1-AI10 as default background */
+  applyBg(['ai1','ai2','ai3','ai4','ai5','ai6','ai7','ai8','ai9','ai10'][Math.floor(Math.random()*10)], true);
   var t0 = Date.now();
   (function frame(){
     var t=(Date.now()-t0)/1000;

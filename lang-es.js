@@ -327,15 +327,11 @@ var ES = {
   'pricing.feat.nosub': 'Sin suscripción',
 
   /* ---- Footer ---- */
-  'footer.tagline': 'PromptRunic — biblioteca de plantillas de prompts de IA',
-  'footer.stats': '700,000+ plantillas · 1,600+ categorías',
-  'footer.builtby': 'Mantenido por Z. Xie',
+  'footer.tagline': 'PromptRunic — una plataforma de lanzamiento de prompts de IA con 700,000+ plantillas en 1,684 categorías.',
+  'footer.builtby': 'Creado por Zongyu Xie',
   'footer.privacy': 'Política de privacidad',
   'footer.terms': 'Términos de servicio',
-  'footer.disclaimer': 'PromptRunic proporciona acceso a modelos de IA de terceros solo con fines informativos. No poseemos, operamos ni controlamos ningún modelo de IA subyacente. Todos los resultados generados por IA pueden ser inexactos, incompletos o sesgados. Usted es el único responsable de verificar cualquier información antes de confiar en ella.',
-  'footer.affiliation': 'PromptRunic no está afiliado a OpenAI, Anthropic, Microsoft, Google, DeepSeek ni a ningún otro proveedor de modelos.',
-  'footer.accuracy': 'Precisión de datos: los recuentos de prompts y números de categorías son aproximados y se actualizan periódicamente. Los números reales pueden variar ligeramente.',
-  'footer.prohibited': 'Usted acepta no usar este sitio para generar: contenido dañino, ilegal o poco ético; contenido que infrinja derechos de terceros; o desinformación, acoso o código malicioso.',
+  'footer.disclaimer': 'PromptRunic es un producto independiente y no está afiliado, respaldado ni patrocinado por OpenAI, Anthropic, Microsoft, Google o DeepSeek. Todos los nombres de productos y marcas comerciales son propiedad de sus respectivos dueños. Las respuestas generadas por IA pueden ser inexactas — verifica antes de confiar en ellas.',
   'footer.rights': 'Todos los derechos reservados.',
 
   /* ---- Toast messages ---- */
@@ -356,7 +352,7 @@ var ES = {
   'bg.choose': 'Elige un fondo',
   'bg.title': 'Fondos',
   'bg.desc.pro': 'Elige cualquier fondo animado — tu elección se guarda en este dispositivo.',
-  'bg.desc.free': '3 fondos son gratuitos (PromptRunic, Constelación y Live Coder). Los otros 9 son función Pro — activa Pro para desbloquearlos.',
+  'bg.desc.free': '5 fondos son gratuitos (PromptRunic AI, Red Cibernética, Reino Cuántico, Constelación y Live Coder). Los otros 9 son función Pro — activa Pro para desbloquearlos.',
   'bg.pro.only': 'Ese fondo es función Pro — activa Pro para usarlo',
   'bg.set': 'Fondo cambiado a {name}',
 
