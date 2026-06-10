@@ -2,13 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PROMPT MATRIX - AI Fortress Survival (FIXED)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>PROMPT MATRIX</title>
 <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap');
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#050508;color:#e0e0e0;font-family:'Share Tech Mono',monospace;overflow-x:hidden;min-height:100vh}
+body{background:#050508;color:#e0e0e0;font-family:'Share Tech Mono',monospace;overflow-x:hidden;min-height:100vh;touch-action:manipulation;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;user-select:none}
 #startScreen{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#050508}
 #startScreen::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 25% 40%,rgba(0,255,136,0.06)0%,transparent 55%),radial-gradient(ellipse at 75% 30%,rgba(0,180,255,0.05)0%,transparent 50%),radial-gradient(ellipse at 50% 80%,rgba(160,80,255,0.04)0%,transparent 50%);pointer-events:none}
 #startScreen::after{content:'';position:absolute;inset:0;box-shadow:inset 0 0 180px 80px rgba(0,0,0,0.85);pointer-events:none;z-index:2}
@@ -45,15 +48,84 @@ body{background:#050508;color:#e0e0e0;font-family:'Share Tech Mono',monospace;ov
 .diff-impossible{background:linear-gradient(145deg,rgba(127,29,29,0.3),rgba(20,5,5,0.6))}.diff-impossible:hover{border-color:rgba(200,0,0,0.6);box-shadow:0 0 50px rgba(200,0,0,0.25)}
 .diff-badge{font-family:'Orbitron',sans-serif;font-size:.55rem;font-weight:700;padding:.1rem .5rem;border-radius:4px;letter-spacing:.1em;display:inline-block;margin-left:6px}
 #gameScreen{flex-direction:column;background:linear-gradient(180deg,#050508,#080510);padding:2px 4px;position:relative;overflow:hidden}
-#gameCanvas{border:1px solid rgba(0,255,136,0.12);border-radius:4px;display:block;cursor:crosshair}
+#gameCanvas{border:1px solid rgba(0,255,136,0.12);border-radius:4px;display:block;cursor:crosshair;touch-action:none}
 .mode-badge{font-family:'Orbitron',sans-serif;font-size:.6rem;font-weight:700;padding:.15rem .65rem;border-radius:4px;letter-spacing:.12em}
 .mode-badge.defense{background:rgba(0,140,255,0.15);color:#00aaff;border:1px solid rgba(0,140,255,0.35)}
 .mode-badge.attack{background:rgba(255,80,0,0.15);color:#ff6600;border:1px solid rgba(255,80,0,0.35)}
-.panel-btn{padding:.35rem .55rem;border-radius:6px;font-size:.72rem;cursor:pointer;transition:all .2s;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:#bbb;font-family:'Share Tech Mono',monospace}
+.panel-btn{padding:.35rem .55rem;border-radius:6px;font-size:.72rem;cursor:pointer;transition:all .2s;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.04);color:#bbb;font-family:'Share Tech Mono',monospace;touch-action:manipulation}
 .panel-btn:hover{background:rgba(255,255,255,0.1);transform:translateY(-1px)}
 .panel-btn.active{border-color:#00ff88;background:rgba(0,255,136,0.12);color:#00ff88;box-shadow:0 0 12px rgba(0,255,136,0.15)}
 .panel-btn.attack-active{border-color:#ff6600;background:rgba(255,100,0,0.12);color:#ff6600}
 .panel-btn:disabled{opacity:.35;cursor:not-allowed;transform:none}
+
+/* ====== MOBILE RESPONSIVE GAME LAYOUT ====== */
+@media(max-width:768px){
+  /* Start screen mobile */
+  .briefing-panel{padding:1rem 1.2rem;max-width:90vw;margin:1.5rem auto}
+  .briefing-panel p{font-size:.7rem !important;line-height:1.4 !important}
+  .launch-btn{font-size:1rem;padding:.8rem 2rem;letter-spacing:.1em}
+  /* Mode selection cards */
+  .mode-card{width:85vw;max-width:300px;padding:1.5rem}
+  .mode-card h3{font-size:1.1rem !important}
+  .mode-card p{font-size:.7rem !important}
+  /* Diff cards */
+  .diff-card{width:140px;padding:.8rem}
+  /* Game header - compact */
+  #gameHeader{margin-bottom:1px !important}
+  #gameHeader .flex{flex-wrap:wrap;gap:2px !important}
+  #gameHeader .text-xs{font-size:.5rem !important}
+  .mode-badge,.diff-badge{font-size:.45rem !important;padding:.05rem .3rem !important}
+  .gold-display{font-size:.5rem !important}
+  /* Main game area: stack panels below canvas on mobile portrait */
+  #gameScreen>div:nth-child(2){
+    flex-direction:column !important;
+    gap:2px !important;
+  }
+  #leftPanel,#rightPanel{
+    min-width:0 !important;
+    max-width:100% !important;
+    flex-shrink:1 !important;
+    flex-direction:row !important;
+    overflow-x:auto !important;
+    overflow-y:hidden !important;
+    padding:0 !important;
+    gap:2px !important;
+    flex-wrap:nowrap !important;
+  }
+  #leftPanel>div:first-child,
+  #rightPanel>div:first-child{
+    display:none !important;
+  }
+  #leftPanel .flex.flex-col,
+  #rightPanel .flex.flex-col{
+    flex-direction:row !important;
+    flex-wrap:nowrap !important;
+    gap:2px !important;
+  }
+  .panel-btn{font-size:.55rem !important;padding:.2rem .35rem !important;white-space:nowrap}
+  /* Canvas takes more space */
+  #canvasWrap{min-height:200px !important}
+  /* Fortress bar compact */
+  #fortressBar .text-xs{font-size:.5rem !important}
+  #fortressBar .progress{height:8px !important}
+}
+
+/* Mobile landscape - full immersive */
+@media(max-width:900px) and (orientation:landscape){
+  #gameScreen{padding:0 !important}
+  #gameHeader{margin-bottom:0 !important}
+  #gameHeader .flex{padding:0 4px !important}
+  #gameHeader .text-xs{font-size:.45rem !important}
+  #leftPanel{min-width:70px !important;max-width:80px !important}
+  #rightPanel{min-width:70px !important;max-width:80px !important}
+  #canvasWrap{min-height:0 !important}
+  #fortressBar{margin-top:0 !important}
+  .panel-btn{font-size:.5rem !important;padding:.15rem .25rem !important}
+  .gold-display{font-size:.45rem !important}
+  .mode-badge,.diff-badge{font-size:.4rem !important;padding:.03rem .2rem !important}
+  /* Hide chapter name in landscape to save space */
+  #chapterName{display:none !important}
+}
 .spell-btn{padding:.3rem .45rem;border-radius:6px;font-size:.68rem;cursor:pointer;transition:all .2s;border:1px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.02);color:#999;text-align:center;min-width:72px;font-family:'Share Tech Mono',monospace}
 .spell-btn:hover{background:rgba(255,255,255,0.07);transform:translateY(-1px)}
 .spell-btn.active{border-color:#aa88ff;background:rgba(170,136,255,0.12);color:#ccbbff}
@@ -1697,11 +1769,16 @@ function init(){
 function resizeCanvas(){
   const wrap=document.getElementById('canvasWrap');
   if(!wrap||!canvas)return;
-  const wW=wrap.clientWidth-4,wH=wrap.clientHeight-4; // minus padding
-  if(wW<100||wH<100)return;
+  const wW=wrap.clientWidth-4,wH=wrap.clientHeight-4;
+  if(wW<50||wH<50)return;
   const ratio=CW/CH;
   let w=wW,h=wW/ratio;
   if(h>wH){h=wH;w=wH*ratio}
+  /* On mobile portrait, canvas takes available width; panels go below */
+  if(window.innerWidth<=768){
+    const maxH=window.innerHeight*0.45;
+    if(h>maxH){h=maxH;w=h*ratio}
+  }
   canvas.style.width=Math.floor(w)+'px';
   canvas.style.height=Math.floor(h)+'px';
 }
@@ -3342,6 +3419,61 @@ document.addEventListener('DOMContentLoaded',()=>{
     const mx=(e.clientX-r.left)*sx,my=(e.clientY-r.top)*sy;
     if(gMode==='defense')handleDefClick(mx,my);
   });
+  /* Touch support for mobile */
+  canvas.addEventListener('touchstart',e=>{
+    e.preventDefault();
+    if(gameOver)return;SFX.resume();
+    const t=e.touches[0];
+    const r=canvas.getBoundingClientRect(),sx=CW/r.width,sy=CH/r.height;
+    const mx=(t.clientX-r.left)*sx,my=(t.clientY-r.top)*sy;
+    mouseP={x:mx,y:my};
+    if(gMode==='defense')handleDefClick(mx,my);
+  },{passive:false});
+  canvas.addEventListener('touchmove',e=>{
+    e.preventDefault();
+    const t=e.touches[0];
+    const r=canvas.getBoundingClientRect(),sx=CW/r.width,sy=CH/r.height;
+    mouseP={x:(t.clientX-r.left)*sx,y:(t.clientY-r.top)*sy};
+  },{passive:false});
+  canvas.addEventListener('touchend',e=>{
+    e.preventDefault();
+    mouseP=null;
+  },{passive:false});
+  /* Auto-fullscreen when game starts on mobile */
+  function tryFullscreen(){
+    try{
+      const el=document.documentElement;
+      if(el.requestFullscreen) el.requestFullscreen().catch(()=>{});
+      else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+      if(screen.orientation && screen.orientation.lock){
+        screen.orientation.lock('landscape').catch(()=>{});
+      }
+    }catch(e){}
+  }
+  /* Intercept the LAUNCH button to trigger fullscreen */
+  const origShowModeSelect=window.showModeSelect;
+  if(origShowModeSelect){
+    window.showModeSelect=function(){
+      if(window.innerWidth<=768) tryFullscreen();
+      origShowModeSelect();
+    };
+  }
+  /* Also fullscreen when starting from mode/diff selection */
+  const origStartGame=window.startGame;
+  if(origStartGame){
+    window.startGame=function(a,b){
+      if(window.innerWidth<=768) tryFullscreen();
+      origStartGame(a,b);
+    };
+  }
+  /* Resize canvas on orientation change */
+  window.addEventListener('resize',()=>{ setTimeout(resizeCanvas,100); });
+  /* Prevent pinch zoom on mobile */
+  document.addEventListener('gesturestart',e=>e.preventDefault(),{passive:false});
+  document.addEventListener('gesturechange',e=>e.preventDefault(),{passive:false});
+  /* Re-init canvas touch after mode/diff selection */
+  window.addEventListener('fullscreenchange',()=>{ setTimeout(resizeCanvas,200); });
+  document.addEventListener('webkitfullscreenchange',()=>{ setTimeout(resizeCanvas,200); });
 });
 
 function applyDSpell(spellId){

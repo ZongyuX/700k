@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <title>PromptPilot — AI Prompt Generator & AI Helper | 700,000+ Prompts for ChatGPT, Claude, Copilot, Gemini & DeepSeek</title>
 <meta name="description" content="PromptPilot is the ultimate AI prompt generator and AI helper with 700,000+ ready-to-use prompt templates. Your AI mate for ChatGPT, Claude, Copilot, Gemini, DeepSeek & more. Fill in the blanks and fire prompts to any AI assistant in one click. AI prompt library, AI writing helper, AI chat assistant — all in one place." />
 <meta name="keywords" content="PromptPilot, AI prompt, AI prompts, AI prompt generator, AI helper, AI mate, AI assistant, AI writing helper, AI chat assistant, prompt generator, prompt library, AI prompt library, ChatGPT prompts, Claude prompts, Gemini prompts, Copilot prompts, DeepSeek prompts, AI prompt templates, AI prompt maker, AI copilot, AI companion, AI tool, AI writing tool, prompt engineering, AI coding helper, AI marketing prompts, AI email writer, AI resume builder, AI content generator, AI brainstorming, AI creative writing, AI productivity, AI chatbot prompts, prompt booster, AI suggestions, AI idea generator, AI prompt finder, best AI prompts, free AI prompts, AI prompt optimizer, prompt template, AI roleplay prompts, AI assistant tool, prompt management, AI communication helper, AI learning assistant, AI study helper, AI homework helper, AI copywriting, AI translation, AI coding assistant, prompt database, prompt catalog, AI starter, AI beginner guide" />
@@ -1035,6 +1038,19 @@
   /* ---- Game overlay ---- */
   #game-overlay{position:fixed;inset:0;z-index:150;background:radial-gradient(circle at center,#0b0f19 0%,#02040a 100%);display:none;flex-direction:column;align-items:center;justify-content:center;color:#f3f4f6;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;overflow-y:auto;padding:16px}
   #game-overlay.show{display:flex}
+  #game-overlay.fullscreen-active{padding:0}
+  #game-overlay.fullscreen-active .game-close-btn{top:8px;right:8px;width:32px;height:32px;font-size:16px;z-index:9999}
+  /* Mobile fullscreen game optimizations */
+  @media(max-width:768px){
+    #game-overlay{padding:0 !important}
+    #game-overlay .game-close-btn{top:4px;right:4px;width:36px;height:36px;font-size:18px;background:rgba(239,68,68,.6)}
+  }
+  @media(max-width:768px) and (orientation:portrait){
+    #game-orientation-hint{display:flex !important}
+  }
+  #game-orientation-hint{display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.92);flex-direction:column;align-items:center;justify-content:center;color:#fff;font-family:'Orbitron',sans-serif;text-align:center;padding:20px}
+  #game-orientation-hint .rotate-icon{font-size:48px;margin-bottom:16px;animation:rotateHint 2s ease-in-out infinite}
+  @keyframes rotateHint{0%,100%{transform:rotate(0deg)}50%{transform:rotate(90deg)}}
   .game-cyber-panel{background:rgba(10,15,30,.85);backdrop-filter:blur(16px);border:1px solid rgba(56,189,248,.2);box-shadow:0 8px 32px 0 rgba(0,0,0,.6),inset 0 0 20px rgba(56,189,248,.05)}
   .game-neon-glow-sky{box-shadow:0 0 15px rgba(56,189,248,.4)}
   .game-neon-text-sky{text-shadow:0 0 8px rgba(56,189,248,.6)}
@@ -1912,7 +1928,13 @@
 <!-- Game overlay (iframe — PROMPT MATRIX) -->
 <div id="game-overlay">
   <button class="game-close-btn" onclick="closeGameOverlay()" title="Close game">&times;</button>
-  <iframe id="gameFrame" title="PROMPT MATRIX" loading="lazy" style="border:0;width:100%;height:100%;flex:1;min-height:0;background:#050508"></iframe>
+  <iframe id="gameFrame" title="PROMPT MATRIX" loading="lazy" allow="fullscreen" style="border:0;width:100%;height:100%;flex:1;min-height:0;background:#050508"></iframe>
+  <!-- Orientation hint for portrait mode -->
+  <div id="game-orientation-hint">
+    <div class="rotate-icon">📱</div>
+    <div style="font-size:18px;font-weight:700;margin-bottom:8px">ROTATE YOUR DEVICE</div>
+    <div style="font-size:14px;color:#aaa">Landscape mode recommended for the best gaming experience</div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -4224,10 +4246,33 @@ runQuickOptimizer = function(){
     document.body.style.overflow='hidden';
     _ppGameStart=Date.now();
     ensureLoaded();
+    /* Auto-fullscreen on mobile */
+    requestAnimationFrame(function(){
+      try{
+        var el=document.documentElement;
+        if(el.requestFullscreen) el.requestFullscreen().catch(function(){});
+        else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+        else if(el.msRequestFullscreen) el.msRequestFullscreen();
+        document.getElementById('game-overlay').classList.add('fullscreen-active');
+        /* Lock to landscape on mobile if supported */
+        if(screen.orientation && screen.orientation.lock){
+          screen.orientation.lock('landscape').catch(function(){});
+        }
+      }catch(e){}
+    });
   };
   window.closeGameOverlay=function(){
     document.getElementById('game-overlay').classList.remove('show');
+    document.getElementById('game-overlay').classList.remove('fullscreen-active');
     document.body.style.overflow='';
+    /* Exit fullscreen */
+    try{
+      if(document.fullscreenElement || document.webkitFullscreenElement){
+        if(document.exitFullscreen) document.exitFullscreen().catch(function(){});
+        else if(document.webkitExitFullscreen) document.webkitExitFullscreen();
+      }
+      if(screen.orientation && screen.orientation.unlock) screen.orientation.unlock();
+    }catch(e){}
   };
   /* receive victory from game.html: +100 coins + save high score */
   window.addEventListener('message',function(e){
