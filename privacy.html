@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Privacy Policy — PromptRunic</title>
+<meta name="robots" content="all" />
+<style>
+  :root{--bg:#0b0f1a;--panel:#121828;--text:#e8ecf4;--muted:#9aa4b2;--accent:#7c5cff;--accent2:#22d3ee;--border:#222a40}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.65}
+  a{color:var(--accent2)}
+  header{padding:18px 6vw;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+  .logo{font-weight:800;font-size:20px}
+  .logo span{background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  .logo a{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:var(--panel);transition:all .2s;font-size:14px;font-weight:700;color:var(--text);text-decoration:none}
+  .logo a:hover{border-color:var(--accent);background:rgba(124,92,255,.1)}
+  .lang-switch{display:flex;gap:6px}
+  .lang-switch button{background:var(--panel);border:1px solid var(--border);color:var(--muted);padding:4px 10px;border-radius:6px;cursor:pointer;font-size:12px;transition:all .2s}
+  .lang-switch button:hover,.lang-switch button.active{color:#fff;border-color:var(--accent)}
+  main{max-width:780px;margin:0 auto;padding:40px 6vw 70px}
+  h1{font-size:30px;margin-bottom:6px}
+  .upd{color:var(--muted);font-size:13px;margin-bottom:26px}
+  h2{font-size:18px;margin:28px 0 8px;color:#fff}
+  p,li{font-size:14.5px;color:#d3d9e6;margin-bottom:10px}
+  ul{margin:0 0 12px 22px}
+  li{margin-bottom:6px}
+  .box{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin:18px 0}
+  footer{border-top:1px solid var(--border);padding:26px 6vw;color:var(--muted);font-size:13px;text-align:center}
+  strong{color:#fff}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><a href="index.html"><span style="font-size:16px">←</span> <span data-t="backHome">Back to Home</span></a></div>
+  <div class="lang-switch" id="langSwitch">
+    <button data-lang="en">EN</button>
+    <button data-lang="zh">中文</button>
+    <button data-lang="es">ES</button>
+  </div>
+</header>
+<main id="content"></main>
+<footer>
+  <span class="footer-copy">&copy; 2026 PromptRunic. <span data-t="footer.rights"></span></span> &nbsp;·&nbsp;
+  <a href="index.html" data-t="footer.home"></a> &nbsp;·&nbsp; <a href="terms.html" data-t="footer.terms"></a>
+</footer>
+
+<script>
+(function(){
+'use strict';
+
+var LANGS = {
+
+en: {
+  'backHome': 'Back to Home',
+  'footer.rights': 'All rights reserved.',
+  'footer.home': 'Home',
+  'footer.terms': 'Terms of Service',
+  'title': 'Privacy Policy',
+  'updated': 'Last updated: 10 June 2026',
+  'intro': 'This Privacy Policy explains how <strong>PromptRunic</strong> ("PromptRunic", "we", "us"), maintained by Z. Xie, handles information when you use our website and desktop application (together, the "Service"). By using the Service you agree to this Policy.',
+  's1h': '1. Information we collect',
+  's1p': 'We collect only what we need to run the Service:',
+  's1l1': '<strong>Account information</strong> — your email address and display name (if provided). We use Firebase Authentication to handle sign-in. We never receive or store your password — all password handling is managed securely by Firebase.',
+  's1l2': '<strong>Content you create</strong> — prompts you save or create, your favorites, progress data (experience points, level, daily streak, achievements), and your Pro or trial status.',
+  's1l3': '<strong>Technical data</strong> — browser type, approximate region, and data stored locally in your browser (see "Cookies & local storage").',
+  's1l4': '<strong>Feedback</strong> — when you submit feedback, we collect the information you provide (which may include your email address and the content of your feedback).',
+  's1l5': '<strong>We do NOT collect or store payment card details.</strong> All payments are processed by Lemon Squeezy; we never see your card number.',
+  's2h': '2. How we use your information',
+  's2l1': 'To provide the Service and let you sign in to your account.',
+  's2l2': 'To sync your favorites, progress, and Pro status across your devices.',
+  's2l3': 'To send you product updates and announcements only if you opted in when registering.',
+  's2l4': 'To maintain security, prevent abuse, and improve the Service.',
+  's3h': '3. Legal bases (for EU/EEA/UK users)',
+  's3p': 'Where the GDPR applies, we process your data on these bases: <strong>performance of a contract</strong> (operating your account), <strong>consent</strong> (marketing emails — you can withdraw it at any time), and <strong>legitimate interests</strong> (keeping the Service secure and functional).',
+  's4h': '4. Service providers',
+  's4p': 'We use trusted third parties to operate the Service. They process data on our behalf:',
+  's4l1': '<strong>Google Firebase</strong> — handles account authentication and stores your account data (favorites, progress, Pro status). Subject to Google\'s privacy terms.',
+  's4l2': '<strong>Lemon Squeezy</strong> — our merchant of record; processes purchases of Pro activation codes and coin packs. Subject to Lemon Squeezy\'s privacy terms.',
+  's4p2': 'We do not sell your personal information, and we do not use third-party advertising trackers.',
+  's5h': '5. Marketing emails',
+  's5p': 'If you opted in, we may occasionally email you about new features and prompt packs. Every such email includes an unsubscribe link, and you can opt out at any time by contacting us. We will not add you to marketing emails without your consent.',
+  's6h': '6. Cookies &amp; local storage',
+  's6p': 'The Service uses your browser\'s local storage to remember your preferences and progress, and Firebase may set cookies that are necessary to keep you signed in. We do not use advertising or cross-site tracking cookies.',
+  's7h': '7. Data retention',
+  's7p': 'We keep your account data for as long as your account is active. If you ask us to delete your account, we will remove your personal data within a reasonable period, except where we must keep certain records to comply with law.',
+  's8h': '8. Your rights',
+  's8p': 'Depending on where you live, you may have the right to access, correct, delete, or export your personal data, and to object to or restrict certain processing. To exercise any of these rights, email us at <a href="mailto:zongxie22@gmail.com">zongxie22@gmail.com</a>.',
+  's9h': '9. Deleting your account',
+  's9p': 'You can request deletion of your account and associated data at any time by emailing <a href="mailto:zongxie22@gmail.com">zongxie22@gmail.com</a>.',
+  's10h': '10. Security',
+  's10p': 'We take reasonable measures to protect your information. However, no method of transmission or storage is completely secure, and we cannot guarantee absolute security.',
+  's11h': '11. Children',
+  's11p': 'The Service is not directed to children under 13 (or the minimum age required in your country). We do not knowingly collect data from children. If you believe a child has provided us data, contact us and we will delete it.',
+  's12h': '12. International transfers',
+  's12p': 'Our service providers (Google Firebase, Lemon Squeezy) may process your data on servers located in the United States or other countries. By using the Service, you understand and consent to the transfer of your data to these jurisdictions, which may have different data protection laws than your country. For users in the EU/EEA/UK, we ensure appropriate safeguards (such as Standard Contractual Clauses) are in place.',
+  's13h': '13. Third-party links',
+  's13p': 'The Service contains links to third-party AI services (such as ChatGPT, Claude, Copilot, Gemini, and DeepSeek). These services may use your input data to improve their models. Those services are operated by other companies and have their own privacy policies. We are not responsible for their practices. You should review their policies before using them.',
+  's14h': '14. Changes to this Policy',
+  's14p': 'We may update this Policy from time to time. When we do, we will update the "Last updated" date above. Significant changes may be communicated through the Service.',
+  's15h': '15. Contact',
+  's15p': 'Questions about this Policy or your data? Contact us at <a href="mailto:zongxie22@gmail.com">zongxie22@gmail.com</a>.'
+},
+
+zh: {
+  'backHome': '返回首页',
+  'footer.rights': '保留所有权利。',
+  'footer.home': '首页',
+  'footer.terms': '服务条款',
+  'title': '隐私政策',
+  'updated': '最后更新：2026 年 6 月 10 日',
+  'intro': '本隐私政策解释了 <strong>PromptRunic</strong>（"PromptRunic"、"我们"），由 Z. Xie 维护，在您使用我们的网站和桌面应用程序（统称"服务"）时如何处理信息。使用本服务即表示您同意本政策。',
+  's1h': '1. 我们收集的信息',
+  's1p': '我们仅收集运营服务所需的信息：',
+  's1l1': '<strong>账户信息</strong> — 您的邮箱地址和显示名称（如有提供）。我们使用 Firebase Authentication 处理登录。我们绝不接收或存储您的密码 — 所有密码处理由 Firebase 安全管理。',
+  's1l2': '<strong>您创建的内容</strong> — 您保存或创建的提示词、收藏、进度数据（经验值、等级、每日签到、成就）以及专业版或试用状态。',
+  's1l3': '<strong>技术数据</strong> — 浏览器类型、大概地区，以及存储在浏览器本地中的数据（见"Cookies 和本地存储"）。',
+  's1l4': '<strong>反馈</strong> — 当您提交反馈时，我们收集您提供的信息（可能包括您的邮箱地址和反馈内容）。',
+  's1l5': '<strong>我们不会收集或存储支付卡信息。</strong>所有支付由 Lemon Squeezy 处理；我们无法看到您的卡号。',
+  's2h': '2. 我们如何使用您的信息',
+  's2l1': '提供服务并让您登录账户。',
+  's2l2': '在您的设备间同步收藏、进度和专业版状态。',
+  's2l3': '仅在您注册时选择接收的情况下，向您发送产品更新和公告。',
+  's2l4': '维护安全、防止滥用和改进服务。',
+  's3h': '3. 法律依据（针对欧盟/欧洲经济区/英国用户）',
+  's3p': '在 GDPR 适用的情况下，我们基于以下依据处理您的数据：<strong>履行合同</strong>（运营您的账户）、<strong>同意</strong>（营销邮件 — 您可随时撤回）以及<strong>合法利益</strong>（保持服务安全和正常运行）。',
+  's4h': '4. 服务提供商',
+  's4p': '我们使用可信的第三方来运营服务。他们代表我们处理数据：',
+  's4l1': '<strong>Google Firebase</strong> — 处理账户认证并存储您的账户数据（收藏、进度、专业版状态）。受 Google 隐私条款约束。',
+  's4l2': '<strong>Lemon Squeezy</strong> — 我们的商户记录方；处理专业版激活码和金币包的购买。受 Lemon Squeezy 隐私条款约束。',
+  's4p2': '我们不出售您的个人信息，也不使用第三方广告追踪器。',
+  's5h': '5. 营销邮件',
+  's5p': '如果您选择接收，我们可能会偶尔发送关于新功能和提示词包的邮件。每封此类邮件都包含取消订阅链接，您可以随时联系我们退出。我们不会在未经您同意的情况下将您添加到营销邮件列表。',
+  's6h': '6. Cookies 和本地存储',
+  's6p': '服务使用浏览器的本地存储来记住您的偏好和进度，Firebase 可能会设置保持您登录状态所必需的 Cookie。我们不使用广告或跨站追踪 Cookie。',
+  's7h': '7. 数据保留',
+  's7p': '只要您的账户处于活跃状态，我们就会保留您的账户数据。如果您要求删除账户，我们将在合理期限内删除您的个人数据，但法律要求保留的记录除外。',
+  's8h': '8. 您的权利',
+  's8p': '根据您所在地区，您可能有权访问、更正、删除或导出您的个人数据，以及反对或限制某些处理。要行使这些权利，请发送邮件至 <a href="mailto:zongxie22@gmail.com">zongxie22@gmail.com</a>。',
+  's9h': '9. 删除您的账户',
+  's9p': '您可以随时通过发送邮件至 <a href="mailto:zongxie22@gmail.com">zongxie22@gmail.com</a> 请求删除您的账户和相关数据。',
+  's10h': '10. 安全',
+  's10p': '我们采取合理措施保护您的信息。然而，没有任何传输或存储方法是完全安全的，我们无法保证绝对安全。',
+  's11h': '11. 儿童',
+  's11p': '本服务不面向 13 岁以下儿童（或您所在国家/地区的最低年龄要求）。我们不会故意收集儿童数据。如果您认为有儿童向我们提供了数据，请联系我们，我们将予以删除。',
+  's12h': '12. 国际传输',
+  's12p': '我们的服务提供商（Google Firebase、Lemon Squeezy）可能会在美国或其他国家的服务器上处理您的数据。使用本服务即表示您了解并同意将您的数据传输到这些司法管辖区，这些司法管辖区可能拥有与您所在国家/地区不同的数据保护法律。对于欧盟/欧洲经济区/英国的用户，我们确保已采取适当的保障措施（如标准合同条款）。',
+  's13h': '13. 第三方链接',
+  's13p': '本服务包含指向第三方 AI 服务的链接（如 ChatGPT、Claude、Copilot、Gemini 和 DeepSeek）。这些服务可能会使用您的输入数据来改进其模型。这些服务由其他公司运营，有其自己的隐私政策。我们对其做法不承担责任。您在使用前应审阅其政策。',
+  's14h': '14. 政策变更',
+  's14p': '我们可能会不时更新本政策。更新时，我们将修改上方的"最后更新"日期。重大变更可能会通过服务通知您。',
+  's15h': '15. 联系方式',
+  's15p': '对本政策或您的数据有疑问？请通过 <a href="mailto:zongxie22@gmail.com">zongxie22@gmail.com</a> 联系我们。'
+},
+
+es: {
+  'backHome': 'Volver al inicio',
+  'footer.rights': 'Todos los derechos reservados.',
+  'footer.home': 'Inicio',
+  'footer.terms': 'Términos de servicio',
+  'title': 'Política de privacidad',
+  'updated': 'Última actualización: 10 de junio de 2026',
+  'intro': 'Esta Política de privacidad explica cómo <strong>PromptRunic</strong> ("PromptRunic", "nosotros"), mantenido por Z. Xie, maneja la información cuando usas nuestro sitio web y aplicación de escritorio (juntos, el "Servicio"). Al usar el Servicio, aceptas esta Política.',
+  's1h': '1. Información que recopilamos',
+  's1p': 'Solo recopilamos lo que necesitamos para operar el Servicio:',
+  's1l1': '<strong>Información de cuenta</strong> — tu correo electrónico y nombre para mostrar (si se proporciona). Usamos Firebase Authentication para gestionar el inicio de sesión. Nunca recibimos ni almacenamos tu contraseña — toda la gestión de contraseñas se realiza de forma segura por Firebase.',
+  's1l2': '<strong>Contenido que creas</strong> — prompts que guardas o creas, tus favoritos, datos de progreso (puntos de experiencia, nivel, racha diaria, logros) y tu estado Pro o de prueba.',
+  's1l3': '<strong>Datos técnicos</strong> — tipo de navegador, región aproximada y datos almacenados localmente en tu navegador (ver "Cookies y almacenamiento local").',
+  's1l4': '<strong>Comentarios</strong> — cuando envías comentarios, recopilamos la información que proporcionas (que puede incluir tu correo electrónico y el contenido de tus comentarios).',
+  's1l5': '<strong>NO recopilamos ni almacenamos datos de tarjetas de pago.</strong> Todos los pagos son procesados por Lemon Squeezy; nunca vemos tu número de tarjeta.',
+  's2h': '2. Cómo usamos tu información',
+  's2l1': 'Para proporcionar el Servicio y permitirte iniciar sesión en tu cuenta.',
+  's2l2': 'Para sincronizar tus favoritos, progreso y estado Pro entre tus dispositivos.',
+  's2l3': 'Para enviarte actualizaciones de productos y anuncios solo si optaste por recibirlos al registrarte.',
+  's2l4': 'Para mantener la seguridad, prevenir abusos y mejorar el Servicio.',
+  's3h': '3. Bases legales (para usuarios de la UE/EEE/UK)',
+  's3p': 'Cuando aplica el GDPR, procesamos tus datos sobre estas bases: <strong>ejecución de un contrato</strong> (operar tu cuenta), <strong>consentimiento</strong> (correos de marketing — puedes retirarlo en cualquier momento) e <strong>intereses legítimos</strong> (mantener el Servicio seguro y funcional).',
+  's4h': '4. Proveedores de servicios',
+  's4p': 'Usamos terceros de confianza para operar el Servicio. Ellos procesan datos en nuestro nombre:',
+  's4l1': '<strong>Google Firebase</strong> — maneja la autenticación de cuentas y almacena tus datos (favoritos, progreso, estado Pro). Sujeto a los términos de privacidad de Google.',
+  's4l2': '<strong>Lemon Squeezy</strong> — nuestro comerciante de registro; procesa compras de códigos de activación Pro y paquetes de monedas. Sujeto a los términos de privacidad de Lemon Squeezy.',
+  's4p2': 'No vendemos tu información personal ni usamos rastreadores publicitarios de terceros.',
+  's5h': '5. Correos de marketing',
+  's5p': 'Si optaste por recibirlos, podemos enviarte correos ocasionalmente sobre nuevas funciones y paquetes de prompts. Cada correo incluye un enlace para cancelar la suscripción, y puedes optar por salir en cualquier momento contactándonos. No te agregaremos a correos de marketing sin tu consentimiento.',
+  's6h': '6. Cookies y almacenamiento local',
+  's6p': 'El Servicio usa el almacenamiento local de tu navegador para recordar tus preferencias y progreso, y Firebase puede establecer cookies necesarias para mantener tu sesión iniciada. No usamos cookies publicitarias o de rastreo entre sitios.',
+  's7h': '7. Retención de datos',
+  's7p': 'Mantenemos los datos de tu cuenta mientras tu cuenta esté activa. Si nos pides eliminar tu cuenta, eliminaremos tus datos personales en un plazo razonable, excepto cuando debamos conservar ciertos registros para cumplir con la ley.',
+  's8h': '8. Tus derechos',
+  's8p': 'Dependiendo de dónde vivas, puedes tener derecho a acceder, corregir, eliminar o exportar tus datos personales, y a oponerte o restringir cierto procesamiento. Para ejercer cualquiera de estos derechos, escríbenos a <a href="mailto:zongxie22@gmail.com">zongxie22@gmail.com</a>.',
+  's9h': '9. Eliminar tu cuenta',
+  's9p': 'Puedes solicitar la eliminación de tu cuenta y datos asociados en cualquier momento enviando un correo a <a href="mailto:zongxie22@gmail.com">zongxie22@gmail.com</a>.',
+  's10h': '10. Seguridad',
+  's10p': 'Tomamos medidas razonables para proteger tu información. Sin embargo, ningún método de transmisión o almacenamiento es completamente seguro y no podemos garantizar seguridad absoluta.',
+  's11h': '11. Niños',
+  's11p': 'El Servicio no está dirigido a menores de 13 años (o la edad mínima requerida en tu país). No recopilamos conscientemente datos de niños. Si crees que un niño nos ha proporcionado datos, contáctanos y los eliminaremos.',
+  's12h': '12. Transferencias internacionales',
+  's12p': 'Nuestros proveedores de servicios (Google Firebase, Lemon Squeezy) pueden procesar tus datos en servidores ubicados en los Estados Unidos u otros países. Al usar el Servicio, entiendes y consientes la transferencia de tus datos a estas jurisdicciones, que pueden tener leyes de protección de datos diferentes a las de tu país. Para usuarios de la UE/EEE/UK, garantizamos que existen salvaguardas apropiadas (como Cláusulas Contractuales Tipo).',
+  's13h': '13. Enlaces de terceros',
+  's13p': 'El Servicio contiene enlaces a servicios de IA de terceros (como ChatGPT, Claude, Copilot, Gemini y DeepSeek). Estos servicios pueden usar tus datos de entrada para mejorar sus modelos. Esos servicios son operados por otras empresas y tienen sus propias políticas de privacidad. No somos responsables de sus prácticas. Debes revisar sus políticas antes de usarlos.',
+  's14h': '14. Cambios a esta Política',
+  's14p': 'Podemos actualizar esta Política de vez en cuando. Cuando lo hagamos, actualizaremos la fecha de "Última actualización" arriba. Los cambios significativos pueden comunicarse a través del Servicio.',
+  's15h': '15. Contacto',
+  's15p': '¿Preguntas sobre esta Política o tus datos? Contáctanos en <a href="mailto:zongxie22@gmail.com">zongxie22@gmail.com</a>.'
+}
+
+};
+
+function getLang(){
+  try{ var l=localStorage.getItem('pp_lang'); if(l&&LANGS[l]) return l; }catch(e){}
+  var n=navigator.language||''; if(n.startsWith('zh')) return 'zh'; if(n.startsWith('es')) return 'es'; return 'en';
+}
+
+function render(lang){
+  var t=LANGS[lang]||LANGS.en;
+  document.documentElement.lang=lang;
+  document.title=(lang==='zh'?'隐私政策 — PromptRunic':lang==='es'?'Política de privacidad — PromptRunic':'Privacy Policy — PromptRunic');
+  var h='';
+  h+='<h1>'+t.title+'</h1>';
+  h+='<div class="upd">'+t.updated+'</div>';
+  h+='<p>'+t.intro+'</p>';
+  h+='<h2>'+t.s1h+'</h2><p>'+t.s1p+'</p><ul><li>'+t.s1l1+'</li><li>'+t.s1l2+'</li><li>'+t.s1l3+'</li><li>'+t.s1l4+'</li><li>'+t.s1l5+'</li></ul>';
+  h+='<h2>'+t.s2h+'</h2><ul><li>'+t.s2l1+'</li><li>'+t.s2l2+'</li><li>'+t.s2l3+'</li><li>'+t.s2l4+'</li></ul>';
+  h+='<h2>'+t.s3h+'</h2><p>'+t.s3p+'</p>';
+  h+='<h2>'+t.s4h+'</h2><p>'+t.s4p+'</p><ul><li>'+t.s4l1+'</li><li>'+t.s4l2+'</li></ul><p>'+t.s4p2+'</p>';
+  h+='<h2>'+t.s5h+'</h2><p>'+t.s5p+'</p>';
+  h+='<h2>'+t.s6h+'</h2><p>'+t.s6p+'</p>';
+  h+='<h2>'+t.s7h+'</h2><p>'+t.s7p+'</p>';
+  h+='<h2>'+t.s8h+'</h2><p>'+t.s8p+'</p>';
+  h+='<h2>'+t.s9h+'</h2><p>'+t.s9p+'</p>';
+  h+='<h2>'+t.s10h+'</h2><p>'+t.s10p+'</p>';
+  h+='<h2>'+t.s11h+'</h2><p>'+t.s11p+'</p>';
+  h+='<h2>'+t.s12h+'</h2><p>'+t.s12p+'</p>';
+  h+='<h2>'+t.s13h+'</h2><p>'+t.s13p+'</p>';
+  h+='<h2>'+t.s14h+'</h2><p>'+t.s14p+'</p>';
+  h+='<h2>'+t.s15h+'</h2><div class="box"><p style="margin:0">'+t.s15p+'</p></div>';
+  document.getElementById('content').innerHTML=h;
+  document.querySelectorAll('[data-t]').forEach(function(el){ el.innerHTML=t[el.getAttribute('data-t')]||''; });
+  document.querySelectorAll('.lang-switch button').forEach(function(b){ b.classList.toggle('active',b.getAttribute('data-lang')===lang); });
+}
+
+var currentLang=getLang();
+render(currentLang);
+
+document.getElementById('langSwitch').addEventListener('click',function(e){
+  var btn=e.target.closest('button[data-lang]'); if(!btn) return;
+  currentLang=btn.getAttribute('data-lang');
+  try{ localStorage.setItem('pp_lang',currentLang); }catch(ex){}
+  render(currentLang);
+});
+
+})();
+</script>
+</body>
+</html>
