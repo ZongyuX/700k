@@ -336,11 +336,15 @@ var ZH = {
   'pricing.feat.nosub': '无需订阅',
 
   /* ---- Footer ---- */
-  'footer.tagline': 'PromptRunic — AI 提示语发射台，700,000+ 模板横跨 1,684 分类。',
-  'footer.builtby': '由 Zongyu Xie 开发',
+  'footer.tagline': 'PromptRunic — AI 提示词模板库',
+  'footer.stats': '700,000+ 模板 · 1,600+ 分类',
+  'footer.builtby': '由 Z. Xie 维护',
   'footer.privacy': '隐私政策',
   'footer.terms': '服务条款',
-  'footer.disclaimer': 'PromptRunic 是独立产品，与 OpenAI、Anthropic、Microsoft、Google 或 DeepSeek 无关联、未获认可、未获赞助。所有产品名称和商标均为其各自所有者的财产。AI 生成的回答可能不准确 — 请在依赖前验证。',
+  'footer.disclaimer': '免责声明：PromptRunic 仅提供对第三方 AI 模型的访问，仅供参考。我们不拥有、运营或控制任何底层 AI 模型。所有 AI 生成的输出可能不准确、不完整或存在偏见。您需自行负责在依赖任何信息前进行验证。',
+  'footer.affiliation': 'PromptRunic 与 OpenAI、Anthropic、Microsoft、Google、DeepSeek 或任何其他模型提供商无关。',
+  'footer.accuracy': '数据准确性：提示词数量和分类数字为近似值，定期更新。实际数字可能略有差异。',
+  'footer.misuse': '您同意不使用本网站生成：有害、非法或不道德的内容；侵犯第三方权利的内容；或虚假信息、骚扰或恶意代码。',
   'footer.rights': '保留所有权利。',
 
   /* ---- Toast messages ---- */

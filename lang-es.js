@@ -332,11 +332,15 @@ var ES = {
   'pricing.feat.nosub': 'Sin suscripción',
 
   /* ---- Footer ---- */
-  'footer.tagline': 'PromptRunic — una plataforma de lanzamiento de prompts de IA con 700,000+ plantillas en 1,684 categorías.',
-  'footer.builtby': 'Creado por Zongyu Xie',
+  'footer.tagline': 'PromptRunic — biblioteca de plantillas de prompts de IA',
+  'footer.stats': '700,000+ plantillas · 1,600+ categorías',
+  'footer.builtby': 'Mantenido por Z. Xie',
   'footer.privacy': 'Política de privacidad',
   'footer.terms': 'Términos de servicio',
-  'footer.disclaimer': 'PromptRunic es un producto independiente y no está afiliado, respaldado ni patrocinado por OpenAI, Anthropic, Microsoft, Google o DeepSeek. Todos los nombres de productos y marcas comerciales son propiedad de sus respectivos dueños. Las respuestas generadas por IA pueden ser inexactas — verifica antes de confiar en ellas.',
+  'footer.disclaimer': 'Descargo de responsabilidad: PromptRunic proporciona acceso a modelos de IA de terceros solo con fines informativos. No poseemos, operamos ni controlamos ningún modelo de IA subyacente. Todos los resultados generados por IA pueden ser inexactos, incompletos o sesgados. Usted es el único responsable de verificar cualquier información antes de depender de ella.',
+  'footer.affiliation': 'PromptRunic no está afiliado con OpenAI, Anthropic, Microsoft, Google, DeepSeek ni ningún otro proveedor de modelos.',
+  'footer.accuracy': 'Precisión de datos: los recuentos de prompts y los números de categorías son aproximados y se actualizan regularmente. Los números reales pueden variar ligeramente.',
+  'footer.misuse': 'Usted acepta no usar este sitio para generar: contenido dañino, ilegal o poco ético; contenido que infrinja derechos de terceros; o desinformación, acoso o código malicioso.',
   'footer.rights': 'Todos los derechos reservados.',
 
   /* ---- Toast messages ---- */

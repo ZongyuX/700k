@@ -332,11 +332,15 @@ var EN = {
   'pricing.feat.nosub': 'No subscription ever',
 
   /* ---- Footer ---- */
-  'footer.tagline': 'PromptRunic — an AI prompt launchpad with 700,000+ templates across 1,684 categories.',
-  'footer.builtby': 'Built by Zongyu Xie',
+  'footer.tagline': 'PromptRunic — AI prompt template library',
+  'footer.stats': '700,000+ templates · 1,600+ categories',
+  'footer.builtby': 'Maintained by Z. Xie',
   'footer.privacy': 'Privacy Policy',
   'footer.terms': 'Terms of Service',
-  'footer.disclaimer': 'PromptRunic is an independent product and is not affiliated with, endorsed by, or sponsored by OpenAI, Anthropic, Microsoft, Google, or DeepSeek. All product names and trademarks are the property of their respective owners. AI-generated answers may be inaccurate — please verify before relying on them.',
+  'footer.disclaimer': 'Disclaimer: PromptRunic provides access to third-party AI models for informational purposes only. We do not own, operate, or control any underlying AI model. All AI-generated outputs may be inaccurate, incomplete, or biased. You are solely responsible for verifying any information before relying on it.',
+  'footer.affiliation': 'PromptRunic is not affiliated with OpenAI, Anthropic, Microsoft, Google, DeepSeek, or any other model provider.',
+  'footer.accuracy': 'Data accuracy: Prompt counts and category numbers are approximate and updated regularly. Actual numbers may vary slightly.',
+  'footer.misuse': 'You agree not to use this site to generate: harmful, illegal, or unethical content; content that infringes third-party rights; or misinformation, harassment, or malicious code.',
   'footer.rights': 'All rights reserved.',
 
   /* ---- Toast messages ---- */
