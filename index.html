@@ -169,8 +169,8 @@
   .lang-switch-btn .lang-text{font-size:12px;opacity:.9}
   .lang-switch-btn .lang-arrow{font-size:10px;opacity:.7;margin-left:2px}
   /* Language Switch Wrapper & Dropdown */
-  .lang-switch-wrapper{position:relative;display:inline-flex;flex-shrink:0}
-  .lang-dropdown{display:none;position:absolute;top:calc(100% + 6px);left:0;background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:6px;z-index:9999;min-width:140px;box-shadow:0 8px 32px rgba(0,0,0,.4)}
+  .lang-switch-wrapper{position:relative;display:inline-flex;flex-shrink:0;z-index:51}
+  .lang-dropdown{display:none;position:fixed;background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:6px;z-index:9999;min-width:140px;box-shadow:0 8px 32px rgba(0,0,0,.4)}
   .lang-dropdown.show{display:block}
   .lang-option{display:flex;align-items:center;gap:8px;width:100%;padding:8px 12px;border:none;background:none;color:var(--text);font-size:13px;font-weight:600;cursor:pointer;border-radius:6px;transition:background .15s}
   .lang-option:hover{background:var(--panel3)}
@@ -1031,6 +1031,7 @@
     .hbtns{flex-wrap:nowrap;justify-content:flex-start;gap:2px;overflow-x:auto;overflow-y:hidden;min-width:0;max-width:calc(100vw - 100px - env(safe-area-inset-right,0px));-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-right:8px}
     .hbtns a,.hbtns button{font-size:9px;padding:2px 4px;border-radius:5px}
     .hbtn-gold,.hbtn-user,.hbtn-game{padding:2px 5px!important;font-size:9px!important}
+    .lang-switch-wrapper{flex-shrink:0}
     .lang-switch-btn{font-size:9px!important;padding:2px 4px!important}
     .lang-switch-btn .lang-text,.lang-switch-btn .lang-arrow{display:none}
     .lang-switch-btn .lang-icon{width:16px;height:16px;font-size:9px}
@@ -1553,7 +1554,6 @@
 <header>
   <a href="javascript:void(0)" class="logo" onclick="window.scrollTo({top:0,behavior:'smooth'})"><img src="logo-header.png" alt="PromptRunic" class="logo-icon"/><span class="logo-text"><span class="prompt-part">Prompt</span><span class="runic-part">Runic</span></span></a>
   <div class="hbtns">
-    <span id="langSwitcher" style="flex-shrink:0"></span>
     <a href="#templates" data-i18n="header.prompts">Prompts</a>
     <a href="#guide" data-i18n="header.guide">Beginner Guide</a>
     <button class="pp-chip" id="communityBtn" data-i18n="header.community" title="Leaderboards & Mood Wall">🏆<span class="btn-hide-sm"> Community</span></button>
@@ -2143,7 +2143,7 @@ if(typeof window.PPI18n==='undefined'){
       isEs:function(){return _lang==='es';},
       applyLang:function(l){if(l)this.setLang(l);var els=document.querySelectorAll('[data-i18n]');for(var i=0;i<els.length;i++){var el=els[i],k=el.getAttribute('data-i18n');if(!k)continue;var v=this.t(k);if(v&&v!==k){var a=el.getAttribute('data-i18n-attr');if(a==='placeholder')el.placeholder=v;else if(a==='html')el.innerHTML=v;else{var hs=el.querySelector('.btn-hide-sm');if(hs){hs.textContent=' '+v;}else{el.textContent=v;}}}document.documentElement.lang=_lang;},
       registerDict:function(l,d){_dicts[l]=d;},
-      buildSwitcher:function(){var bar=document.querySelector('.hbtns');if(!bar)return;var wrapper=document.createElement('div');wrapper.className='lang-switch-wrapper';wrapper.id='langSwitchWrapper';var btn=document.createElement('button');btn.id='langSwitch';btn.className='lang-switch-btn';btn.title='Switch language / 切换语言 / Cambiar idioma';btn.innerHTML='<span class="lang-icon">'+_iconMap[_lang]+'</span><span class="lang-text">'+_labelMap[_lang]+'</span><span class="lang-arrow">▾</span>';var dd=document.createElement('div');dd.id='langDropdown';dd.className='lang-dropdown';_supported.forEach(function(l){var opt=document.createElement('button');opt.className='lang-option'+(l===_lang?' active':'');opt.setAttribute('data-lang',l);opt.innerHTML='<span class="lang-opt-icon">'+_iconMap[l]+'</span><span class="lang-opt-label">'+_labelMap[l]+'</span>';opt.addEventListener('click',function(){if(l!==_lang){PPI18n.setLang(l);PPI18n.applyLang(l);btn.innerHTML='<span class="lang-icon">'+_iconMap[l]+'</span><span class="lang-text">'+_labelMap[l]+'</span><span class="lang-arrow">▾</span>';dd.querySelectorAll('.lang-option').forEach(function(o){o.className='lang-option'+(o.getAttribute('data-lang')===l?' active':'');});if(typeof window._ppI18nRefresh==='function')window._ppI18nRefresh();}dd.classList.remove('show');});dd.appendChild(opt);});btn.addEventListener('click',function(e){e.stopPropagation();dd.classList.toggle('show');});document.addEventListener('click',function(){dd.classList.remove('show');});wrapper.appendChild(btn);wrapper.appendChild(dd);if(bar.firstChild)bar.insertBefore(wrapper,bar.firstChild);else bar.appendChild(wrapper);},
+      buildSwitcher:function(){var bar=document.querySelector('.hbtns');var hdr=document.querySelector('header');if(!hdr)return;var wrapper=document.createElement('div');wrapper.className='lang-switch-wrapper';wrapper.id='langSwitchWrapper';var btn=document.createElement('button');btn.id='langSwitch';btn.className='lang-switch-btn';btn.title='Switch language / 切换语言 / Cambiar idioma';btn.innerHTML='<span class="lang-icon">'+_iconMap[_lang]+'</span><span class="lang-text">'+_labelMap[_lang]+'</span><span class="lang-arrow">▾</span>';var dd=document.createElement('div');dd.id='langDropdown';dd.className='lang-dropdown';_supported.forEach(function(l){var opt=document.createElement('button');opt.className='lang-option'+(l===_lang?' active':'');opt.setAttribute('data-lang',l);opt.innerHTML='<span class="lang-opt-icon">'+_iconMap[l]+'</span><span class="lang-opt-label">'+_labelMap[l]+'</span>';opt.addEventListener('click',function(e){e.stopPropagation();if(l!==_lang){PPI18n.setLang(l);PPI18n.applyLang(l);btn.innerHTML='<span class="lang-icon">'+_iconMap[l]+'</span><span class="lang-text">'+_labelMap[l]+'</span><span class="lang-arrow">▾</span>';dd.querySelectorAll('.lang-option').forEach(function(o){o.className='lang-option'+(o.getAttribute('data-lang')===l?' active':'');});if(typeof window._ppI18nRefresh==='function')window._ppI18nRefresh();}dd.classList.remove('show');});dd.appendChild(opt);});btn.addEventListener('click',function(e){e.stopPropagation();e.preventDefault();var r=btn.getBoundingClientRect();dd.style.top=(r.bottom+6)+'px';dd.style.left=Math.max(4,Math.min(r.left,window.innerWidth-160))+'px';dd.classList.toggle('show');});document.addEventListener('click',function(){dd.classList.remove('show');});wrapper.appendChild(btn);document.body.appendChild(dd);if(bar&&bar.parentNode===hdr){if(bar.nextSibling)hdr.insertBefore(wrapper,bar.nextSibling);else hdr.appendChild(wrapper);}else{hdr.appendChild(wrapper);}},
       fmtLocal:function(n){return Number(n).toLocaleString(_localeMap[_lang]||'en-US');},
       SUPPORTED:_supported
     };

@@ -101,10 +101,11 @@ function applyLang(lang){
   document.dispatchEvent(evt);
 }
 
-/* ---- Build the language switcher (3-language cycle: en → zh → es → en) ---- */
+/* ---- Build the language switcher (3-language dropdown: en / zh / es) ---- */
 function buildSwitcher(){
   var bar = document.querySelector('.hbtns');
-  if(!bar) return;
+  var header = document.querySelector('header');
+  if(!header) return;
   /* Create a dropdown-style language switcher */
   var wrapper = document.createElement('div');
   wrapper.className = 'lang-switch-wrapper';
@@ -118,8 +119,13 @@ function buildSwitcher(){
   updateSwitcherLabel(btn);
   btn.addEventListener('click', function(e){
     e.stopPropagation();
+    e.preventDefault();
     var dropdown = document.getElementById('langDropdown');
     if(dropdown) {
+      /* Position the fixed dropdown below the button */
+      var rect = btn.getBoundingClientRect();
+      dropdown.style.top = (rect.bottom + 6) + 'px';
+      dropdown.style.left = Math.max(4, Math.min(rect.left, window.innerWidth - 160)) + 'px';
       dropdown.classList.toggle('show');
     }
   });
@@ -135,7 +141,8 @@ function buildSwitcher(){
     opt.className = 'lang-option' + (lang === _lang ? ' active' : '');
     opt.setAttribute('data-lang', lang);
     opt.innerHTML = '<span class="lang-opt-icon">' + info.icon + '</span><span class="lang-opt-label">' + info.label + '</span>';
-    opt.addEventListener('click', function(){
+    opt.addEventListener('click', function(e){
+      e.stopPropagation();
       if(lang !== _lang){
         applyLang(lang);
         updateSwitcherLabel(null);
@@ -157,10 +164,16 @@ function buildSwitcher(){
   });
 
   wrapper.appendChild(btn);
-  wrapper.appendChild(dropdown);
-  /* Insert as the FIRST item in the header buttons bar (top-right position) */
-  if(bar.firstChild) bar.insertBefore(wrapper, bar.firstChild);
-  else bar.appendChild(wrapper);
+  /* Append dropdown to body (not inside header) so it's not clipped by overflow */
+  document.body.appendChild(dropdown);
+  /* Insert wrapper as a sibling AFTER .hbtns — always visible, not inside scrollable area */
+  if(bar && bar.parentNode === header){
+    if(bar.nextSibling) header.insertBefore(wrapper, bar.nextSibling);
+    else header.appendChild(wrapper);
+  } else {
+    /* Fallback: append to header directly */
+    header.appendChild(wrapper);
+  }
 }
 
 function updateSwitcherLabel(btn){
