@@ -1970,7 +1970,16 @@
   <div class="modal sm">
     <button class="x" data-close>&times;</button>
     <h2 data-i18n="activate.title">Activate PromptRunic Pro</h2>
-    <div class="desc" data-i18n="activate.desc">Unlock all 700,000+ prompts on this site.</div>
+    <div class="desc" data-i18n="activate.desc">Enter your code to unlock all 700,000+ prompts. Supports all Pro plans and coin packs.</div>
+    <div class="act-plans" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;justify-content:center">
+      <span class="tag" style="background:rgba(245,185,66,.12);color:var(--gold);font-size:11px;border-radius:6px;padding:3px 8px">3 Days</span>
+      <span class="tag" style="background:rgba(245,185,66,.12);color:var(--gold);font-size:11px;border-radius:6px;padding:3px 8px">1 Month</span>
+      <span class="tag" style="background:rgba(245,185,66,.12);color:var(--gold);font-size:11px;border-radius:6px;padding:3px 8px">3 Months</span>
+      <span class="tag" style="background:rgba(245,185,66,.12);color:var(--gold);font-size:11px;border-radius:6px;padding:3px 8px">6 Months</span>
+      <span class="tag" style="background:rgba(245,185,66,.12);color:var(--gold);font-size:11px;border-radius:6px;padding:3px 8px">12 Months</span>
+      <span class="tag" style="background:rgba(245,185,66,.15);color:var(--gold);font-size:11px;border-radius:6px;padding:3px 8px;font-weight:700">Lifetime</span>
+      <span class="tag" style="background:rgba(100,200,255,.1);color:#64c8ff;font-size:11px;border-radius:6px;padding:3px 8px">Coin Packs</span>
+    </div>
     <div class="pro-box" id="actLoginReminder" style="background:rgba(245,185,66,.08);border:1px solid rgba(245,185,66,.3);border-radius:10px;padding:14px 18px;margin-bottom:14px">
       <h3 style="color:var(--gold);font-size:14px;margin-bottom:6px" data-i18n="activate.login.title">Account Required</h3>
       <p style="font-size:13px;color:var(--muted);line-height:1.6" data-i18n="activate.login.desc">To use Pro, you must be signed in with a registered account or continue with Google/GitHub. Your Pro membership is linked to your account and syncs across all devices.</p>
@@ -1985,7 +1994,7 @@
       <button class="mbtn mbtn-ghost" id="buyBtn" data-i18n="activate.buy">View membership plans</button>
     </div>
     <div class="msg" id="actMsg"></div>
-    <div class="note" data-i18n="activate.note">Pro is linked to your account. Sign in to activate and sync your Pro access across all devices.</div>
+    <div class="note" data-i18n="activate.note">Each activation code can only be used once. Pro and coins are linked to your account and sync across all devices.</div>
   </div>
 </div>
 
@@ -2728,6 +2737,14 @@ async function loadUserDoc(user){
       var allPromos=[].concat(d.promoUsed,localPromoList).filter(function(v,i,a){return a.indexOf(v)===i;});
       lsSet('pp_promo_used',JSON.stringify(allPromos));
       allPromos.forEach(function(c){ lsSet('pp_promo_'+c,'1'); });
+    }
+    /* Merge used license keys from cloud (one-time-use enforcement) */
+    if(Array.isArray(d.usedKeys)){
+      var localUsedKeys=[];
+      try{ localUsedKeys=JSON.parse(lsGet('pp_used_keys')||'[]'); }catch(e){ localUsedKeys=[]; }
+      var allUsedKeys=[].concat(d.usedKeys,localUsedKeys).filter(function(v,i,a){return a.indexOf(v)===i;});
+      lsSet('pp_used_keys',JSON.stringify(allUsedKeys));
+      allUsedKeys.forEach(function(k){ lsSet('pp_used_key_'+k,'1'); });
     }
   }
 }
@@ -3481,10 +3498,17 @@ async function redeemCode(){
   const m=document.getElementById('actMsg');
   if(!key){ m.className='msg err'; m.textContent=PPI18n.t('activate.entercode'); return; }
 
-  /* Require login for Pro activation */
+  /* Require login for any activation (Pro, coins, credits) */
   if(!currentUser){
     m.className='msg err';
     m.textContent=PPI18n.t('activate.login.required');
+    return;
+  }
+
+  /* ---- Check if this EXACT license key has already been used ---- */
+  if(isLicenseUsed(key)){
+    m.className='msg err';
+    m.textContent=PPI18n.t('activate.code.used');
     return;
   }
 
@@ -3500,6 +3524,7 @@ async function redeemCode(){
   if(promoKey.indexOf('ZX14D-')===0){
     if(isPromoUsed('ZX14D')) return promoAlreadyUsed(m,'ZX14D');
     markPromoUsed('ZX14D');
+    markLicenseUsed(key);
     return unlockTimed(key,m,14,PPI18n.t('activate.promo.14d'));
   }
 
@@ -3507,6 +3532,7 @@ async function redeemCode(){
   if(promoKey.indexOf('ZX1M-')===0){
     if(isPromoUsed('ZX1M')) return promoAlreadyUsed(m,'ZX1M');
     markPromoUsed('ZX1M');
+    markLicenseUsed(key);
     return unlockTimed(key,m,30,PPI18n.t('activate.promo.1m'));
   }
 
@@ -3514,6 +3540,7 @@ async function redeemCode(){
   if(promoKey.indexOf('ZX5000C-')===0){
     if(isPromoUsed('ZX5000C')) return promoAlreadyUsed(m,'ZX5000C');
     markPromoUsed('ZX5000C');
+    markLicenseUsed(key);
     if(window.PPGame && PPGame.addCoins) PPGame.addCoins(5000);
     m.className='msg ok';
     m.textContent=PPI18n.t('activate.promo.5000c');
@@ -3530,6 +3557,8 @@ async function redeemCode(){
     const res=await PPLemon.validateLicense(key);
     console.log('[PromptRunic] redeemCode result:', JSON.stringify(res));
     if(res.ok && res.kind==='pro'){
+      /* Mark the key as used BEFORE unlocking to prevent reuse */
+      markLicenseUsed(key);
       /* Lifetime (days===0) → permanent; subscription (days>0) → set expiry */
       if(res.days && res.days > 0){
         return unlockTimed(key,m,res.days,PPI18n.t('activate.unlocked.sub').replace('{d}',res.days));
@@ -3537,6 +3566,8 @@ async function redeemCode(){
       return unlock(key,m,PPI18n.t('activate.unlocked'));
     }
     if(res.ok && res.kind==='coins'){
+      /* Mark the key as used BEFORE adding coins to prevent reuse */
+      markLicenseUsed(key);
       if(window.PPGame && PPGame.addCoins) PPGame.addCoins(res.coins);
       m.className='msg ok';
       m.textContent=PPI18n.t('activate.coincode').replace('{n}',res.coins);
@@ -3544,7 +3575,8 @@ async function redeemCode(){
     }
     if(res.ok){
       /* Valid key but couldn't determine type (unknown product).
-       * Log details for the owner to add to COIN_VARIANTS/COIN_PRODUCTS. */
+       * Still mark as used so it can't be re-entered. */
+      markLicenseUsed(key);
       console.warn('[PromptRunic] Valid key but unknown product type. product_id=' +
         (res.product_id||'?') + ', product_name=' + (res.product_name||'?'));
       m.className='msg err';
@@ -3556,7 +3588,7 @@ async function redeemCode(){
       return;
     }
     if(res.error==='limit'){
-      m.className='msg err'; m.textContent='This license key has reached its activation limit. If you already activated on another device, please deactivate it there first, or contact support.';
+      m.className='msg err'; m.textContent=PPI18n.t('activate.limit');
       return;
     }
     m.className='msg err'; m.textContent=PPI18n.t('activate.invalid');
@@ -3593,6 +3625,43 @@ function markPromoUsed(code){
 function promoAlreadyUsed(m,code){
   m.className='msg err';
   m.textContent=PPI18n.t('activate.promo.used');
+}
+
+/* ---- License key one-time-use tracking ----
+ * Every license key (whether Pro, coin, or credit) can only be used ONCE
+ * per account. This prevents the same code from being entered repeatedly.
+ * Tracked via: localStorage pp_used_keys + Firestore usedKeys array.
+ */
+function isLicenseUsed(key){
+  var normalizedKey = key.trim().toUpperCase();
+  /* Check local list */
+  var usedKeys=[];
+  try{ usedKeys=JSON.parse(lsGet('pp_used_keys')||'[]'); }catch(e){ usedKeys=[]; }
+  if(usedKeys.indexOf(normalizedKey)>=0) return true;
+  /* Check per-key flag (set when signed in) */
+  if(lsGet('pp_used_key_'+normalizedKey)) return true;
+  /* Also check the current pro code — if this is the key that's already
+   * providing the active Pro subscription, it's already used */
+  if(lsGet('pp_pro_code') && lsGet('pp_pro_code').trim().toUpperCase() === normalizedKey) return true;
+  return false;
+}
+function markLicenseUsed(key){
+  var normalizedKey = key.trim().toUpperCase();
+  var usedKeys=[];
+  try{ usedKeys=JSON.parse(lsGet('pp_used_keys')||'[]'); }catch(e){ usedKeys=[]; }
+  if(usedKeys.indexOf(normalizedKey)<0) usedKeys.push(normalizedKey);
+  lsSet('pp_used_keys',JSON.stringify(usedKeys));
+  /* Per-key flag */
+  lsSet('pp_used_key_'+normalizedKey,'1');
+  /* Sync to cloud so it persists across devices */
+  if(currentUser && fbReady){
+    try{
+      userDocRef().set({
+        usedKeys:firebase.firestore.FieldValue.arrayUnion(normalizedKey),
+        updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+      },{merge:true});
+    }catch(e){ console.warn('markLicenseUsed cloud sync',e); }
+  }
 }
 
 function unlock(key,m,text){

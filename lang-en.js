@@ -204,7 +204,7 @@ var EN = {
 
   /* ---- Activate Modal ---- */
   'activate.title': 'Activate PromptRunic Pro',
-  'activate.desc': 'Unlock all 700,000+ prompts on this site.',
+  'activate.desc': 'Enter your code to unlock all 700,000+ prompts. Supports all Pro plans and coin packs.',
   'activate.login.title': 'Account Required',
   'activate.login.desc': 'To use Pro, you must be signed in with a registered account or continue with Google/GitHub. Your Pro membership is linked to your account and syncs across all devices.',
   'activate.login.btn': 'Sign in / Create account',
@@ -214,7 +214,7 @@ var EN = {
   'activate.code.placeholder': 'e.g. 8B7C-4FA2-9D11-...',
   'activate.redeem': 'Activate',
   'activate.buy': 'View membership plans',
-  'activate.note': 'Pro is linked to your account. Sign in to activate and sync your Pro access across all devices.',
+  'activate.note': 'Each activation code can only be used once. Pro and coins are linked to your account and sync across all devices.',
   'activate.entercode': 'Please enter your activation code.',
   'activate.checking': 'Checking…',
   'activate.notready': 'Activation is not ready yet. Please try again in a moment.',
@@ -234,6 +234,8 @@ var EN = {
   'activate.promo.1m': '1-month Pro activated! Enjoy all 700,000+ prompts.',
   'activate.promo.5000c': '5,000 coins added to your account!',
   'activate.promo.used': 'This promo code has already been used on this account.',
+  'activate.code.used': 'This activation code has already been used on your account. Each code can only be activated once.',
+  'activate.limit': 'This license key has reached its activation limit. If you already activated on another device, please deactivate it there first, or contact support.',
 
   /* ---- Auth Modal ---- */
   'auth.signin.title': 'Sign in to PromptRunic',

@@ -208,7 +208,7 @@ var ZH = {
 
   /* ---- Activate Modal ---- */
   'activate.title': '激活 PromptRunic 专业版',
-  'activate.desc': '解锁本站所有 700,000+ 条提示语。',
+  'activate.desc': '输入激活码解锁全部 700,000+ 条提示语。支持所有专业版方案和金币包。',
   'activate.login.title': '需要登录账号',
   'activate.login.desc': '使用专业版必须注册账号或通过 Google/GitHub 登录。你的专业版会员与账号绑定，可在所有设备上同步。',
   'activate.login.btn': '登录 / 注册账号',
@@ -218,7 +218,7 @@ var ZH = {
   'activate.code.placeholder': '例如 8B7C-4FA2-9D11-...',
   'activate.redeem': '激活',
   'activate.buy': '查看会员方案',
-  'activate.note': '专业版与你的账号绑定。登录后激活，专业版权限可在所有设备上同步。',
+  'activate.note': '每个激活码只能使用一次。专业版和金币与你的账号绑定，可在所有设备上同步。',
   'activate.entercode': '请输入你的激活码。',
   'activate.checking': '验证中…',
   'activate.notready': '激活功能尚未就绪，请稍后再试。',
@@ -238,6 +238,8 @@ var ZH = {
   'activate.promo.1m': '1个月专业版已激活！畅享全部 700,000+ 条提示语。',
   'activate.promo.5000c': '已添加 5,000 金币到你的账户！',
   'activate.promo.used': '此推广码已在该账号上使用过。',
+  'activate.code.used': '此激活码已在你的账号上使用过。每个激活码只能激活一次。',
+  'activate.limit': '此许可证密钥已达到激活上限。如果你已在其他设备上激活，请先在该设备上停用，或联系客服。',
 
   /* ---- Auth Modal ---- */
   'auth.signin.title': '登录 PromptRunic',
