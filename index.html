@@ -3505,6 +3505,10 @@ async function redeemCode(){
       m.className='msg err'; m.textContent=PPI18n.t('activate.network');
       return;
     }
+    if(res.error==='limit'){
+      m.className='msg err'; m.textContent='This license key has reached its activation limit. If you already activated on another device, please deactivate it there first, or contact support.';
+      return;
+    }
     m.className='msg err'; m.textContent=PPI18n.t('activate.invalid');
   }catch(e){
     m.className='msg err'; m.textContent=PPI18n.t('activate.network');

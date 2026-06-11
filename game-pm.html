@@ -4012,9 +4012,9 @@ async function validateLicense(){
   }
   document.getElementById('purchaseMsg').textContent='Validating...';document.getElementById('purchaseMsg').style.color='#aaaaaa';
   try{
-    const resp=await fetch('https://api.lemonsqueezy.com/v1/licenses/validate',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({license_key:code})});
+    const resp=await fetch('https://api.lemonsqueezy.com/v1/licenses/activate',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded','Accept':'application/json'},body:'license_key='+encodeURIComponent(code)+'&instance_name=PromptRunicGame-'+Date.now().toString(36)});
     const data=await resp.json();
-    if(data.valid){
+    if(data.activated || data.valid){
       // Determine credits based on product_id
       let credits=1200; // default: $1.99 product
       const pid=data.meta?.product_id||data.product_id||0;
@@ -4023,6 +4023,27 @@ async function validateLicense(){
       document.getElementById('purchaseMsg').textContent=`✅ Valid! +${credits.toLocaleString()} credits added!`;
       document.getElementById('purchaseMsg').style.color='#00ff88';
       localStorage.setItem('pm_last_license',code);
+    }else if(data.error && (String(data.error).indexOf('limit')>=0 || String(data.error).indexOf('No more activations')>=0)){
+      /* Activation limit reached — try validate as fallback */
+      try{
+        const resp2=await fetch('https://api.lemonsqueezy.com/v1/licenses/validate',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded','Accept':'application/json'},body:'license_key='+encodeURIComponent(code)});
+        const data2=await resp2.json();
+        if(data2.valid){
+          let credits=1200;
+          const pid2=data2.meta?.product_id||data2.product_id||0;
+          if(pid2===1092744||String(pid2)==='1092744')credits=3800;
+          setUnlockCredits(getUnlockCredits()+credits);
+          document.getElementById('purchaseMsg').textContent=`✅ Valid! +${credits.toLocaleString()} credits added!`;
+          document.getElementById('purchaseMsg').style.color='#00ff88';
+          localStorage.setItem('pm_last_license',code);
+        }else{
+          document.getElementById('purchaseMsg').textContent='❌ License already in use on another device. Contact support if needed.';
+          document.getElementById('purchaseMsg').style.color='#ff4444';
+        }
+      }catch(e2){
+        document.getElementById('purchaseMsg').textContent='❌ License activation limit reached.';
+        document.getElementById('purchaseMsg').style.color='#ff4444';
+      }
     }else{
       document.getElementById('purchaseMsg').textContent='❌ Invalid license key. Try again.';
       document.getElementById('purchaseMsg').style.color='#ff4444';

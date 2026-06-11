@@ -6,7 +6,7 @@
  * How it works:
  *   - Buying  -> opens a Lemon Squeezy hosted checkout page.
  *   - Unlocking -> the customer gets a LICENSE KEY by email, types it in,
- *     and this script verifies it with the Lemon Squeezy license API.
+ *     and this script ACTIVATES it with the Lemon Squeezy license API.
  * This file never touches card numbers.
  *
  * Author: Zongyu Xie <zongyufred@gmail.com>
@@ -81,8 +81,10 @@ var COIN_VARIANTS = {
   /* replace with real variant IDs from your Lemon Squeezy dashboard */
 };
 
-/* Lemon Squeezy's public license-key endpoint (no API key needed). */
+/* Lemon Squeezy license API endpoints (public, no API key needed). */
 var VALIDATE_URL = 'https://api.lemonsqueezy.com/v1/licenses/validate';
+var ACTIVATE_URL = 'https://api.lemonsqueezy.com/v1/licenses/activate';
+var DEACTIVATE_URL = 'https://api.lemonsqueezy.com/v1/licenses/deactivate';
 
 /* --------------------------------------------------------------- helpers */
 function openUrl(u){
@@ -95,45 +97,122 @@ function openUrl(u){
 }
 function configured(){ return !!BUY_PRO; }
 
-/* Verify a license key. Resolves to one of:
+/* Generate a unique instance name for this browser/device.
+ * This is required by Lemon Squeezy when activating a license.
+ * We store it so the same instance can be deactivated later if needed. */
+function getInstanceName(){
+  var name = lsGet('pp_instance_name');
+  if(!name){
+    name = 'PromptRunic-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2,8);
+    lsSet('pp_instance_name', name);
+  }
+  return name;
+}
+
+/* LocalStorage helpers (must exist in fun.js already, but safe fallback) */
+function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+
+/* Verify a license key by ACTIVATING it with Lemon Squeezy.
+ * We use the ACTIVATE endpoint (not just validate) because:
+ *   - New license keys have status "inactive" — validate returns valid:true
+ *     but license_key.status is "inactive", which the old code incorrectly rejected.
+ *   - Activate both validates AND activates the key in one step.
+ *   - It creates an "instance" so the key is properly registered as in use.
+ *
+ * Resolves to one of:
  *   { ok:true,  kind:'pro', days:N }   N=0 means lifetime; N>0 = subscription days
  *   { ok:true,  kind:'coins', coins:N }
  *   { ok:true,  kind:'unknown' }
- *   { ok:false }                       (invalid / not found / expired / inactive)
+ *   { ok:false }                       (invalid / not found / expired / disabled)
  *   { ok:false, error:'network' }      (could not reach server)
+ *   { ok:false, error:'limit' }        (activation limit reached)
  */
 function validateLicense(key){
-  return fetch(VALIDATE_URL, {
+  var instanceName = getInstanceName();
+
+  /* First, try to ACTIVATE the license key (validates + activates in one step) */
+  return fetch(ACTIVATE_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
       'Accept': 'application/json'
     },
-    body: 'license_key=' + encodeURIComponent(key)
+    body: 'license_key=' + encodeURIComponent(key) + '&instance_name=' + encodeURIComponent(instanceName)
   })
   .then(function(r){ return r.json(); })
   .then(function(d){
-    if(!d || d.valid !== true) return { ok:false };
-    var meta = d.meta || {};
-    var status = d.license_key && d.license_key.status || d.status || '';
-    /* Reject expired / inactive licenses */
-    if(status === 'expired' || status === 'inactive' || status === 'disabled') return { ok:false };
-    /* coin pack? */
-    var coins = COIN_VARIANTS[meta.variant_id];
-    if(coins) return { ok:true, kind:'coins', coins:coins };
-    /* Pro? — any membership product ID counts */
-    if(PRO_PRODUCT_IDS.length){
-      if(PRO_PRODUCT_IDS.indexOf(meta.product_id) >= 0){
-        var days = PLAN_DURATION_DAYS[meta.product_id];
-        if(typeof days === 'undefined') days = 0;
-        return { ok:true, kind:'pro', days: days };
-      }
-      return { ok:true, kind:'unknown' };
+    /* If activation succeeds, the key is valid and now active */
+    if(d && d.activated === true){
+      return processLicenseResponse(d, key);
     }
-    /* PRO_PRODUCT_IDS not set — treat any valid non-coin key as Pro */
-    return { ok:true, kind:'pro', days: 0 };
+
+    /* If activation fails because limit is reached, try validate instead.
+     * This means the key was already activated on this or another device.
+     * We still want to let the user use it if it's valid. */
+    if(d && d.error && (d.error.indexOf('limit') >= 0 || d.error.indexOf('No more activations') >= 0)){
+      return fetch(VALIDATE_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Accept': 'application/json'
+        },
+        body: 'license_key=' + encodeURIComponent(key)
+      })
+      .then(function(r){ return r.json(); })
+      .then(function(d2){
+        if(!d2 || d2.valid !== true) return { ok:false, error:'limit' };
+        return processLicenseResponse(d2, key);
+      });
+    }
+
+    /* If activation failed for other reasons, try just validating */
+    if(d && d.valid === true){
+      return processLicenseResponse(d, key);
+    }
+
+    /* Completely invalid / not found */
+    return { ok:false };
   })
   .catch(function(){ return { ok:false, error:'network' }; });
+}
+
+/* Process the license response from Lemon Squeezy API (validate or activate) */
+function processLicenseResponse(d, key){
+  if(!d || d.valid !== true) return { ok:false };
+
+  var meta = d.meta || {};
+  var licenseKey = d.license_key || {};
+  var status = licenseKey.status || d.status || '';
+
+  /* Only reject truly dead keys — "expired" and "disabled".
+   * IMPORTANT: Do NOT reject "inactive" — a key that hasn't been activated
+   * yet is still VALID. The old code incorrectly rejected "inactive" keys,
+   * which is why users couldn't activate newly purchased licenses! */
+  if(status === 'expired' || status === 'disabled') return { ok:false };
+
+  /* Save the activated instance ID for future deactivation if needed */
+  if(d.instance && d.instance.id){
+    lsSet('pp_activated_instance_' + key, d.instance.id);
+  }
+
+  /* Coin pack? */
+  var coins = COIN_VARIANTS[meta.variant_id];
+  if(coins) return { ok:true, kind:'coins', coins:coins };
+
+  /* Pro? — any membership product ID counts */
+  if(PRO_PRODUCT_IDS.length){
+    if(PRO_PRODUCT_IDS.indexOf(meta.product_id) >= 0){
+      var days = PLAN_DURATION_DAYS[meta.product_id];
+      if(typeof days === 'undefined') days = 0;
+      return { ok:true, kind:'pro', days: days };
+    }
+    /* Valid key but not a Pro product — still let them use it */
+    return { ok:true, kind:'unknown' };
+  }
+
+  /* PRO_PRODUCT_IDS not set — treat any valid non-coin key as Pro */
+  return { ok:true, kind:'pro', days: 0 };
 }
 
 /* --------------------------------------------------------------- public */
