@@ -88,6 +88,24 @@ var ES = {
   'pm.ai.label': 'Enviar directamente a una IA — el prompt se copia y la IA se abre:',
   'pm.ai.note': 'ChatGPT y Claude rellenan automáticamente el prompt desde el enlace. Para Copilot, Gemini y DeepSeek, presiona <strong>Ctrl+V</strong> para pegar — ya está en tu portapapeles. El autocompletado con un clic en todas las IA, además de dos IA locales integradas, están en la aplicación de escritorio PromptRunic.',
 
+  /* ---- Prompt History / Share ---- */
+  'pm.history.title': 'Historial de Prompts',
+  'pm.history.empty': 'Aún no hay prompts vistos recientemente.',
+  'pm.share.copied': '¡Enlace compartido copiado! Los prompts Pro requieren inicio de sesión + Pro para ver.',
+  'share.login.required': 'Este es un prompt Pro. Inicia sesión para verlo.',
+  'share.pro.required': 'Este es un prompt Pro. Activa Pro para verlo.',
+
+  /* ---- Avatar ---- */
+  'avatar.title': 'Elige Tu Avatar',
+  'avatar.desc': 'Los avatares gratuitos siempre están disponibles. Los avatares Pro requieren Pro. Los avatares de nivel se desbloquean al subir de nivel. Los avatares de monedas se pueden comprar con monedas.',
+
+  /* ---- Friends ---- */
+  'friends.title': 'Amigos',
+  'friends.add': '+ Agregar',
+  'friends.email.placeholder': 'Correo del amigo',
+  'friends.sendrequest': 'Enviar solicitud',
+  'friends.chat.placeholder': 'Escribe un mensaje...',
+
   /* ---- Variant groups ---- */
   'variant.depth': 'Profundidad',
   'variant.length': 'Longitud',

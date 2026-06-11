@@ -87,6 +87,24 @@ var ZH = {
   'pm.noblanks': '此提示语无需填空 — 直接复制或发送给 AI。',
   'pm.ai.label': '直接发送给 AI — 提示语已复制，AI 页面将打开：',
   'pm.ai.note': 'ChatGPT 和 Claude 会通过链接自动填入提示语。对于 Copilot、Gemini 和 DeepSeek，请按 <strong>Ctrl+V</strong> 粘贴 — 已在剪贴板中。所有 AI 的一键自动填入及两个内置本地 AI，在 PromptRunic 桌面应用中。',
+
+  /* ---- Prompt History / Share ---- */
+  'pm.history.title': '提示词历史记录',
+  'pm.history.empty': '还没有浏览过的提示词。',
+  'pm.share.copied': '分享链接已复制！专业版提示词需要登录 + Pro 才能查看。',
+  'share.login.required': '这是一个专业版提示词，请登录后查看。',
+  'share.pro.required': '这是一个专业版提示词，请激活 Pro 后查看。',
+
+  /* ---- Avatar ---- */
+  'avatar.title': '选择你的头像',
+  'avatar.desc': '免费头像始终可用。Pro 头像需要 Pro。等级头像随等级解锁。金币头像可用金币购买。',
+
+  /* ---- Friends ---- */
+  'friends.title': '好友',
+  'friends.add': '+ 添加',
+  'friends.email.placeholder': '输入好友邮箱',
+  'friends.sendrequest': '发送请求',
+  'friends.chat.placeholder': '输入消息...',
   'pm.tts': '🔊 朗读',
   'pm.expand': '⬆️ 展开',
   'pm.collapse': '⬇️ 收起',

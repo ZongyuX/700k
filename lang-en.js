@@ -88,6 +88,24 @@ var EN = {
   'pm.ai.label': 'Send straight to an AI — the prompt is copied and the AI opens:',
   'pm.ai.note': 'ChatGPT and Claude auto-fill the prompt from the link. For Copilot, Gemini and DeepSeek, press <strong>Ctrl+V</strong> to paste — it is already on your clipboard. True one-click auto-fill on every AI, plus two built-in local AIs, are in the PromptRunic desktop app.',
 
+  /* ---- Prompt History / Share ---- */
+  'pm.history.title': 'Prompt History',
+  'pm.history.empty': 'No recently viewed prompts yet.',
+  'pm.share.copied': 'Share link copied! Pro prompts require login + Pro to view.',
+  'share.login.required': 'This is a Pro prompt. Please sign in to view it.',
+  'share.pro.required': 'This is a Pro prompt. Activate Pro to view it.',
+
+  /* ---- Avatar ---- */
+  'avatar.title': 'Choose Your Avatar',
+  'avatar.desc': 'Free avatars are always available. Pro avatars require Pro. Level avatars unlock as you level up. Coin avatars can be purchased with coins.',
+
+  /* ---- Friends ---- */
+  'friends.title': 'Friends',
+  'friends.add': '+ Add',
+  'friends.email.placeholder': "Enter friend's email",
+  'friends.sendrequest': 'Send Request',
+  'friends.chat.placeholder': 'Type a message...',
+
   /* ---- Variant groups ---- */
   'variant.depth': 'Depth',
   'variant.length': 'Length',

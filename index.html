@@ -1802,20 +1802,14 @@
     <span data-i18n="upsell.feat4">✓ All AI assistants</span>
   </div>
   <!-- Professional card-based pricing -->
-  <!-- Mini 3-day plan card -->
-  <div class="pricing-mini-row" style="display:flex;justify-content:center;margin-bottom:8px">
-    <div class="p-card p-card-mini" data-plan="3day" style="max-width:200px;background:linear-gradient(135deg,rgba(34,211,238,.08),rgba(124,92,255,.08));border-color:rgba(34,211,238,.3);padding:14px 16px 12px">
-      <div class="p-card-name" style="font-size:12px;margin-bottom:4px">3 <span data-i18n="pricing.days">Days</span></div>
-      <div class="p-card-price-row">
-        <span class="p-card-price" style="font-size:24px">$0.99</span>
-        <span class="p-card-period" style="font-size:11px">/3 days</span>
+  <!-- Mini 3-day plan card — top-left corner -->
+  <div class="pricing-mini-row" style="display:flex;justify-content:flex-start;margin-bottom:6px;padding-left:4px">
+    <div class="p-card p-card-mini" data-plan="3day" style="max-width:260px;background:linear-gradient(135deg,rgba(34,211,238,.08),rgba(124,92,255,.08));border-color:rgba(34,211,238,.3);padding:8px 14px;display:flex;align-items:center;gap:12px;flex-wrap:nowrap">
+      <div style="flex-shrink:0">
+        <span style="font-size:11px;color:var(--accent2);font-weight:700">3 <span data-i18n="pricing.days">Days</span></span>
+        <span class="p-card-price" style="font-size:20px;margin-left:6px">$0.99</span>
       </div>
-      <div class="p-card-billed" style="font-size:10px;margin-bottom:6px" data-i18n="pricing.billed.3d">Billed $0.99 once</div>
-      <ul class="p-card-features" style="margin-bottom:8px">
-        <li data-i18n="pricing.feat.all" style="font-size:11px">Full access to 700K+ prompts</li>
-        <li data-i18n="pricing.feat.styles" style="font-size:11px">40 answer styles</li>
-      </ul>
-      <button class="mbtn mbtn-ghost p-card-btn" data-plan-id="3day" style="font-size:12px!important;padding:7px 0!important" data-i18n="pricing.select">Select</button>
+      <button class="mbtn mbtn-ghost p-card-btn" data-plan-id="3day" style="font-size:11px!important;padding:5px 14px!important;white-space:nowrap" data-i18n="pricing.select">Select</button>
     </div>
   </div>
   <!-- Main plan cards (5-column grid) -->
@@ -2097,6 +2091,64 @@
     <div style="font-size:14px;color:#aaa">Landscape mode recommended for the best gaming experience</div>
   </div>
 </div>
+
+<!-- History Panel (overlaid on prompt modal) -->
+<div class="history-panel" id="historyPanel" style="display:none;position:fixed;top:0;right:0;width:340px;max-width:90vw;height:100vh;background:var(--panel);border-left:1px solid var(--border);z-index:10001;overflow-y:auto;padding:20px 16px;box-shadow:-4px 0 24px rgba(0,0,0,.5)">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <h3 style="font-size:16px;margin:0" data-i18n="pm.history.title">Prompt History</h3>
+    <button onclick="document.getElementById('historyPanel').style.display='none'" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer">&times;</button>
+  </div>
+  <div id="historyList"></div>
+</div>
+
+<!-- Avatar Picker Overlay -->
+<div class="overlay" id="avatarOverlay">
+  <div class="modal" style="max-width:540px">
+    <button class="x" data-close>&times;</button>
+    <h2 data-i18n="avatar.title">Choose Your Avatar</h2>
+    <div class="desc" data-i18n="avatar.desc">Free avatars are always available. Pro avatars require Pro. Level avatars unlock as you level up. Coin avatars can be purchased with coins.</div>
+    <div id="avatarGrid" style="display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin-top:14px"></div>
+  </div>
+</div>
+
+<!-- Friends Panel -->
+<div class="friends-panel" id="friendsPanel" style="display:none;position:fixed;bottom:80px;right:20px;width:320px;max-width:90vw;background:var(--panel);border:1px solid var(--border);border-radius:14px;z-index:10000;box-shadow:0 8px 32px rgba(0,0,0,.5);overflow:hidden">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--border);cursor:move" id="friendsPanelHeader">
+    <h4 style="margin:0;font-size:14px" data-i18n="friends.title">Friends</h4>
+    <div style="display:flex;gap:6px">
+      <button onclick="showAddFriend()" style="background:none;border:1px solid var(--border);color:var(--accent2);padding:2px 8px;border-radius:6px;font-size:11px;cursor:pointer" data-i18n="friends.add">+ Add</button>
+      <button onclick="toggleFriendsPanel()" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer">&times;</button>
+    </div>
+  </div>
+  <div id="friendsList" style="max-height:240px;overflow-y:auto;padding:8px 10px"></div>
+  <!-- Add friend sub-panel -->
+  <div id="addFriendPanel" style="display:none;padding:10px 14px;border-top:1px solid var(--border)">
+    <input type="text" id="addFriendInput" placeholder="Enter friend's email" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:8px;font-size:13px" data-i18n="friends.email.placeholder" data-i18n-attr="placeholder" />
+    <button onclick="sendFriendRequest()" style="width:100%;margin-top:6px;background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff;border:none;padding:7px;border-radius:8px;font-size:13px;cursor:pointer" data-i18n="friends.sendrequest">Send Request</button>
+  </div>
+</div>
+
+<!-- Chat Window (per friend) -->
+<div class="chat-window" id="chatWindow" style="display:none;position:fixed;bottom:20px;right:20px;width:320px;max-width:90vw;background:var(--panel);border:1px solid var(--border);border-radius:14px;z-index:10001;box-shadow:0 8px 32px rgba(0,0,0,.5);overflow:hidden;resize:both;min-width:260px;min-height:300px">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border)" id="chatWindowHeader">
+    <div style="display:flex;align-items:center;gap:6px">
+      <span id="chatFriendStatus" style="width:8px;height:8px;border-radius:50%;background:#555"></span>
+      <span id="chatFriendName" style="font-size:13px;font-weight:700">Friend</span>
+    </div>
+    <div style="display:flex;gap:6px">
+      <button onclick="toggleChatMinimize()" style="background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer">_</button>
+      <button onclick="closeChatWindow()" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer">&times;</button>
+    </div>
+  </div>
+  <div id="chatMessages" style="height:260px;overflow-y:auto;padding:10px 14px;font-size:13px;display:flex;flex-direction:column;gap:6px"></div>
+  <div id="chatInputRow" style="display:flex;gap:6px;padding:8px 10px;border-top:1px solid var(--border)">
+    <input type="text" id="chatInput" placeholder="Type a message..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:8px;font-size:13px" data-i18n="friends.chat.placeholder" data-i18n-attr="placeholder" />
+    <button onclick="sendChatMessage()" style="background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff;border:none;padding:7px 14px;border-radius:8px;font-size:13px;cursor:pointer">Send</button>
+  </div>
+</div>
+
+<!-- Friends FAB (floating action button) -->
+<button class="friends-fab" id="friendsFab" style="position:fixed;bottom:20px;right:20px;width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;color:#fff;font-size:18px;cursor:pointer;z-index:9999;box-shadow:0 4px 16px rgba(124,92,255,.4);display:none" title="Friends">👥</button>
 
 <div class="toast" id="toast"></div>
 
@@ -3527,13 +3579,23 @@ function wireEvents(){
   });
   document.getElementById('pmCopy').addEventListener('click',()=>{ copyText(buildOutput()); if(window.PPGame) PPGame.award('copy'); toast(PPI18n.t('toast.copied')); });
   document.getElementById('pmFav').addEventListener('click',()=>{ if(currentPrompt) toggleFav(currentPrompt.id); });
-  /* Share prompt button */
+  /* Share prompt button — generates shareable link */
   document.getElementById('pmShare').addEventListener('click',()=>{
     if(!currentPrompt) return;
-    var text=buildOutput();
-    var shareData={title:'PromptRunic Prompt',text:text,url:location.href};
-    if(navigator.share){navigator.share(shareData).catch(()=>copyText(text));}
-    else{copyText(text);toast(PPI18n.t('toast.copied','Prompt copied for sharing!'));}
+    var baseUrl=location.origin+location.pathname;
+    var shareUrl=baseUrl+'#prompt='+currentPrompt.id;
+    var isProPrompt=!currentPrompt.free;
+    var shareText=currentPrompt.t||currentPrompt.title||'';
+    if(isProPrompt){
+      shareText+=' (Pro)';
+    }
+    var fullShareText=shareText+'\n'+shareUrl;
+    if(navigator.share){
+      navigator.share({title:'PromptRunic Prompt',text:fullShareText,url:shareUrl}).catch(()=>{copyText(fullShareText);toast(PPI18n.t('toast.copied'));});
+    }else{
+      copyText(fullShareText);
+      toast(PPI18n.t('pm.share.copied','Share link copied! Pro prompts require login + Pro to view.'));
+    }
   });
   /* Random prompt button */
   document.getElementById('pmRandom').addEventListener('click',()=>{
@@ -3541,14 +3603,33 @@ function wireEvents(){
     var freePrompts=prompts.filter(p=>p.free||isPro);
     if(freePrompts.length){var rp=freePrompts[Math.floor(Math.random()*freePrompts.length)];openPrompt(rp.id);}
   });
-  /* History button */
+  /* History button — shows history panel with all previously viewed prompts */
   document.getElementById('pmHistory').addEventListener('click',()=>{
     var hist=[];
     try{hist=JSON.parse(lsGet('pp_prompt_history')||'[]');}catch(e){}
-    if(!hist.length){toast(PPI18n.t('pm.history.empty','No recently viewed prompts yet.'));return;}
-    /* Show last prompt from history */
-    var lastId=hist[0];
-    if(lastId) openPrompt(lastId);
+    var panel=document.getElementById('historyPanel');
+    var list=document.getElementById('historyList');
+    if(panel.style.display==='block'){panel.style.display='none';return;}
+    if(!hist.length){
+      list.innerHTML='<div style="color:var(--muted);font-size:13px;text-align:center;padding:40px 0" data-i18n="pm.history.empty">No recently viewed prompts yet.</div>';
+      panel.style.display='block';
+      return;
+    }
+    var allPrompts=getCurrentPrompts();
+    var h='';
+    hist.forEach(function(id){
+      var p=allPrompts.find(function(x){return x.id===id;});
+      if(p){
+        var cat=p.cat||'';
+        var isProP=!p.free;
+        h+='<div style="padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="document.getElementById(\'historyPanel\').style.display=\'none\';openPrompt('+p.id+')">';
+        h+='<div style="font-size:13px;font-weight:600;color:var(--text)">'+esc(p.t||p.title||'Untitled')+'</div>';
+        h+='<div style="font-size:11px;color:var(--muted);margin-top:2px">'+esc(cat)+(isProP?' · <span style="color:var(--accent2)">Pro</span>':'')+'</div>';
+        h+='</div>';
+      }
+    });
+    list.innerHTML=h;
+    panel.style.display='block';
   });
   /* TTS — Read prompt aloud */
   document.getElementById('pmTTS').addEventListener('click',()=>{
@@ -3563,17 +3644,26 @@ function wireEvents(){
     utterance.rate=0.9;
     window.speechSynthesis.speak(utterance);
   });
-  /* Expand/Collapse output area */
+  /* Expand/Collapse — toggles history panel content or expands output area */
   var outputExpanded=false;
   document.getElementById('pmExpand').addEventListener('click',()=>{
-    var outputEl=document.getElementById('pmOutput');
-    outputExpanded=!outputExpanded;
-    if(outputExpanded){
-      outputEl.style.maxHeight='70vh';
-      document.getElementById('pmExpand').innerHTML='⬇️ Collapse';
-    }else{
-      outputEl.style.maxHeight='280px';
+    var panel=document.getElementById('historyPanel');
+    if(panel.style.display==='block'){
+      /* If history is showing, collapse it */
+      panel.style.display='none';
       document.getElementById('pmExpand').innerHTML='⬆️ Expand';
+      outputExpanded=false;
+    }else{
+      /* Otherwise toggle output area expand */
+      var outputEl=document.getElementById('pmOutput');
+      outputExpanded=!outputExpanded;
+      if(outputExpanded){
+        outputEl.style.maxHeight='70vh';
+        document.getElementById('pmExpand').innerHTML='⬇️ Collapse';
+      }else{
+        outputEl.style.maxHeight='280px';
+        document.getElementById('pmExpand').innerHTML='⬆️ Expand';
+      }
     }
   });
   document.getElementById('pmAiRow').addEventListener('click',e=>{
@@ -4734,6 +4824,427 @@ runQuickOptimizer = function(){
       });
     });
   }
+})();
+</script>
+
+<!-- ============================================================
+  NEW FEATURES: Friends, Avatar Picker, Bio Sync, Deep Link,
+  Achievements in Community, Enhanced Firebase Sync
+  ============================================================ -->
+<script>
+(function(){
+'use strict';
+
+/* ============================================================
+ *  DEEP LINK: #prompt=ID — open a specific prompt from share link
+ *  If Pro prompt and user not logged in / not Pro, show notice
+ * ============================================================ */
+function handleDeepLink(){
+  var hash=location.hash||'';
+  var m=hash.match(/prompt=(\d+)/);
+  if(!m) return;
+  var pid=parseInt(m[1],10);
+  if(isNaN(pid)) return;
+  /* Wait for data to be available */
+  function tryOpen(){
+    var prompts=getCurrentPrompts();
+    if(!prompts.length){ setTimeout(tryOpen,500); return; }
+    var p=prompts.find(function(x){return x.id===pid;});
+    if(!p){
+      /* Prompt may be in a different language data set, try EN */
+      if(typeof PROMPTS_DATA!=='undefined'){
+        p=PROMPTS_DATA.find(function(x){return x.id===pid;});
+      }
+    }
+    if(!p){ toast('Prompt not found'); return; }
+    if(!p.free && !isPro){
+      if(!currentUser){
+        toast(PPI18n.t('share.login.required','This is a Pro prompt. Please sign in to view it.'),'info');
+        setTimeout(function(){ openAuth(); },800);
+      }else{
+        toast(PPI18n.t('share.pro.required','This is a Pro prompt. Activate Pro to view it.'),'info');
+        setTimeout(function(){ openActivate(); },800);
+      }
+      return;
+    }
+    openPrompt(pid);
+    history.replaceState(null,'',location.pathname+location.search);
+  }
+  setTimeout(tryOpen,1500);
+}
+if(document.readyState!=='loading') handleDeepLink();
+else document.addEventListener('DOMContentLoaded',handleDeepLink);
+
+/* ============================================================
+ *  ENHANCED FIREBASE SYNC: ensure bio, coins, level, avatar,
+ *  Pro days, game credits all persist to cloud
+ * ============================================================ */
+var _origCloudSavePro = cloudSavePro;
+cloudSavePro = function(){
+  if(!(fbReady && currentUser)) return;
+  var gameData = (window.PPGame && PPGame.exportState) ? PPGame.exportState() : {};
+  userDocRef().set({
+    pro:(proUntil()===0 && isPro),
+    proUntil:proUntil(),
+    trialUsed:!!lsGet('pp_trial_used'),
+    proCode:lsGet('pp_pro_code')||'',
+    bio:document.getElementById('setBio')?document.getElementById('setBio').value.trim():userBio,
+    game:gameData,
+    updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+  },{merge:true}).catch(function(e){console.warn('save pro+game',e);});
+};
+
+/* Save bio + game state together */
+function cloudSaveBio(){
+  if(!(fbReady && currentUser)) return;
+  var bio=document.getElementById('setBio')?document.getElementById('setBio').value.trim():'';
+  var gameData=(window.PPGame && PPGame.exportState)?PPGame.exportState():{};
+  userDocRef().set({
+    bio:bio,
+    game:gameData,
+    updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+  },{merge:true}).catch(function(e){console.warn('save bio',e);});
+}
+
+/* ============================================================
+ *  AVATAR PICKER — click avatar badge to open picker
+ * ============================================================ */
+function openAvatarPicker(){
+  var grid=document.getElementById('avatarGrid');
+  if(!grid) return;
+  var html='';
+  for(var i=0;i<200;i++){
+    var st=(window.PPGame && PPGame.avatarStatus)?PPGame.avatarStatus(i):{locked:i>=15};
+    var svg=(window.PPGame && PPGame.avatarSVG)?PPGame.avatarSVG(i):'';
+    var lockTag=st.locked?'<div style="position:absolute;top:0;right:0;font-size:8px;background:rgba(0,0,0,.6);padding:1px 3px;border-radius:3px">🔒</div>':'';
+    var equipped=(window.PPGame && PPGame.exportState && PPGame.exportState().avatar===i);
+    var border=equipped?'2px solid var(--accent2)':'2px solid transparent';
+    html+='<div data-ava="'+i+'" style="position:relative;width:48px;height:48px;border-radius:10px;overflow:hidden;border:'+border+';cursor:pointer;opacity:'+(st.locked?'0.5':'1')+'">'+svg+lockTag+'</div>';
+  }
+  grid.innerHTML=html;
+  grid.querySelectorAll('[data-ava]').forEach(function(el){
+    el.addEventListener('click',function(){
+      var idx=parseInt(this.getAttribute('data-ava'),10);
+      if(window.PPGame && PPGame.tapAvatar) PPGame.tapAvatar(idx);
+      openAvatarPicker();
+    });
+  });
+  document.getElementById('avatarOverlay').classList.add('show');
+}
+
+/* Wire avatar badge click */
+document.addEventListener('DOMContentLoaded',function(){
+  var badge=document.getElementById('planBadge');
+  if(badge){
+    badge.style.cursor='pointer';
+    badge.addEventListener('click',function(){
+      if(window.PPGame && PPGame.exportState){
+        openAvatarPicker();
+      }
+    });
+  }
+});
+
+/* ============================================================
+ *  FRIENDS SYSTEM — Firestore-based friend list + messaging
+ * ============================================================ */
+var _chatFriendUid=null;
+var _chatUnsubscribe=null;
+
+function toggleFriendsPanel(){
+  var p=document.getElementById('friendsPanel');
+  p.style.display=p.style.display==='none'?'block':'none';
+  if(p.style.display==='block') loadFriendsList();
+}
+function showAddFriend(){
+  var p=document.getElementById('addFriendPanel');
+  p.style.display=p.style.display==='none'?'block':'none';
+}
+function toggleChatMinimize(){
+  var body=document.getElementById('chatMessages');
+  var input=document.getElementById('chatInputRow');
+  if(body.style.display==='none'){
+    body.style.display='flex'; input.style.display='flex';
+  }else{
+    body.style.display='none'; input.style.display='none';
+  }
+}
+function closeChatWindow(){
+  document.getElementById('chatWindow').style.display='none';
+  if(_chatUnsubscribe){ _chatUnsubscribe(); _chatUnsubscribe=null; }
+  _chatFriendUid=null;
+}
+
+/* Send friend request by email */
+async function sendFriendRequest(){
+  if(!fbReady||!currentUser){toast('Please sign in to add friends','info');return;}
+  var email=document.getElementById('addFriendInput').value.trim().toLowerCase();
+  if(!email){toast('Enter an email address','info');return;}
+  try{
+    /* Look up user by email in pp_public */
+    var snap=await db.collection('pp_public').where('name','==',email).limit(1).get();
+    if(snap.empty){
+      /* Try users collection */
+      var snap2=await db.collection('users').where('email','==',email).limit(1).get();
+      if(snap2.empty){toast('User not found','info');return;}
+      var uid=snap2.docs[0].id;
+      addFriendUid(uid,email);
+    }else{
+      var uid=snap.docs[0].id;
+      addFriendUid(uid,email);
+    }
+  }catch(e){console.warn('friend search',e);toast('Error finding user','info');}
+}
+
+async function addFriendUid(uid,email){
+  var myUid=currentUser.uid;
+  if(uid===myUid){toast('You cannot add yourself','info');return;}
+  /* Write mutual friendship */
+  var batch=db.batch();
+  batch.set(db.collection('friends').doc(myUid).collection('list').doc(uid),{
+    uid:uid,email:email,status:'accepted',addedAt:firebase.firestore.FieldValue.serverTimestamp()
+  },{merge:true});
+  batch.set(db.collection('friends').doc(uid).collection('list').doc(myUid),{
+    uid:myUid,email:currentUser.email||'',status:'accepted',addedAt:firebase.firestore.FieldValue.serverTimestamp()
+  },{merge:true});
+  try{await batch.commit();toast('Friend added!');document.getElementById('addFriendInput').value='';loadFriendsList();}
+  catch(e){console.warn('add friend',e);toast('Error adding friend','info');}
+}
+
+/* Load friends list */
+async function loadFriendsList(){
+  var list=document.getElementById('friendsList');
+  if(!fbReady||!currentUser){list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">Sign in to see friends</div>';return;}
+  list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">Loading...</div>';
+  try{
+    var snap=await db.collection('friends').doc(currentUser.uid).collection('list').orderBy('addedAt','desc').get();
+    if(snap.empty){list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">No friends yet. Click + Add to add someone!</div>';return;}
+    /* Get online status from pp_public */
+    var html='';
+    var online=[];
+    var offline=[];
+    for(var i=0;i<snap.docs.length;i++){
+      var d=snap.docs[i].data();
+      var fUid=d.uid||snap.docs[i].id;
+      var fEmail=d.email||'User';
+      var fName=fEmail.split('@')[0];
+      /* Check online status (last updated < 5 min ago = online) */
+      var isOnline=false;
+      try{
+        var pubSnap=await db.collection('pp_public').doc(fUid).get();
+        var pub=pubSnap.data()||{};
+        fName=pub.name||fName;
+        var lastUpd=pub.updatedAt;
+        if(lastUpd && lastUpd.toDate){
+          isOnline=(Date.now()-lastUpd.toDate().getTime())<300000;
+        }
+      }catch(e){}
+      if(isOnline) online.push({uid:fUid,name:fName,email:fEmail,online:true});
+      else offline.push({uid:fUid,name:fName,email:fEmail,online:false});
+    }
+    if(online.length){
+      html+='<div style="font-size:11px;color:var(--accent2);font-weight:700;padding:4px 0">ONLINE ('+online.length+')</div>';
+      online.forEach(function(f){html+=friendRow(f);});
+    }
+    if(offline.length){
+      html+='<div style="font-size:11px;color:var(--muted);font-weight:700;padding:8px 0 4px">OFFLINE ('+offline.length+')</div>';
+      offline.forEach(function(f){html+=friendRow(f);});
+    }
+    list.innerHTML=html;
+  }catch(e){console.warn('load friends',e);list.innerHTML='<div style="color:var(--muted);font-size:12px">Error loading friends</div>';}
+}
+
+function friendRow(f){
+  var dot=f.online?'#22d3ee':'#555';
+  return '<div style="display:flex;align-items:center;gap:8px;padding:6px 4px;border-radius:8px;cursor:pointer;transition:background .15s" onmouseenter="this.style.background=\'rgba(124,92,255,.1)\'" onmouseleave="this.style.background=\'transparent\'" onclick="openChatWith(\''+f.uid+'\',\''+esc(f.name)+'\')">'+
+    '<span style="width:8px;height:8px;border-radius:50%;background:'+dot+';flex-shrink:0"></span>'+
+    '<span style="font-size:13px;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(f.name)+'</span>'+
+    '<span style="font-size:10px;color:var(--muted)">💬</span>'+
+  '</div>';
+}
+
+/* Open chat with a friend */
+window.openChatWith=function(fUid,fName){
+  _chatFriendUid=fUid;
+  document.getElementById('chatFriendName').textContent=fName;
+  document.getElementById('chatWindow').style.display='block';
+  document.getElementById('chatMessages').innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">Loading messages...</div>';
+  document.getElementById('chatInputRow').style.display='flex';
+  document.getElementById('chatMessages').style.display='flex';
+  /* Listen for messages in real-time */
+  if(_chatUnsubscribe) _chatUnsubscribe();
+  var chatId=[currentUser.uid,fUid].sort().join('_');
+  _chatUnsubscribe=db.collection('chats').doc(chatId).collection('messages').orderBy('ts','asc').limitToLast(100).onSnapshot(function(snap){
+    var html='';
+    snap.forEach(function(doc){
+      var m=doc.data();
+      var isMe=m.from===currentUser.uid;
+      var align=isMe?'right':'left';
+      var bg=isMe?'rgba(124,92,255,.15)':'rgba(34,211,238,.08)';
+      var ts=m.ts&&m.ts.toDate?m.ts.toDate().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'';
+      html+='<div style="align-self:'+align+';max-width:80%;padding:6px 10px;border-radius:10px;background:'+bg+';font-size:13px">'+
+        '<div>'+esc(m.text||'')+'</div>'+
+        '<div style="font-size:9px;color:var(--muted);margin-top:2px">'+ts+'</div>'+
+      '</div>';
+    });
+    var el=document.getElementById('chatMessages');
+    el.innerHTML=html||'<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">No messages yet. Say hi!</div>';
+    el.scrollTop=el.scrollHeight;
+  },function(e){console.warn('chat listen',e);});
+};
+
+/* Send chat message */
+window.sendChatMessage=async function(){
+  if(!fbReady||!currentUser||!_chatFriendUid) return;
+  var input=document.getElementById('chatInput');
+  var text=input.value.trim();
+  if(!text) return;
+  input.value='';
+  var chatId=[currentUser.uid,_chatFriendUid].sort().join('_');
+  try{
+    await db.collection('chats').doc(chatId).collection('messages').add({
+      from:currentUser.uid,
+      text:text,
+      ts:firebase.firestore.FieldValue.serverTimestamp()
+    });
+    /* Update chat metadata */
+    await db.collection('chats').doc(chatId).set({
+      participants:[currentUser.uid,_chatFriendUid],
+      lastMessage:text,
+      lastAt:firebase.firestore.FieldValue.serverTimestamp()
+    },{merge:true});
+  }catch(e){console.warn('send msg',e);}
+};
+
+/* Enter key sends chat */
+document.getElementById('chatInput').addEventListener('keydown',function(e){
+  if(e.key==='Enter'){e.preventDefault();sendChatMessage();}
+});
+
+/* Friends FAB — show when logged in */
+function updateFriendsFab(){
+  var fab=document.getElementById('friendsFab');
+  if(fbReady&&currentUser){fab.style.display='block';}
+  else{fab.style.display='none';}
+}
+document.getElementById('friendsFab').addEventListener('click',toggleFriendsPanel);
+
+/* ============================================================
+ *  COMMUNITY ENHANCEMENTS: achievements viewer + bio display
+ * ============================================================ */
+/* Enhance the showUser function in social.js to include bio + achievements */
+if(window.PPSocial){
+  var _origOpen=PPSocial.open;
+  PPSocial.open=function(){
+    _origOpen.apply(this,arguments);
+    /* After community opens, add achievements tab handler */
+    setTimeout(function(){
+      var tabs=document.querySelectorAll('.cm-tab');
+      if(tabs.length){
+        /* Add achievements tab if not exists */
+        var hasAchTab=false;
+        tabs.forEach(function(t){if(t.textContent.indexOf('Achievements')>=0||t.textContent.indexOf('成就')>=0) hasAchTab=true;});
+        if(!hasAchTab&&tabs[0]&&tabs[0].parentNode){
+          var achTab=document.createElement('button');
+          achTab.className='cm-tab';
+          achTab.textContent='🏆 Achievements';
+          achTab.addEventListener('click',function(){
+            document.querySelectorAll('.cm-tab').forEach(function(t){t.classList.remove('active');});
+            achTab.classList.add('active');
+            loadCommunityAchievements();
+          });
+          tabs[0].parentNode.appendChild(achTab);
+        }
+      }
+    },300);
+  };
+}
+
+async function loadCommunityAchievements(){
+  var board=document.querySelector('.cm-board');
+  if(!board) return;
+  if(!fbReady||!currentUser){board.innerHTML='<div style="color:var(--muted);text-align:center;padding:40px">Sign in to view achievements</div>';return;}
+  board.innerHTML='<div style="color:var(--muted);text-align:center;padding:40px">Loading achievements...</div>';
+  try{
+    var snap=await db.collection('pp_public').orderBy('achN','desc').limit(50).get();
+    var html='<div style="padding:8px 0">';
+    snap.forEach(function(doc,i){
+      var d=doc.data()||{};
+      var myDoc=doc.id===currentUser.uid;
+      html+='<div style="display:flex;align-items:center;gap:10px;padding:8px 4px;border-radius:8px;'+(myDoc?'background:rgba(124,92,255,.1)':'')+'">'+
+        '<span style="font-size:14px;color:var(--muted);width:24px;text-align:right">#'+(i+1)+'</span>'+
+        '<span style="font-size:13px;flex:1">'+esc(d.name||'User')+(myDoc?' (You)':'')+'</span>'+
+        '<span style="font-size:13px;color:var(--accent2);font-weight:700">'+(d.achN||0)+' 🏆</span>'+
+      '</div>';
+    });
+    html+='</div>';
+    board.innerHTML=html;
+  }catch(e){console.warn('ach load',e);board.innerHTML='<div style="color:var(--muted)">Error loading</div>';}
+}
+
+/* Enhance showUser in social.js to display bio */
+/* We patch the profile viewer to show bio and achievements detail */
+var _origShowUser=window.showUser;
+if(typeof _origShowUser==='function'){
+  window.showUser=async function(uid){
+    _origShowUser(uid);
+    /* Add bio and achievement details */
+    if(fbReady){
+      try{
+        var userDoc=await db.collection('users').doc(uid).get();
+        var userData=userDoc.data()||{};
+        var bio=userData.bio||'';
+        var pubDoc=await db.collection('pp_public').doc(uid).get();
+        var pubData=pubDoc.data()||{};
+        /* Find the profile modal and add bio */
+        var profileEl=document.querySelector('.cm-profile');
+        if(profileEl&&bio){
+          var bioDiv=document.createElement('div');
+          bioDiv.style.cssText='font-size:13px;color:var(--text);padding:8px 0;margin-top:4px;border-top:1px solid var(--border);font-style:italic';
+          bioDiv.textContent='"'+bio+'"';
+          profileEl.appendChild(bioDiv);
+        }
+        /* Show achievement details */
+        if(profileEl&&window.PPGame&&PPGame.exportState){
+          var game=PPGame.exportState();
+          var achList=game.ach||[];
+          var achN=pubData.achN||achList.length||0;
+          if(achN>0){
+            var achDiv=document.createElement('div');
+            achDiv.style.cssText='padding:8px 0;margin-top:4px;border-top:1px solid var(--border)';
+            achDiv.innerHTML='<div style="font-size:12px;font-weight:700;color:var(--accent2);margin-bottom:4px">🏆 '+achN+' Achievements Unlocked</div>';
+            achList.slice(0,10).forEach(function(a){
+              achDiv.innerHTML+='<span style="display:inline-block;font-size:11px;background:rgba(124,92,255,.15);padding:2px 8px;border-radius:6px;margin:2px">'+esc(a)+'</span>';
+            });
+            if(achList.length>10) achDiv.innerHTML+='<span style="font-size:11px;color:var(--muted)"> +'+(achList.length-10)+' more</span>';
+            profileEl.appendChild(achDiv);
+          }
+        }
+      }catch(e){console.warn('profile enhance',e);}
+    }
+  };
+}
+
+/* ============================================================
+ *  INIT: show friends FAB, sync data on auth change
+ * ============================================================ */
+var _origHandleAuthChange=handleAuthChange;
+handleAuthChange=async function(user){
+  await _origHandleAuthChange(user);
+  updateFriendsFab();
+  /* Re-sync full game state to cloud on login */
+  if(currentUser){
+    cloudSaveBio();
+  }
+};
+
+/* Also save bio when account settings are saved */
+var _origSaveAccount=saveAccountSettings;
+saveAccountSettings=async function(){
+  await _origSaveAccount();
+  cloudSaveBio();
+};
+
 })();
 </script>
 </body>
