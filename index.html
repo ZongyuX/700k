@@ -2686,6 +2686,19 @@ async function loadUserDoc(user){
     };
     try{ await ref.set(doc); }catch(e){ console.warn('user doc create',e); }
     applyUserState(doc);
+    /* Also create pp_public document for new accounts so they're searchable */
+    try{
+      var pubName = user.displayName || (user.email ? user.email.split('@')[0] : 'User');
+      var pubGame = doc.game || {};
+      db.collection('pp_public').doc(user.uid).set({
+        name: pubName,
+        email: user.email || '',
+        avatar: pubGame.avatar || 0,
+        lvl: pubGame.lvl || 1,
+        bio: '',
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      },{merge:true});
+    }catch(e){ console.warn('pp_public create',e); }
   }else{
     const d=snap.data()||{};
     const merged=[];
@@ -3506,7 +3519,11 @@ async function redeemCode(){
   }
 
   /* ---- Check if this EXACT license key has already been used ---- */
-  if(isLicenseUsed(key)){
+  /* Use the async version which checks localStorage AND the global
+   * Firestore used_license_keys collection (prevents reuse across
+   * different accounts and devices) */
+  var alreadyUsed = await isLicenseUsedAsync(key);
+  if(alreadyUsed){
     m.className='msg err';
     m.textContent=PPI18n.t('activate.code.used');
     return;
@@ -3628,9 +3645,16 @@ function promoAlreadyUsed(m,code){
 }
 
 /* ---- License key one-time-use tracking ----
- * Every license key (whether Pro, coin, or credit) can only be used ONCE
- * per account. This prevents the same code from being entered repeatedly.
- * Tracked via: localStorage pp_used_keys + Firestore usedKeys array.
+ * Every license key (whether Pro, coin, or credit) can only be used ONCE.
+ * This prevents the same code from being entered repeatedly, even across
+ * different accounts and devices.
+ *
+ * Tracking layers:
+ *   1. localStorage pp_used_keys array + per-key flags (fast, local)
+ *   2. Firestore users/{uid}/usedKeys array (synced on login)
+ *   3. Firestore global used_license_keys/{normalizedKey} (cross-account)
+ *
+ * redeemCode() calls isLicenseUsedAsync() which checks all three layers.
  */
 function isLicenseUsed(key){
   var normalizedKey = key.trim().toUpperCase();
@@ -3645,6 +3669,47 @@ function isLicenseUsed(key){
   if(lsGet('pp_pro_code') && lsGet('pp_pro_code').trim().toUpperCase() === normalizedKey) return true;
   return false;
 }
+
+/* Async version: also checks the global Firestore used_license_keys collection.
+ * This is the authoritative check — it prevents the same activation code
+ * from being used by different accounts on different devices.
+ * MUST be used in redeemCode() before processing any license key. */
+async function isLicenseUsedAsync(key){
+  /* First, do the fast synchronous check */
+  if(isLicenseUsed(key)) return true;
+  var normalizedKey = key.trim().toUpperCase();
+  /* Check Firestore: global used_license_keys collection (cross-account) */
+  if(fbReady && db){
+    try{
+      var globalDoc = await db.collection('used_license_keys').doc(normalizedKey).get();
+      if(globalDoc.exists){
+        /* This key was already used by someone — mark it locally too */
+        markLicenseUsed(key);
+        return true;
+      }
+    }catch(e){
+      console.warn('[PromptRunic] Could not check global used keys:', e);
+    }
+  }
+  /* Check Firestore: current user's usedKeys array (in case local was cleared) */
+  if(fbReady && db && currentUser){
+    try{
+      var userDoc = await db.collection('users').doc(currentUser.uid).get();
+      if(userDoc.exists){
+        var userData = userDoc.data()||{};
+        var cloudUsedKeys = userData.usedKeys || [];
+        if(cloudUsedKeys.indexOf(normalizedKey) >= 0){
+          /* This key was already used by this account — mark locally */
+          markLicenseUsed(key);
+          return true;
+        }
+      }
+    }catch(e){
+      console.warn('[PromptRunic] Could not check user used keys:', e);
+    }
+  }
+  return false;
+}
 function markLicenseUsed(key){
   var normalizedKey = key.trim().toUpperCase();
   var usedKeys=[];
@@ -3653,7 +3718,7 @@ function markLicenseUsed(key){
   lsSet('pp_used_keys',JSON.stringify(usedKeys));
   /* Per-key flag */
   lsSet('pp_used_key_'+normalizedKey,'1');
-  /* Sync to cloud so it persists across devices */
+  /* Sync to user's cloud doc so it persists across devices */
   if(currentUser && fbReady){
     try{
       userDocRef().set({
@@ -3661,6 +3726,18 @@ function markLicenseUsed(key){
         updatedAt:firebase.firestore.FieldValue.serverTimestamp()
       },{merge:true});
     }catch(e){ console.warn('markLicenseUsed cloud sync',e); }
+    /* Also write to the GLOBAL used_license_keys collection.
+     * This is the authoritative cross-account registry — once a key is
+     * written here, no other account can ever use it again.
+     * The document ID is the normalized key itself, and we store who
+     * used it and when for auditing. */
+    try{
+      db.collection('used_license_keys').doc(normalizedKey).set({
+        usedBy: currentUser.uid,
+        usedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        key: normalizedKey
+      });
+    }catch(e){ console.warn('markLicenseUsed global registry',e); }
   }
 }
 
@@ -5039,6 +5116,8 @@ cloudSavePro = function(){
     game:gameData,
     updatedAt:firebase.firestore.FieldValue.serverTimestamp()
   },{merge:true}).catch(function(e){console.warn('save pro+game',e);});
+  /* Also sync public profile when Pro state changes (avatar/level may have changed) */
+  if(typeof syncPublicProfile === 'function') syncPublicProfile();
 };
 
 /* Save bio + game state together */
@@ -5192,12 +5271,12 @@ async function searchUsers(){
     var html='';
     var seen={};
     var users=[];
-    /* Search by email (exact match) */
+    /* Search by email (exact match) in users collection */
     try{
       var snap1=await db.collection('users').where('email','==',query).limit(5).get();
       snap1.forEach(function(d){if(!seen[d.id]&&d.id!==currentUser.uid){seen[d.id]=1;users.push({uid:d.id,data:d.data()});}});
     }catch(e){console.warn('email search',e);}
-    /* Search by displayName prefix in pp_public */
+    /* Search by displayName prefix in pp_public (populated by syncPublicProfile) */
     try{
       var snap2=await db.collection('pp_public').where('name','>=',query).where('name','<=',query+'\uf8ff').limit(10).get();
       snap2.forEach(function(d){
@@ -5207,7 +5286,7 @@ async function searchUsers(){
           users.push({uid:d.id,data:{displayName:dd.name,email:dd.email||'',avatar:dd.avatar||0,lvl:dd.lvl||1,bio:dd.bio||''}});
         }
       });
-    }catch(e){console.warn('name search',e);}
+    }catch(e){console.warn('name search pp_public',e);}
     /* Search by email prefix in pp_public */
     try{
       var snap3=await db.collection('pp_public').where('email','>=',query).where('email','<=',query+'\uf8ff').limit(10).get();
@@ -5218,7 +5297,7 @@ async function searchUsers(){
           users.push({uid:d.id,data:{displayName:dd.name,email:dd.email||'',avatar:dd.avatar||0,lvl:dd.lvl||1,bio:dd.bio||''}});
         }
       });
-    }catch(e){console.warn('email prefix search',e);}
+    }catch(e){console.warn('email prefix search pp_public',e);}
     /* Fallback: try displayName in users collection */
     try{
       var snap4=await db.collection('users').where('displayName','>=',query).where('displayName','<=',query+'\uf8ff').limit(10).get();
@@ -5236,6 +5315,54 @@ async function searchUsers(){
         }
       });
     }catch(e){console.warn('game displayname search',e);}
+    /* FALLBACK: If no Firestore query returned results (possibly due to
+     * missing indexes), try getting all users and filtering client-side.
+     * This is less efficient but ensures search works even without
+     * Firestore composite indexes configured. */
+    if(!users.length && query.length >= 2){
+      try{
+        var allUsersSnap = await db.collection('users').limit(50).get();
+        var ql = query.toLowerCase();
+        allUsersSnap.forEach(function(d){
+          if(seen[d.id] || d.id===currentUser.uid) return;
+          var dd = d.data()||{};
+          var gd = dd.game||{};
+          var name = dd.displayName || gd.displayName || dd.email || '';
+          if(name.toLowerCase().indexOf(ql) >= 0 || (dd.email||'').toLowerCase().indexOf(ql) >= 0){
+            seen[d.id]=1;
+            users.push({uid:d.id, data:{
+              displayName: name,
+              email: dd.email||'',
+              avatar: gd.avatar||0,
+              lvl: gd.lvl||1,
+              bio: dd.bio||''
+            }});
+          }
+        });
+      }catch(e){console.warn('client-side search fallback',e);}
+    }
+    /* Also try pp_public client-side fallback if no results */
+    if(!users.length && query.length >= 2){
+      try{
+        var allPubSnap = await db.collection('pp_public').limit(50).get();
+        var ql = query.toLowerCase();
+        allPubSnap.forEach(function(d){
+          if(seen[d.id] || d.id===currentUser.uid) return;
+          var dd = d.data()||{};
+          var name = dd.name || dd.email || '';
+          if(name.toLowerCase().indexOf(ql) >= 0 || (dd.email||'').toLowerCase().indexOf(ql) >= 0){
+            seen[d.id]=1;
+            users.push({uid:d.id, data:{
+              displayName: name,
+              email: dd.email||'',
+              avatar: dd.avatar||0,
+              lvl: dd.lvl||1,
+              bio: dd.bio||''
+            }});
+          }
+        });
+      }catch(e){console.warn('pp_public client-side search fallback',e);}
+    }
     /* Also search demo/fake users from PPDemo — appear identical to real users */
     if(window.PPDemo&&PPDemo.users){
       var ql=query.toLowerCase();
@@ -6084,6 +6211,8 @@ handleAuthChange=async function(user){
     cloudSaveBio();
     setOnlineStatus();
     listenForConversations();
+    /* Sync public profile so other users can find this user by name/email */
+    if(typeof syncPublicProfile === 'function') syncPublicProfile();
   }
 };
 
@@ -6092,7 +6221,52 @@ var _origSaveAccount=saveAccountSettings;
 saveAccountSettings=async function(){
   await _origSaveAccount();
   cloudSaveBio();
+  syncPublicProfile();
 };
+
+/* ---- Sync public profile to pp_public collection ----
+ * The pp_public collection is used for friend search. It stores a
+ * lightweight, publicly-readable document for each user with their
+ * displayName, email, avatar, level, and online status.
+ * This MUST be called whenever the user's profile changes. */
+function syncPublicProfile(){
+  if(!fbReady || !currentUser || !db) return;
+  var gameData = (window.PPGame && PPGame.exportState) ? PPGame.exportState() : {};
+  var displayName = currentUser.displayName || (currentUser.email ? currentUser.email.split('@')[0] : 'User');
+  var email = currentUser.email || '';
+  var avatar = gameData.avatar || 0;
+  var lvl = gameData.lvl || 1;
+  var bio = document.getElementById('setBio') ? document.getElementById('setBio').value.trim() : userBio;
+  db.collection('pp_public').doc(currentUser.uid).set({
+    name: displayName,
+    email: email,
+    avatar: avatar,
+    lvl: lvl,
+    bio: bio || '',
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  },{merge:true}).catch(function(e){
+    console.warn('syncPublicProfile', e);
+  });
+}
+
+/* ---- Expose friend/chat functions to global scope ----
+ * These functions are called from onclick handlers in HTML generated
+ * by the friends panel. They MUST be on window for the onclick to work. */
+window.searchUsers = searchUsers;
+window.sendFriendRequestTo = sendFriendRequestTo;
+window.acceptFriendRequest = acceptFriendRequest;
+window.declineFriendRequest = declineFriendRequest;
+window.viewSearchUser = viewSearchUser;
+window.switchFriendsTab = switchFriendsTab;
+window.toggleFriendsPanel = toggleFriendsPanel;
+window.openChatWith = openChatWith;
+window.closeChatWindow = closeChatWindow;
+window.sendChatMessage = sendChatMessage;
+window.loadSuggestedUsers = loadSuggestedUsers;
+window.loadFriendsList = loadFriendsList;
+window.loadFriendRequests = loadFriendRequests;
+window.loadConversations = loadConversations;
+window.syncPublicProfile = syncPublicProfile;
 
 })();
 </script>
