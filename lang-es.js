@@ -11,9 +11,9 @@ var ES = {
   'header.guide': 'Guía para principiantes',
   'header.activate': 'Activar código',
   'header.signin': 'Iniciar sesión',
-  'header.game': '🎮 Juego',
+  'header.game': 'Juego',
   'header.getpro': 'Obtener Pro',
-  'header.community': '🏆 Comunidad',
+  'header.community': 'Comunidad',
 
   /* ---- Hero ---- */
   'hero.h1.prefix': 'PromptRunic',

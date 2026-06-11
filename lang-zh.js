@@ -11,9 +11,9 @@ var ZH = {
   'header.guide': '新手指南',
   'header.activate': '激活码',
   'header.signin': '登录',
-  'header.game': '🎮 游戏',
+  'header.game': '游戏',
   'header.getpro': '获取专业版',
-  'header.community': '🏆 社区',
+  'header.community': '社区',
 
   /* ---- Hero ---- */
   'hero.h1.prefix': 'PromptRunic',

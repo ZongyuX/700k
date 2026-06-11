@@ -74,7 +74,16 @@ function translateDOM(root){
       else if(attr === 'title') el.title = val;
       else if(attr === 'href') el.href = val;
       else if(attr === 'html') el.innerHTML = val;
-      else el.textContent = val;
+      /* Smart handling: if the element has .btn-hide-sm children, only update that span's text */
+      else {
+        var hideSpan = el.querySelector('.btn-hide-sm');
+        if(hideSpan){
+          /* Extract icon prefix (text/emoji before the span) and update only the label */
+          hideSpan.textContent = ' ' + val;
+        } else {
+          el.textContent = val;
+        }
+      }
     }
   }
   /* Update document language attribute */
