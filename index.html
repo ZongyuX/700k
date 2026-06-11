@@ -2435,7 +2435,10 @@ function evalProState(){
   const until = proUntil();
   if(until>0 && Date.now()>until){
     lsDel('pp_pro_code'); lsDel('pp_pro_until');
-    isPro=false; proExpired=true; return;
+    isPro=false; proExpired=true;
+    /* Sync the expired state to cloud so the Firestore doc is accurate */
+    if(fbReady && currentUser) cloudSavePro();
+    return;
   }
   /* Pro only works for logged-in users — without login, treat as free */
   if(!currentUser){ isPro=false; return; }
@@ -2659,10 +2662,14 @@ async function loadUserDoc(user){
   const method=(user.providerData&&user.providerData[0]&&user.providerData[0].providerId)||'password';
 
   if(!snap.exists){
+    /* New account — ALWAYS start as Free. Only a purchased subscription
+     * can grant Pro; never inherit leftover local pro state from a
+     * previous session / different account. */
+    lsDel('pp_pro_code'); lsDel('pp_pro_until'); isPro=false; proExpired=false;
     const doc={
       email:user.email||'', displayName:user.displayName||'', method:method,
-      favorites:localFavs, pro:localPermanent, proUntil:localUntil,
-      trialUsed:localTrialUsed, proCode:lsGet('pp_pro_code')||'',
+      favorites:localFavs, pro:false, proUntil:0,
+      trialUsed:false, proCode:'',
       marketingOptIn:(lsGet('pp_optin')!=='0'),
       bio:'',
       game:(window.PPGame?PPGame.exportState():null),
@@ -2676,18 +2683,38 @@ async function loadUserDoc(user){
     [].concat(Array.isArray(d.favorites)?d.favorites:[], localFavs).forEach(id=>{
       if(merged.indexOf(id)<0) merged.push(id);
     });
-    const permanent=(!!d.pro)||localPermanent;
-    const untilM=permanent?0:Math.max(d.proUntil||0, localUntil||0);
+    /* Validate cloud pro state: only grant pro if there's a real license
+     * key (not a placeholder like 'ACCOUNT' or empty). This ensures only
+     * purchased subscriptions can provide Pro access. */
+    var cloudProCode = d.proCode || '';
+    var hasRealProCode = cloudProCode && cloudProCode !== 'ACCOUNT';
+    var cloudPermanent = hasRealProCode && !!d.pro;
+    var permanent=cloudPermanent||localPermanent;
+    /* If the cloud says pro=true but the proCode is just a placeholder,
+     * don't grant permanent pro — force the user to re-activate. */
+    if(d.pro && !hasRealProCode){
+      permanent = false;
+    }
+    var untilM=permanent?0:Math.max(d.proUntil||0, localUntil||0);
+    /* Also reject timed pro without a real code */
+    if(untilM > 0 && !hasRealProCode && !localPermanent){
+      var localCode = lsGet('pp_pro_code') || '';
+      if(!localCode || localCode === 'ACCOUNT' || localCode === 'TRIAL'){
+        untilM = 0; /* no valid code — clear timed pro */
+      }
+    }
     const trialUsedM=(!!d.trialUsed)||localTrialUsed;
     const state={
       email:user.email||d.email||'', method:method,
       favorites:merged, pro:permanent, proUntil:untilM, trialUsed:trialUsedM,
+      proCode:cloudProCode,
       marketingOptIn:(d.marketingOptIn!==false)
     };
     try{
       await ref.set({
         email:state.email, displayName:user.displayName||d.displayName||'', method:method,
         favorites:merged, pro:permanent, proUntil:untilM, trialUsed:trialUsedM,
+        proCode:cloudProCode,
         updatedAt:TS
       },{merge:true});
     }catch(e){ console.warn('user doc merge',e); }
@@ -2710,9 +2737,30 @@ function applyUserState(s){
   favorites=Array.isArray(s.favorites)?s.favorites.slice():[];
   saveFavs();
   if(s.pro){
-    lsSet('pp_pro_code', lsGet('pp_pro_code')||'ACCOUNT'); lsDel('pp_pro_until'); isPro=true; proExpired=false;
+    /* Use the real license key from the cloud doc.
+     * Only a genuine license key (from a purchased subscription) grants Pro.
+     * Reject placeholder codes like 'ACCOUNT' — if no real code exists,
+     * the user must re-activate with a valid key. */
+    var code=s.proCode || lsGet('pp_pro_code') || '';
+    if(code && code !== 'ACCOUNT'){
+      lsSet('pp_pro_code', code);
+      lsDel('pp_pro_until'); isPro=true; proExpired=false;
+    }else{
+      /* No valid license key — cannot grant Pro */
+      lsDel('pp_pro_code'); lsDel('pp_pro_until'); isPro=false;
+    }
   }else if(s.proUntil && Date.now()<s.proUntil){
-    lsSet('pp_pro_code','TRIAL'); lsSet('pp_pro_until',String(s.proUntil)); isPro=true; proExpired=false;
+    var code=s.proCode || lsGet('pp_pro_code') || '';
+    if(code && code !== 'TRIAL'){
+      lsSet('pp_pro_code', code);
+    }else if(code === 'TRIAL'){
+      /* 'TRIAL' is acceptable for timed subscriptions that were activated
+       * via valid promo codes (ZX14D-, ZX1M-). Keep for backward compat. */
+      lsSet('pp_pro_code', code);
+    }else{
+      lsSet('pp_pro_code', 'TRIAL');
+    }
+    lsSet('pp_pro_until',String(s.proUntil)); isPro=true; proExpired=false;
   }else{
     lsDel('pp_pro_code'); lsDel('pp_pro_until'); isPro=false;
   }
@@ -3445,12 +3493,8 @@ async function redeemCode(){
   /* ---- Promo codes (advertising / marketing) ---- */
   const promoKey = key.toUpperCase();
 
-  /* ZXTEST- : test mode — permanent Pro unlock */
-  if(promoKey.indexOf('ZXTEST-')===0){
-    if(isPromoUsed('ZXTEST')) return promoAlreadyUsed(m,'ZXTEST');
-    markPromoUsed('ZXTEST');
-    return unlock(key,m,PPI18n.t('activate.testmode'));
-  }
+  /* ZXTEST- : REMOVED — free permanent Pro is no longer allowed.
+   * Only a purchased subscription can grant Pro access. */
 
   /* ZX14D- : free 14-day Pro trial */
   if(promoKey.indexOf('ZX14D-')===0){
@@ -3484,6 +3528,7 @@ async function redeemCode(){
   /* verify the license key with Lemon Squeezy */
   try{
     const res=await PPLemon.validateLicense(key);
+    console.log('[PromptRunic] redeemCode result:', JSON.stringify(res));
     if(res.ok && res.kind==='pro'){
       /* Lifetime (days===0) → permanent; subscription (days>0) → set expiry */
       if(res.days && res.days > 0){
@@ -3498,7 +3543,12 @@ async function redeemCode(){
       return;
     }
     if(res.ok){
-      m.className='msg err'; m.textContent=PPI18n.t('activate.notpro');
+      /* Valid key but couldn't determine type (unknown product).
+       * Log details for the owner to add to COIN_VARIANTS/COIN_PRODUCTS. */
+      console.warn('[PromptRunic] Valid key but unknown product type. product_id=' +
+        (res.product_id||'?') + ', product_name=' + (res.product_name||'?'));
+      m.className='msg err';
+      m.textContent=PPI18n.t('activate.notpro') + ' (Product: ' + (res.product_name||res.product_id||'unknown') + ')';
       return;
     }
     if(res.error==='network'){
@@ -3511,6 +3561,7 @@ async function redeemCode(){
     }
     m.className='msg err'; m.textContent=PPI18n.t('activate.invalid');
   }catch(e){
+    console.error('[PromptRunic] redeemCode exception:', e);
     m.className='msg err'; m.textContent=PPI18n.t('activate.network');
   }
 }
