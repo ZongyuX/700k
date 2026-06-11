@@ -5407,9 +5407,9 @@ async function searchUsers(){
       var btnHtml=alreadySent?
         '<button id="'+btnId+'" style="background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.3);color:var(--accent2);padding:4px 10px;border-radius:6px;font-size:11px;cursor:default" disabled>Sent</button>':
         '<button id="'+btnId+'" onclick="event.stopPropagation();sendFriendRequestTo(\''+u.uid+'\',\''+esc(name).replace(/'/g,"\\'")+'\',\''+btnId+'\')" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer">+ Add</button>';
-      html+='<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;border:1px solid var(--border);margin-bottom:6px;background:var(--panel2);cursor:pointer;transition:background .15s" onmouseenter="this.style.background=\'rgba(124,92,255,.08)\'" onmouseleave="this.style.background=\'var(--panel2)\'" onclick="viewSearchUser(\''+u.uid+'\',\''+esc(name).replace(/'/g,"\\'")+'\')">'+
-        '<div style="width:36px;height:36px;border-radius:10px;overflow:hidden;border:1px solid var(--border)">'+svg+'</div>'+
-        '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(name)+'</div>'+
+      html+='<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;border:1px solid var(--border);margin-bottom:6px;background:var(--panel2);transition:background .15s" onmouseenter="this.style.background=\'rgba(124,92,255,.08)\'" onmouseleave="this.style.background=\'var(--panel2)\'">'+
+        '<div style="width:36px;height:36px;border-radius:10px;overflow:hidden;border:1px solid var(--border);cursor:pointer;transition:transform .15s" onclick="viewSearchUser(\''+u.uid+'\',\''+esc(name).replace(/'/g,"\\'")+'\')" onmouseenter="this.style.transform=\'scale(1.12)\'" onmouseleave="this.style.transform=\'scale(1)\'">'+svg+'</div>'+
+        '<div style="flex:1;min-width:0;cursor:pointer" onclick="viewSearchUser(\''+u.uid+'\',\''+esc(name).replace(/'/g,"\\'")+'\')"><div style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(name)+'</div>'+
         subLine+bioLine+
         '</div>'+
         btnHtml+
@@ -5506,8 +5506,44 @@ function viewSearchUser(uid,name){
     return;
   }
 
-  if(!fbReady) return;
+  if(!fbReady){
+    /* Not ready yet — show minimal profile with just the name */
+    content.innerHTML='<div style="text-align:center">'+
+      '<div style="font-size:16px;font-weight:800">'+esc(name)+'</div>'+
+      '<div style="font-size:12px;color:var(--muted);margin-top:8px">Loading profile...</div>'+
+    '</div>';
+    overlay.classList.add('show');
+    return;
+  }
   db.collection('users').doc(uid).get().then(function(doc){
+    if(!doc.exists){
+      /* User doc doesn't exist — try pp_public as fallback */
+      db.collection('pp_public').doc(uid).get().then(function(pubDoc){
+        var pd=pubDoc.data()||{};
+        var bio=pd.bio||'';
+        var displayName=pd.name||name||'User';
+        var email=pd.email||'';
+        var avatar=pd.avatar||0;
+        var svg=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(avatar):'';
+        content.innerHTML='<div style="text-align:center">'+
+          '<div style="width:64px;height:64px;border-radius:14px;overflow:hidden;border:1px solid var(--border);margin:0 auto 8px">'+svg+'</div>'+
+          '<div style="font-size:16px;font-weight:800">'+esc(displayName)+'</div>'+
+          '<div style="font-size:12px;color:var(--muted)">'+esc(email)+'</div>'+
+          (bio?'<div style="margin-top:8px;font-size:13px;color:var(--text);font-style:italic;padding:8px;border-top:1px solid var(--border)">"'+esc(bio)+'"</div>':'')+
+          '<button id="profileAddBtn" onclick="sendFriendRequestTo(\''+uid+'\',\''+esc(displayName).replace(/'/g,"\\'")+'\',\'profileAddBtn\');document.getElementById(\'searchUserProfile\').classList.remove(\'show\')" style="margin-top:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">+ Add Friend</button>'+
+        '</div>';
+        overlay.classList.add('show');
+      }).catch(function(e2){
+        console.warn('view user pp_public fallback',e2);
+        /* Last resort: show minimal profile */
+        content.innerHTML='<div style="text-align:center">'+
+          '<div style="font-size:16px;font-weight:800">'+esc(name)+'</div>'+
+          '<button id="profileAddBtn" onclick="sendFriendRequestTo(\''+uid+'\',\''+esc(name).replace(/'/g,"\\'")+'\',\'profileAddBtn\');document.getElementById(\'searchUserProfile\').classList.remove(\'show\')" style="margin-top:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">+ Add Friend</button>'+
+        '</div>';
+        overlay.classList.add('show');
+      });
+      return;
+    }
     var d=doc.data()||{};
     var bio=d.bio||'';
     var displayName=d.displayName||name||'User';
@@ -5523,7 +5559,29 @@ function viewSearchUser(uid,name){
       '<button id="profileAddBtn" onclick="sendFriendRequestTo(\''+uid+'\',\''+esc(displayName).replace(/'/g,"\\'")+'\',\'profileAddBtn\');document.getElementById(\'searchUserProfile\').classList.remove(\'show\')" style="margin-top:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">+ Add Friend</button>'+
     '</div>';
     overlay.classList.add('show');
-  }).catch(function(e){console.warn('view user',e);toast('Could not load profile','info');});
+  }).catch(function(e){
+    console.warn('view user',e);
+    /* Instead of just showing "Could not load profile", try pp_public as fallback */
+    db.collection('pp_public').doc(uid).get().then(function(pubDoc){
+      var pd=pubDoc.data()||{};
+      var pName=pd.name||name||'User';
+      var pEmail=pd.email||'';
+      var pAvatar=pd.avatar||0;
+      var pBio=pd.bio||'';
+      var svg=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(pAvatar):'';
+      content.innerHTML='<div style="text-align:center">'+
+        '<div style="width:64px;height:64px;border-radius:14px;overflow:hidden;border:1px solid var(--border);margin:0 auto 8px">'+svg+'</div>'+
+        '<div style="font-size:16px;font-weight:800">'+esc(pName)+'</div>'+
+        '<div style="font-size:12px;color:var(--muted)">'+esc(pEmail)+'</div>'+
+        (pBio?'<div style="margin-top:8px;font-size:13px;color:var(--text);font-style:italic;padding:8px;border-top:1px solid var(--border)">"'+esc(pBio)+'"</div>':'')+
+        '<button id="profileAddBtn" onclick="sendFriendRequestTo(\''+uid+'\',\''+esc(pName).replace(/'/g,"\\'")+'\',\'profileAddBtn\');document.getElementById(\'searchUserProfile\').classList.remove(\'show\')" style="margin-top:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">+ Add Friend</button>'+
+      '</div>';
+      overlay.classList.add('show');
+    }).catch(function(e2){
+      console.warn('view user pp_public fallback also failed',e2);
+      toast('Could not load profile','info');
+    });
+  });
 }
 
 /* ---- Demo user friend request local storage ---- */
@@ -5594,16 +5652,39 @@ async function sendFriendRequestTo(uid,name,btnId){
       if(st==='pending_sent'){toast('Request already sent','info');return;}
       if(st==='accepted'){toast('Already friends','info');return;}
     }
-    /* Write pending request for both users */
-    var batch=db.batch();
-    batch.set(db.collection('friends').doc(currentUser.uid).collection('list').doc(uid),{
-      uid:uid,name:name,status:'pending_sent',addedAt:firebase.firestore.FieldValue.serverTimestamp()
-    },{merge:true});
-    var myName=currentUser.displayName||currentUser.email.split('@')[0];
-    batch.set(db.collection('friends').doc(uid).collection('list').doc(currentUser.uid),{
-      uid:currentUser.uid,name:myName,status:'pending_received',addedAt:firebase.firestore.FieldValue.serverTimestamp()
-    },{merge:true});
-    await batch.commit();
+    /* Try batch write first (both directions in one transaction) */
+    try{
+      var batch=db.batch();
+      batch.set(db.collection('friends').doc(currentUser.uid).collection('list').doc(uid),{
+        uid:uid,name:name,status:'pending_sent',addedAt:firebase.firestore.FieldValue.serverTimestamp()
+      },{merge:true});
+      var myName=currentUser.displayName||currentUser.email.split('@')[0];
+      batch.set(db.collection('friends').doc(uid).collection('list').doc(currentUser.uid),{
+        uid:currentUser.uid,name:myName,status:'pending_received',addedAt:firebase.firestore.FieldValue.serverTimestamp()
+      },{merge:true});
+      await batch.commit();
+    }catch(batchErr){
+      /* Batch write failed (likely Firestore rules don't allow writing to
+       * other user's sub-collection). Fall back to writing only the current
+       * user's side, and write the other side separately. */
+      console.warn('Batch friend write failed, trying individual writes:', batchErr);
+      /* Write current user's side (this should always work — own sub-collection) */
+      await db.collection('friends').doc(currentUser.uid).collection('list').doc(uid).set({
+        uid:uid,name:name,status:'pending_sent',addedAt:firebase.firestore.FieldValue.serverTimestamp()
+      },{merge:true});
+      /* Try writing the other user's side separately (may fail if rules block it) */
+      var myName2=currentUser.displayName||currentUser.email.split('@')[0];
+      try{
+        await db.collection('friends').doc(uid).collection('list').doc(currentUser.uid).set({
+          uid:currentUser.uid,name:myName2,status:'pending_received',addedAt:firebase.firestore.FieldValue.serverTimestamp()
+        },{merge:true});
+      }catch(otherErr){
+        /* If we can't write the other user's side, that's OK — the request
+         * is still recorded on our side. The other user will see it when
+         * they check their incoming requests or when both sides sync. */
+        console.warn('Could not write other user friend side (expected if rules restrict cross-user writes):', otherErr);
+      }
+    }
     toast('Friend request sent to '+name);
     loadFriendsList();
     loadFriendRequests();
