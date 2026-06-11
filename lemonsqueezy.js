@@ -114,6 +114,40 @@ var COIN_NAME_MAP = {
   '12000': 12000
 };
 
+/* ---- Pro membership detection by product_name (fallback) ----
+ * When the product_id from the API doesn't match PRO_PRODUCT_IDS,
+ * we fall back to checking the product_name for known patterns.
+ * This handles the case where Lemon Squeezy re-assigns product IDs
+ * or when the owner hasn't updated PRO_PRODUCT_IDS yet.
+ *
+ * Each entry: { pattern: RegExp or string, days: number }
+ *   days: 0 = lifetime/permanent, >0 = subscription duration
+ */
+var PRO_NAME_PATTERNS = [
+  /* English names — match "PromptRunic Pro 3 months", "3 Days", "1 Month", etc. */
+  { pattern: /\b3\s*days?\b/i,              days: 3 },
+  { pattern: /\b1\s*month\b/i,              days: 30 },
+  { pattern: /\b3\s*months?\b/i,            days: 90 },
+  { pattern: /\b6\s*months?\b/i,            days: 180 },
+  { pattern: /\b12\s*months?\b/i,           days: 365 },
+  { pattern: /\b1\s*year\b/i,               days: 365 },
+  { pattern: /\blifetime\b/i,               days: 0 },
+  /* Chinese names */
+  { pattern: /3天/i,                         days: 3 },
+  { pattern: /1个月/i,                       days: 30 },
+  { pattern: /3个月/i,                       days: 90 },
+  { pattern: /6个月/i,                       days: 180 },
+  { pattern: /12个月/i,                      days: 365 },
+  { pattern: /1年/i,                         days: 365 },
+  { pattern: /永久/i,                        days: 0 },
+  /* Also try variant_name */
+  { pattern: /3\s*day/i,                     days: 3 },
+  { pattern: /1\s*month/i,                   days: 30 },
+  { pattern: /3\s*month/i,                   days: 90 },
+  { pattern: /6\s*month/i,                   days: 180 },
+  { pattern: /12\s*month/i,                  days: 365 }
+];
+
 /* Lemon Squeezy license API endpoints (public, no API key needed). */
 var VALIDATE_URL = 'https://api.lemonsqueezy.com/v1/licenses/validate';
 var ACTIVATE_URL = 'https://api.lemonsqueezy.com/v1/licenses/activate';
@@ -304,22 +338,59 @@ function processLicenseResponse(d, key){
 
   /* ---- Pro membership detection ---- */
 
-  /* Pro? — any membership product ID counts */
+  /* Level 1: Check PRO_PRODUCT_IDS (product_id → Pro) — most precise */
   if(PRO_PRODUCT_IDS.length){
     if(PRO_PRODUCT_IDS.indexOf(meta.product_id) >= 0){
       var days = PLAN_DURATION_DAYS[meta.product_id];
       if(typeof days === 'undefined') days = 0;
-      console.log('[PromptRunic] Detected Pro membership: product_id=' + meta.product_id + ', days=' + days);
+      console.log('[PromptRunic] Detected Pro via PRO_PRODUCT_IDS: product_id=' + meta.product_id + ', days=' + days);
       return { ok:true, kind:'pro', days: days };
     }
-    /* Valid key but not a Pro product and not a coin product */
-    console.log('[PromptRunic] Valid key but not Pro or coin product: product_id=' + meta.product_id + ', product_name=' + meta.product_name);
-    return { ok:true, kind:'unknown', product_id: meta.product_id, product_name: meta.product_name || '' };
   }
 
-  /* PRO_PRODUCT_IDS not set — treat any valid non-coin key as Pro */
-  console.log('[PromptRunic] No PRO_PRODUCT_IDS set, treating as Pro');
-  return { ok:true, kind:'pro', days: 0 };
+  /* Level 2: Check product_name / variant_name against known Pro patterns.
+   * This fallback handles the case where product_id doesn't match
+   * PRO_PRODUCT_IDS (e.g., Lemon Squeezy re-assigned the ID, or the
+   * owner hasn't updated the hardcoded IDs yet).
+   * The product name must contain "pro" or "PromptRunic" to qualify. */
+  var nameToCheck = String(meta.product_name || '') + ' ' + String(meta.variant_name || '');
+  var nameLower = nameToCheck.toLowerCase();
+  var isProByName = (nameLower.indexOf('pro') >= 0) || (nameLower.indexOf('promptrunic') >= 0);
+
+  if(isProByName){
+    /* Try to determine duration from the name */
+    var matchedDays = -1;
+    for(var i = 0; i < PRO_NAME_PATTERNS.length; i++){
+      if(PRO_NAME_PATTERNS[i].pattern.test(nameToCheck)){
+        matchedDays = PRO_NAME_PATTERNS[i].days;
+        break;
+      }
+    }
+    /* If no pattern matched but name contains "pro", default to 30 days
+     * (safest assumption for a subscription). The user can see the actual
+     * duration in their Lemon Squeezy receipt. */
+    if(matchedDays < 0){
+      /* Check expires_at from license_key to determine duration */
+      var expiresAt = licenseKey.expires_at;
+      if(expiresAt){
+        var expiryDate = new Date(expiresAt);
+        var now = new Date();
+        var diffMs = expiryDate.getTime() - now.getTime();
+        var diffDays = Math.ceil(diffMs / 86400000);
+        if(diffDays > 0) matchedDays = diffDays;
+        else matchedDays = 30; /* fallback */
+      }else{
+        /* No expiry date = lifetime */
+        matchedDays = 0;
+      }
+    }
+    console.log('[PromptRunic] Detected Pro via product_name "' + meta.product_name + '": days=' + matchedDays);
+    return { ok:true, kind:'pro', days: matchedDays };
+  }
+
+  /* Valid key but not a Pro product and not a coin product */
+  console.log('[PromptRunic] Valid key but not Pro or coin product: product_id=' + meta.product_id + ', product_name=' + meta.product_name);
+  return { ok:true, kind:'unknown', product_id: meta.product_id, product_name: meta.product_name || '' };
 }
 
 /* --------------------------------------------------------------- public */
