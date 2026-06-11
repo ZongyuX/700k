@@ -14,6 +14,7 @@ var EN = {
   'header.game': 'Game',
   'header.getpro': 'Get Pro',
   'header.community': 'Community',
+  'header.friends': 'Friends',
 
   /* ---- Hero ---- */
   'hero.h1.prefix': 'PromptRunic',
@@ -389,6 +390,8 @@ var EN = {
   'community.desc': 'See the top players and the moods members leave on prompts. Tap any player to view their profile.',
   'community.tab.level': '🏆 Level',
   'community.tab.coins': '🪙 Coins',
+  'community.tab.badges': '🏅 Badges',
+  'community.tab.avatars': '🎭 Avatars',
   'community.tab.games': '🎮 Games',
   'community.tab.speed': '⏱️ Speed',
   'community.tab.mood': '😊 Mood Wall',
@@ -396,6 +399,8 @@ var EN = {
   'community.empty': 'No players on the board yet.<br>Sign in and use PromptRunic — your profile appears here automatically.',
   'community.top50.level': 'Top 50 — highest level & XP',
   'community.top50.coins': 'Top 50 — most coins',
+  'community.top50.badges': '🏅 Top 50 — most badges unlocked',
+  'community.top50.avatars': '🎭 Top 50 — avatar unlocks',
   'community.top50.games': 'Top 50 — best PROMPT MATRIX scores',
   'community.top50.speed': 'Top 50 — fastest PROMPT MATRIX clears',
   'community.back': '‹ Back to leaderboard',

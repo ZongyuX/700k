@@ -5056,12 +5056,17 @@ async function searchUsers(){
       var btnId='addBtn_'+u.uid.replace(/[^a-zA-Z0-9]/g,'_');
       var subLine=isDemo?'':'<div style="font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(email)+'</div>';
       var bioLine=(!isDemo&&bio)?'<div style="font-size:10px;color:var(--muted);font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(bio.substring(0,40))+'</div>':'';
+      /* Check if demo user already has a sent request */
+      var alreadySent=isDemo&&_demoSentHas(u.uid);
+      var btnHtml=alreadySent?
+        '<button id="'+btnId+'" style="background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.3);color:var(--accent2);padding:4px 10px;border-radius:6px;font-size:11px;cursor:default" disabled>Sent</button>':
+        '<button id="'+btnId+'" onclick="event.stopPropagation();sendFriendRequestTo(\''+u.uid+'\',\''+esc(name).replace(/'/g,"\\'")+'\',\''+btnId+'\')" style="background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer">+ Add</button>';
       html+='<div style="display:flex;align-items:center;gap:8px;padding:8px;border-radius:8px;border:1px solid var(--border);margin-bottom:4px;background:var(--panel2);cursor:pointer" onclick="viewSearchUser(\''+u.uid+'\',\''+esc(name).replace(/'/g,"\\'")+'\')">'+
         '<div style="width:32px;height:32px;border-radius:8px;overflow:hidden;border:1px solid var(--border)">'+svg+'</div>'+
         '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(name)+'</div>'+
         subLine+bioLine+
         '</div>'+
-        '<button id="'+btnId+'" onclick="event.stopPropagation();sendFriendRequestTo(\''+u.uid+'\',\''+esc(name).replace(/'/g,"\\'")+'\',\''+btnId+'\')" style="background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer">+ Add</button>'+
+        btnHtml+
       '</div>';
     });
     results.innerHTML=html;
@@ -5115,11 +5120,15 @@ function viewSearchUser(uid,name){
     ];
     var idx=0;for(var c=0;c<uid.length;c++) idx+=uid.charCodeAt(c);
     var bio=fakeBios[idx%fakeBios.length];
+    var demoAlreadySent=_demoSentHas(uid);
+    var profileBtnHtml=demoAlreadySent?
+      '<button id="profileAddBtn" style="margin-top:12px;background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.3);color:var(--accent2);padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:default" disabled>Sent</button>':
+      '<button id="profileAddBtn" onclick="sendFriendRequestTo(\''+uid+'\',\''+esc(dName).replace(/'/g,"\\'")+'\',\'profileAddBtn\');document.getElementById(\'searchUserProfile\').classList.remove(\'show\')" style="margin-top:12px;background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff;border:none;padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">+ Add Friend</button>';
     content.innerHTML='<div style="text-align:center">'+
       '<div style="width:64px;height:64px;border-radius:14px;overflow:hidden;border:1px solid var(--border);margin:0 auto 8px">'+svg+'</div>'+
       '<div style="font-size:16px;font-weight:800">'+esc(dName)+'</div>'+
       '<div style="margin-top:8px;font-size:13px;color:var(--text);font-style:italic;padding:8px;border-top:1px solid var(--border)">"'+esc(bio)+'"</div>'+
-      '<button id="profileAddBtn" onclick="sendFriendRequestTo(\''+uid+'\',\''+esc(dName).replace(/'/g,"\\'")+'\',\'profileAddBtn\');document.getElementById(\'searchUserProfile\').classList.remove(\'show\')" style="margin-top:12px;background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff;border:none;padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">+ Add Friend</button>'+
+      profileBtnHtml+
     '</div>';
     overlay.classList.add('show');
     return;
@@ -5145,11 +5154,46 @@ function viewSearchUser(uid,name){
   }).catch(function(e){console.warn('view user',e);toast('Could not load profile','info');});
 }
 
+/* ---- Demo user friend request local storage ---- */
+function _demoSentMap(){
+  try{var s=localStorage.getItem('pp_demo_sent');return s?JSON.parse(s):{};}catch(e){return{};}
+}
+function _demoSentSave(uid,name){
+  var m=_demoSentMap();m[uid]={name:name,at:Date.now()};localStorage.setItem('pp_demo_sent',JSON.stringify(m));
+}
+function _demoSentHas(uid){return !!_demoSentMap()[uid];}
+
 /* ---- Send friend request ---- */
 async function sendFriendRequestTo(uid,name,btnId){
   if(!fbReady||!currentUser){toast('Please sign in first','info');return;}
   if(uid===currentUser.uid){toast('Cannot add yourself','info');return;}
-  /* Immediately update button to "Sent" state */
+  /* Demo/fake user: save locally only, no Firestore write needed */
+  if(uid.indexOf('demo_')===0){
+    if(_demoSentHas(uid)){toast('Request already sent','info');return;}
+    _demoSentSave(uid,name);
+    /* Update button to "Sent" state immediately */
+    if(btnId){
+      var dBtn=document.getElementById(btnId);
+      if(dBtn){
+        dBtn.textContent='Sent';
+        dBtn.style.cssText='background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.3);color:var(--accent2);padding:4px 10px;border-radius:6px;font-size:11px;cursor:default';
+        dBtn.disabled=true;
+        dBtn.onclick=null;
+      }
+    }
+    /* Also update profile popup button if open */
+    var pBtn=document.getElementById('profileAddBtn');
+    if(pBtn){
+      pBtn.textContent='Sent';
+      pBtn.style.cssText='margin-top:12px;background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.3);color:var(--accent2);padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:default';
+      pBtn.disabled=true;
+      pBtn.onclick=null;
+    }
+    toast('Friend request sent to '+name);
+    loadFriendsList();
+    return;
+  }
+  /* Real user: Immediately update button to "Sent" state */
   if(btnId){
     var btn=document.getElementById(btnId);
     if(btn){
@@ -5158,24 +5202,6 @@ async function sendFriendRequestTo(uid,name,btnId){
       btn.disabled=true;
       btn.onclick=null;
     }
-  }
-  /* Demo/fake user: just save locally, don't write to Firestore for their side */
-  if(uid.indexOf('demo_')===0){
-    try{
-      await db.collection('friends').doc(currentUser.uid).collection('list').doc(uid).set({
-        uid:uid,name:name,status:'pending_sent',addedAt:firebase.firestore.FieldValue.serverTimestamp()
-      },{merge:true});
-      toast('Friend request sent to '+name);
-      loadFriendsList();
-    }catch(e){
-      console.warn('send demo friend req',e);
-      toast('Error sending request','info');
-      if(btnId){
-        var btn2=document.getElementById(btnId);
-        if(btn2){btn2.textContent='+ Add';btn2.style.cssText='background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer';btn2.disabled=false;}
-      }
-    }
-    return;
   }
   try{
     /* Check if already friends or pending */
@@ -5277,8 +5303,25 @@ async function loadFriendsList(){
     var pending=[];
     pendingSnap.forEach(function(doc){
       var d=doc.data();
-      pending.push({uid:d.uid||doc.id,name:d.name||'User'});
+      pending.push({uid:d.uid||doc.id,name:d.name||'User',avatar:0});
     });
+    /* Also include demo user pending requests from localStorage */
+    var demoMap=_demoSentMap();
+    var demoUids=Object.keys(demoMap);
+    for(var di=0;di<demoUids.length;di++){
+      var dUid=demoUids[di];
+      var alreadyInPending=false;
+      for(var pi=0;pi<pending.length;pi++){if(pending[pi].uid===dUid){alreadyInPending=true;break;}}
+      if(!alreadyInPending){
+        var dAvatar=0;
+        if(window.PPDemo&&PPDemo.users){
+          for(var dj=0;dj<PPDemo.users.length;dj++){
+            if(PPDemo.users[dj]._uid===dUid){dAvatar=PPDemo.users[dj].avatar||0;break;}
+          }
+        }
+        pending.push({uid:dUid,name:demoMap[dUid].name||'User',avatar:dAvatar,demo:true});
+      }
+    }
     var online=[];
     var offline=[];
     for(var i=0;i<snap.docs.length;i++){
@@ -5304,9 +5347,9 @@ async function loadFriendsList(){
     if(pending.length){
       html+='<div style="font-size:11px;color:var(--gold);font-weight:700;padding:4px 0">PENDING ('+pending.length+')</div>';
       pending.forEach(function(f){
-        var svg=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(0):'';
+        var fSvg=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(f.avatar||0):'';
         html+='<div style="display:flex;align-items:center;gap:8px;padding:6px 4px;border-radius:8px;opacity:.6">'+
-          '<div style="width:28px;height:28px;border-radius:8px;overflow:hidden;border:1px solid var(--border)">'+svg+'</div>'+
+          '<div style="width:28px;height:28px;border-radius:8px;overflow:hidden;border:1px solid var(--border)">'+fSvg+'</div>'+
           '<span style="font-size:13px;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(f.name)+'</span>'+
           '<span style="font-size:10px;color:var(--gold);font-style:italic">Sent</span>'+
         '</div>';

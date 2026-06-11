@@ -14,6 +14,7 @@ var ZH = {
   'header.game': '游戏',
   'header.getpro': '获取专业版',
   'header.community': '社区',
+  'header.friends': '好友',
 
   /* ---- Hero ---- */
   'hero.h1.prefix': 'PromptRunic',
@@ -393,6 +394,8 @@ var ZH = {
   'community.desc': '查看顶级玩家和成员在提示语上留下心情。点击任何玩家查看其资料。',
   'community.tab.level': '🏆 等级',
   'community.tab.coins': '🪙 金币',
+  'community.tab.badges': '🏅 徽章',
+  'community.tab.avatars': '🎭 头像',
   'community.tab.games': '🎮 游戏',
   'community.tab.speed': '⏱️ 速度',
   'community.tab.mood': '😊 心情墙',
@@ -400,6 +403,8 @@ var ZH = {
   'community.empty': '排行榜上还没有玩家。<br>登录并使用 PromptRunic — 你的资料会自动出现在这里。',
   'community.top50.level': '前 50 名 — 最高等级和 XP',
   'community.top50.coins': '前 50 名 — 最多金币',
+  'community.top50.badges': '🏅 前 50 名 — 最多徽章解锁',
+  'community.top50.avatars': '🎭 前 50 名 — 头像解锁',
   'community.top50.games': '前 50 名 — 最佳 PROMPT MATRIX 得分',
   'community.top50.speed': '前 50 名 — 最快 PROMPT MATRIX 通关',
   'community.back': '‹ 返回排行榜',

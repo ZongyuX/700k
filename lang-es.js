@@ -14,6 +14,7 @@ var ES = {
   'header.game': 'Juego',
   'header.getpro': 'Obtener Pro',
   'header.community': 'Comunidad',
+  'header.friends': 'Amigos',
 
   /* ---- Hero ---- */
   'hero.h1.prefix': 'PromptRunic',
@@ -389,6 +390,8 @@ var ES = {
   'community.desc': 'Mira a los mejores jugadores y los estados de ánimo que los miembros dejan en los prompts. Toca cualquier jugador para ver su perfil.',
   'community.tab.level': '🏆 Nivel',
   'community.tab.coins': '🪙 Monedas',
+  'community.tab.badges': '🏅 Insignias',
+  'community.tab.avatars': '🎭 Avatares',
   'community.tab.games': '🎮 Juegos',
   'community.tab.speed': '⏱️ Velocidad',
   'community.tab.mood': '😊 Muro de ánimos',
@@ -396,6 +399,8 @@ var ES = {
   'community.empty': 'No hay jugadores en la tabla aún.<br>Inicia sesión y usa PromptRunic — tu perfil aparecerá aquí automáticamente.',
   'community.top50.level': 'Top 50 — nivel más alto y XP',
   'community.top50.coins': 'Top 50 — más monedas',
+  'community.top50.badges': '🏅 Top 50 — más insignias desbloqueadas',
+  'community.top50.avatars': '🎭 Top 50 — avatares desbloqueados',
   'community.top50.games': 'Top 50 — mejores puntuaciones PROMPT MATRIX',
   'community.top50.speed': 'Top 50 — completaciones más rápidas de PROMPT MATRIX',
   'community.back': '‹ Volver a la tabla de clasificación',

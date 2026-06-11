@@ -814,7 +814,13 @@ const CW=800,CH=510,TILE=22,PATH_W=26;
 let sfxOn=true,musOn=true;
 const SFX={
   ctx:null,
-  init(){try{this.ctx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}},
+  init(){/* Defer AudioContext creation — iOS crashes if created before user gesture */
+    if(this.ctx) return;
+    try{
+      var AC=window.AudioContext||window.webkitAudioContext;
+      if(AC) this.ctx=new AC();
+    }catch(e){console.warn('AudioContext init failed:',e);}
+  },
   resume(){if(this.ctx&&this.ctx.state==='suspended')this.ctx.resume()},
   play(type){
     if(!sfxOn||!this.ctx)return;
@@ -1759,7 +1765,15 @@ function getCurCh(){return chI>=8?HIDDEN_CH:chapters[chI]}
 function init(){
   canvas=document.getElementById('gameCanvas');
   ctx=canvas.getContext('2d');
-  SFX.init();mkStartFx();
+  /* Defer SFX.init() — iOS crashes if AudioContext is created before user gesture */
+  /* Instead, we init on first user interaction */
+  var sfxInited=false;
+  function sfxLazyInit(){
+    if(!sfxInited){sfxInited=true;SFX.init();}
+  }
+  document.addEventListener('touchstart',sfxLazyInit,{once:true,passive:true});
+  document.addEventListener('click',sfxLazyInit,{once:true,passive:true});
+  mkStartFx();
   resizeCanvas();
   window.addEventListener('resize',resizeCanvas);
   if(gameCompleted)document.getElementById('unlimitedGoldOption').style.display='block';
@@ -1836,6 +1850,8 @@ function startGame(m,diff){
   document.getElementById('gameOverScreen').style.display='none';
   document.getElementById('gameScreen').style.display='flex';
   gState='playing';
+  /* Init AudioContext on first user gesture (iOS safe) */
+  if(!SFX.ctx){try{SFX.init();}catch(e){}}
   SFX.resume();startBGM();
   initCh(0);
 }
@@ -3439,8 +3455,13 @@ document.addEventListener('DOMContentLoaded',()=>{
     e.preventDefault();
     mouseP=null;
   },{passive:false});
-  /* Auto-fullscreen when game starts on mobile */
+  /* Auto-fullscreen when game starts on mobile — SKIPPED on iOS Safari */
+  function isIOS(){
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+           (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+  }
   function tryFullscreen(){
+    if(isIOS()) return; /* iOS Safari does not support requestFullscreen and crashes */
     try{
       const el=document.documentElement;
       if(el.requestFullscreen) el.requestFullscreen().catch(()=>{});
@@ -3450,7 +3471,7 @@ document.addEventListener('DOMContentLoaded',()=>{
       }
     }catch(e){}
   }
-  /* Intercept the LAUNCH button to trigger fullscreen */
+  /* Intercept the LAUNCH button to trigger fullscreen (not on iOS) */
   const origShowModeSelect=window.showModeSelect;
   if(origShowModeSelect){
     window.showModeSelect=function(){
@@ -3458,7 +3479,7 @@ document.addEventListener('DOMContentLoaded',()=>{
       origShowModeSelect();
     };
   }
-  /* Also fullscreen when starting from mode/diff selection */
+  /* Also fullscreen when starting from mode/diff selection (not on iOS) */
   const origStartGame=window.startGame;
   if(origStartGame){
     window.startGame=function(a,b){
@@ -3468,9 +3489,11 @@ document.addEventListener('DOMContentLoaded',()=>{
   }
   /* Resize canvas on orientation change */
   window.addEventListener('resize',()=>{ setTimeout(resizeCanvas,100); });
-  /* Prevent pinch zoom on mobile */
-  document.addEventListener('gesturestart',e=>e.preventDefault(),{passive:false});
-  document.addEventListener('gesturechange',e=>e.preventDefault(),{passive:false});
+  /* Prevent pinch zoom on mobile — use passive to avoid iOS scroll jank */
+  try{
+    document.addEventListener('gesturestart',e=>e.preventDefault(),{passive:false});
+    document.addEventListener('gesturechange',e=>e.preventDefault(),{passive:false});
+  }catch(e){}
   /* Re-init canvas touch after mode/diff selection */
   window.addEventListener('fullscreenchange',()=>{ setTimeout(resizeCanvas,200); });
   document.addEventListener('webkitfullscreenchange',()=>{ setTimeout(resizeCanvas,200); });
