@@ -28,6 +28,8 @@
 
 /* ---- Membership plans ---- */
 var MEMBERSHIP_PLANS = [
+  { id:'3day',    name:'3 Days',            price:'$0.99',  productId:1134081,
+    url:'https://zongyu220.lemonsqueezy.com/checkout/buy/4c8265f5-9432-4a9b-8539-13fca42a343e', mini:true },
   { id:'1month',  name:'1 Month',           price:'$7.99',  productId:1130711,
     url:'https://zongyu220.lemonsqueezy.com/checkout/buy/c912e170-15f3-419b-8e13-541ea4206f52' },
   { id:'3month',  name:'3 Months',          price:'$18',    productId:1130720,
@@ -41,7 +43,7 @@ var MEMBERSHIP_PLANS = [
 ];
 
 /* Legacy — buyPro now opens the lifetime plan by default */
-var BUY_PRO = MEMBERSHIP_PLANS[4].url;
+var BUY_PRO = MEMBERSHIP_PLANS[5].url;
 
 /* ---- Coin packs ---- */
 var BUY_COINS = [
@@ -58,7 +60,7 @@ var BUY_COINS = [
  *   - COIN_VARIANTS  : map each coin-pack VARIANT ID to the coins it grants.
  * If PRO_PRODUCT_IDS is empty, any valid non-coin key unlocks Pro.
  * ===================================================================== */
-var PRO_PRODUCT_IDS = [1130711, 1130720, 1130724, 1130727, 1073472];
+var PRO_PRODUCT_IDS = [1134081, 1130711, 1130720, 1130724, 1130727, 1073472];
 
 /* Map each subscription product ID to its duration in days.
  * When a license key is validated, the Lemon Squeezy API tells us the
@@ -67,6 +69,7 @@ var PRO_PRODUCT_IDS = [1130711, 1130720, 1130724, 1130727, 1073472];
  * Lifetime (1073472) is permanent — no expiry.
  */
 var PLAN_DURATION_DAYS = {
+  1134081: 3,     /* 3 Days   */
   1130711: 30,    /* 1 Month  */
   1130720: 90,    /* 3 Months */
   1130724: 180,   /* 6 Months */

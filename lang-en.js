@@ -23,7 +23,7 @@ var EN = {
 
   /* ---- CTA ---- */
   'cta.browse': 'Browse Prompts',
-  'cta.unlock': 'Get Pro Membership — from $7.99/mo',
+  'cta.unlock': 'Get Pro — from $0.99',
   'cta.play': '🎮 Play Game',
 
   /* ---- Stats ---- */
@@ -186,14 +186,16 @@ var EN = {
   /* ---- Activate Modal ---- */
   'activate.title': 'Activate PromptRunic Pro',
   'activate.desc': 'Unlock all 700,000+ prompts on this site.',
-  'activate.trial.title': 'Try Pro free for 3 days',
-  'activate.trial.desc': 'No purchase needed — unlock every prompt for 3 days, then it reverts to Free. One trial per browser. (Or buy a membership via Lemon Squeezy for permanent access — plans from $7.99/month or $69 lifetime.)',
-  'activate.trial.btn': 'Start my 3-day free trial',
+  'activate.login.title': 'Account Required',
+  'activate.login.desc': 'To use Pro, you must be signed in with a registered account or continue with Google/GitHub. Your Pro membership is linked to your account and syncs across all devices.',
+  'activate.login.btn': 'Sign in / Create account',
+  'activate.login.required': 'Please sign in first. Pro requires a registered account or Google/GitHub login.',
+  'activate.trial.removed': 'The free 3-day trial has been discontinued. Please choose a membership plan starting at $0.99 for 3 days.',
   'activate.code.label': 'Enter your activation code',
   'activate.code.placeholder': 'e.g. 8B7C-4FA2-9D11-...',
   'activate.redeem': 'Activate',
   'activate.buy': 'View membership plans',
-  'activate.note': 'Signed in? Your unlock syncs to your account and works on every device. Otherwise it is saved in this browser only.',
+  'activate.note': 'Pro is linked to your account. Sign in to activate and sync your Pro access across all devices.',
   'activate.entercode': 'Please enter your activation code.',
   'activate.checking': 'Checking…',
   'activate.notready': 'Activation is not ready yet. Please try again in a moment.',
@@ -204,10 +206,10 @@ var EN = {
   'activate.invalid': 'Invalid code. Check the code in your Lemon Squeezy receipt email.',
   'activate.testmode': 'TEST mode unlock — customers use a real Lemon Squeezy code.',
   'activate.alreadypro': 'You already have full Pro access — no trial needed.',
-  'activate.trialused': 'Your {d}-day free trial has already been used{suffix}.',
-  'activate.trialactive': 'Your {d}-day Pro trial is active — enjoy all {n} prompts!',
+  'activate.trialused': 'Your free trial has already been used.',
+  'activate.trialactive': 'Pro is active — enjoy all {n} prompts!',
   'activate.pro.unlocked': 'PromptRunic Pro unlocked!',
-  'activate.trial.unlocked': '{d}-day Pro trial unlocked!',
+  'activate.trial.unlocked': 'Pro unlocked!',
   'activate.unlocked.sub': 'Pro unlocked for {d} days. Enjoy the full prompt library!',
   'activate.promo.14d': '14-day Pro activated! Enjoy all 700,000+ prompts.',
   'activate.promo.1m': '1-month Pro activated! Enjoy all 700,000+ prompts.',
@@ -285,9 +287,10 @@ var EN = {
   /* ---- Plan badge ---- */
   'plan.free': 'FREE',
   'plan.pro': 'PRO',
+  'plan.pro.days': 'PRO · {d}d left',
   'plan.pro.trial': 'PRO · {d}d left',
   'plan.pro.full': 'Pro — full access',
-  'plan.pro.trial.label': 'Pro trial — {d} day{s} left',
+  'plan.pro.trial.label': 'Pro — {d} day{s} left',
 
   /* ---- Upsell ---- */
   'upsell.title': 'Choose Your Pro Plan',
@@ -308,6 +311,8 @@ var EN = {
   'pricing.save': 'You Save',
   'pricing.month': 'Month',
   'pricing.months': 'Months',
+  'pricing.days': 'Days',
+  'pricing.billed.3d': 'Billed $0.99 once',
   'pricing.lifetime': 'Lifetime',
   'pricing.flexible': 'Flexible trial',
   'pricing.bestvalue': 'Best Value',
@@ -338,7 +343,8 @@ var EN = {
   'toast.copied': 'Prompt copied to clipboard',
   'toast.opening': 'Opening {ai} with your prompt…',
   'toast.copypaste': 'Prompt copied — press Ctrl+V in {ai}',
-  'toast.trial.ended': 'Your {d}-day Pro trial has ended — activate Pro to keep full access',
+  'toast.trial.ended': 'Your Pro access has ended — activate Pro to keep full access',
+  'toast.pro.ended': 'Your Pro access has ended — activate Pro to keep full access',
 
   /* ---- Fun.js / Gamification ---- */
   'game.levelup': '🎉 Level up! Level {lvl} — +{coins} 🪙',

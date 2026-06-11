@@ -23,7 +23,7 @@ var ZH = {
 
   /* ---- CTA ---- */
   'cta.browse': '浏览提示语',
-  'cta.unlock': '获取 Pro 会员 — 低至 $7.99/月',
+  'cta.unlock': '获取 Pro — 低至 $0.99',
   'cta.play': '🎮 玩游戏',
 
   /* ---- Stats ---- */
@@ -190,14 +190,16 @@ var ZH = {
   /* ---- Activate Modal ---- */
   'activate.title': '激活 PromptRunic 专业版',
   'activate.desc': '解锁本站所有 700,000+ 条提示语。',
-  'activate.trial.title': '免费试用专业版 3 天',
-  'activate.trial.desc': '无需购买 — 解锁全部提示语 3 天，之后恢复为免费版。每个浏览器限一次试用。（或通过 Lemon Squeezy 购买会员永久解锁 — $7.99/月起，或 $69 终身买断。）',
-  'activate.trial.btn': '开始 3 天免费试用',
+  'activate.login.title': '需要登录账号',
+  'activate.login.desc': '使用专业版必须注册账号或通过 Google/GitHub 登录。你的专业版会员与账号绑定，可在所有设备上同步。',
+  'activate.login.btn': '登录 / 注册账号',
+  'activate.login.required': '请先登录。专业版需要注册账号或通过 Google/GitHub 登录。',
+  'activate.trial.removed': '免费 3 天试用已取消。请选择会员方案，最低 $0.99 可用 3 天。',
   'activate.code.label': '输入你的激活码',
   'activate.code.placeholder': '例如 8B7C-4FA2-9D11-...',
   'activate.redeem': '激活',
   'activate.buy': '查看会员方案',
-  'activate.note': '已登录？你的解锁会同步到账户并在所有设备上生效。否则仅保存在此浏览器中。',
+  'activate.note': '专业版与你的账号绑定。登录后激活，专业版权限可在所有设备上同步。',
   'activate.entercode': '请输入你的激活码。',
   'activate.checking': '验证中…',
   'activate.notready': '激活功能尚未就绪，请稍后再试。',
@@ -208,10 +210,10 @@ var ZH = {
   'activate.invalid': '激活码无效。请检查 Lemon Squeezy 收据邮件中的激活码。',
   'activate.testmode': '测试模式解锁 — 客户请使用真实 Lemon Squeezy 激活码。',
   'activate.alreadypro': '你已拥有完整专业版权限 — 无需试用。',
-  'activate.trialused': '你的 {d} 天免费试用已使用{suffix}。',
-  'activate.trialactive': '你的 {d} 天专业版试用已激活 — 畅享全部 {n} 条提示语！',
+  'activate.trialused': '你的免费试用已使用。',
+  'activate.trialactive': '专业版已激活 — 畅享全部 {n} 条提示语！',
   'activate.pro.unlocked': 'PromptRunic 专业版已解锁！',
-  'activate.trial.unlocked': '{d} 天专业版试用已解锁！',
+  'activate.trial.unlocked': '专业版已解锁！',
   'activate.unlocked.sub': '专业版已解锁 {d} 天，畅享完整提示语库！',
   'activate.promo.14d': '14天专业版已激活！畅享全部 700,000+ 条提示语。',
   'activate.promo.1m': '1个月专业版已激活！畅享全部 700,000+ 条提示语。',
@@ -289,9 +291,10 @@ var ZH = {
   /* ---- Plan badge ---- */
   'plan.free': '免费版',
   'plan.pro': '专业版',
+  'plan.pro.days': '专业版 · 剩 {d} 天',
   'plan.pro.trial': '专业版 · 剩 {d} 天',
   'plan.pro.full': '专业版 — 完整权限',
-  'plan.pro.trial.label': '专业版试用 — 剩 {d} 天',
+  'plan.pro.trial.label': '专业版 — 剩 {d} 天',
 
   /* ---- Upsell ---- */
   'upsell.title': '选择您的 Pro 方案',
@@ -312,6 +315,8 @@ var ZH = {
   'pricing.save': '节省',
   'pricing.month': '个月',
   'pricing.months': '个月',
+  'pricing.days': '天',
+  'pricing.billed.3d': '一次性支付 $0.99',
   'pricing.lifetime': '终身买断',
   'pricing.flexible': '灵活试用',
   'pricing.bestvalue': '最划算',
@@ -342,7 +347,8 @@ var ZH = {
   'toast.copied': '提示语已复制到剪贴板',
   'toast.opening': '正在打开 {ai}，提示语已准备…',
   'toast.copypaste': '提示语已复制 — 请在 {ai} 中按 Ctrl+V 粘贴',
-  'toast.trial.ended': '你的 {d} 天专业版试用已结束 — 激活专业版以继续使用完整权限',
+  'toast.trial.ended': '你的专业版权限已结束 — 激活专业版以继续使用完整权限',
+  'toast.pro.ended': '你的专业版权限已结束 — 激活专业版以继续使用完整权限',
 
   /* ---- Fun.js / Gamification ---- */
   'game.levelup': '🎉 升级！等级 {lvl} — +{coins} 🪙',

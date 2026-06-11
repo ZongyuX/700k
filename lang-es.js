@@ -23,7 +23,7 @@ var ES = {
 
   /* ---- CTA ---- */
   'cta.browse': 'Explorar prompts',
-  'cta.unlock': 'Obtener membresía Pro — desde $7.99/mes',
+  'cta.unlock': 'Obtener Pro — desde $0.99',
   'cta.play': '🎮 Jugar',
 
   /* ---- Stats ---- */
@@ -186,14 +186,16 @@ var ES = {
   /* ---- Activate Modal ---- */
   'activate.title': 'Activar PromptRunic Pro',
   'activate.desc': 'Desbloquea los más de 700,000+ prompts en este sitio.',
-  'activate.trial.title': 'Prueba Pro gratis por 3 días',
-  'activate.trial.desc': 'No necesitas comprar — desbloquea todos los prompts por 3 días, luego vuelve a la versión gratuita. Una prueba por navegador. (O compra una membresía a través de Lemon Squeezy para acceso permanente — planes desde $7.99/mes o $69 de por vida.)',
-  'activate.trial.btn': 'Comenzar mi prueba gratuita de 3 días',
+  'activate.login.title': 'Cuenta requerida',
+  'activate.login.desc': 'Para usar Pro, debes iniciar sesión con una cuenta registrada o continuar con Google/GitHub. Tu membresía Pro está vinculada a tu cuenta y se sincroniza en todos los dispositivos.',
+  'activate.login.btn': 'Iniciar sesión / Crear cuenta',
+  'activate.login.required': 'Por favor inicia sesión primero. Pro requiere una cuenta registrada o inicio de sesión con Google/GitHub.',
+  'activate.trial.removed': 'La prueba gratuita de 3 días ha sido descontinuada. Por favor elige un plan de membresía desde $0.99 por 3 días.',
   'activate.code.label': 'Ingresa tu código de activación',
   'activate.code.placeholder': 'ej. 8B7C-4FA2-9D11-...',
   'activate.redeem': 'Activar',
   'activate.buy': 'Ver planes de membresía',
-  'activate.note': '¿Has iniciado sesión? Tu desbloqueo se sincroniza con tu cuenta y funciona en todos los dispositivos. De lo contrario, se guarda solo en este navegador.',
+  'activate.note': 'Pro está vinculado a tu cuenta. Inicia sesión para activar y sincronizar tu acceso Pro en todos los dispositivos.',
   'activate.entercode': 'Por favor ingresa tu código de activación.',
   'activate.checking': 'Verificando…',
   'activate.notready': 'La activación aún no está lista. Por favor intenta de nuevo en un momento.',
@@ -204,10 +206,10 @@ var ES = {
   'activate.invalid': 'Código inválido. Revisa el código en el correo de recibo de Lemon Squeezy.',
   'activate.testmode': 'Desbloqueo en modo PRUEBA — los clientes usan un código real de Lemon Squeezy.',
   'activate.alreadypro': 'Ya tienes acceso completo a Pro — no necesitas prueba.',
-  'activate.trialused': 'Tu prueba gratuita de {d} días ya ha sido utilizada{suffix}.',
-  'activate.trialactive': '¡Tu prueba Pro de {d} días está activa — disfruta los {n} prompts!',
+  'activate.trialused': 'Tu prueba gratuita ya ha sido utilizada.',
+  'activate.trialactive': 'Pro está activo — disfruta los {n} prompts!', 
   'activate.pro.unlocked': '¡PromptRunic Pro desbloqueado!',
-  'activate.trial.unlocked': '¡Prueba Pro de {d} días desbloqueada!',
+  'activate.trial.unlocked': 'Pro desbloqueado!',
   'activate.unlocked.sub': 'Pro desbloqueado por {d} días. ¡Disfruta la biblioteca completa de prompts!',
   'activate.promo.14d': '¡Pro de 14 días activado! Disfruta los 700,000+ prompts.',
   'activate.promo.1m': '¡Pro de 1 mes activado! Disfruta los 700,000+ prompts.',
@@ -285,9 +287,10 @@ var ES = {
   /* ---- Plan badge ---- */
   'plan.free': 'GRATIS',
   'plan.pro': 'PRO',
+  'plan.pro.days': 'PRO · {d}d restantes',
   'plan.pro.trial': 'PRO · {d}d restantes',
   'plan.pro.full': 'Pro — acceso completo',
-  'plan.pro.trial.label': 'Prueba Pro — {d} día{s} restantes',
+  'plan.pro.trial.label': 'Pro — {d} día{s} restantes',
 
   /* ---- Upsell ---- */
   'upsell.title': 'Elige tu plan Pro',
@@ -308,6 +311,8 @@ var ES = {
   'pricing.save': 'Ahorro',
   'pricing.month': 'Mes',
   'pricing.months': 'Meses',
+  'pricing.days': 'Días',
+  'pricing.billed.3d': 'Cobro único de $0.99',
   'pricing.lifetime': 'Vitalicio',
   'pricing.flexible': 'Prueba flexible',
   'pricing.bestvalue': 'Mejor valor',
@@ -338,7 +343,8 @@ var ES = {
   'toast.copied': 'Prompt copiado al portapapeles',
   'toast.opening': 'Abriendo {ai} con tu prompt…',
   'toast.copypaste': 'Prompt copiado — presiona Ctrl+V en {ai}',
-  'toast.trial.ended': 'Tu prueba Pro de {d} días ha terminado — activa Pro para mantener acceso completo',
+  'toast.trial.ended': 'Tu acceso Pro ha terminado — activa Pro para mantener acceso completo',
+  'toast.pro.ended': 'Tu acceso Pro ha terminado — activa Pro para mantener acceso completo',
 
   /* ---- Fun.js / Gamification ---- */
   'game.levelup': '🎉 ¡Subiste de nivel! Nivel {lvl} — +{coins} 🪙',
