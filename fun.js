@@ -1387,7 +1387,7 @@ function thankYou(){
 }
 function fbMailto(txt,email){
   try{
-    location.href='mailto:zongyufred@gmail.com?subject='+encodeURIComponent('PromptRunic feedback')
+    location.href='mailto:zongxie22@gmail.com?subject='+encodeURIComponent('PromptRunic feedback')
       +'&body='+encodeURIComponent(txt+(email?('\n\nFrom: '+email):''));
   }catch(e){}
 }

@@ -235,6 +235,7 @@ var ES = {
   'activate.promo.5000c': '¡5,000 monedas añadidas a tu cuenta!',
   'activate.promo.used': 'Este código promocional ya ha sido usado en esta cuenta.',
   'activate.code.used': 'Este código de activación ya ha sido usado en tu cuenta. Cada código solo puede activarse una vez.',
+  'activate.code.used.other': 'Este código de activación ya ha sido usado y activado. Cada código solo puede usarse una vez.',
   'activate.limit': 'Esta clave de licencia ha alcanzado su límite de activación. Si ya la activaste en otro dispositivo, desactívala allí primero, o contacta soporte.',
 
   /* ---- Auth Modal ---- */

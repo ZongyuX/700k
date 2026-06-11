@@ -2479,7 +2479,7 @@ function init(){
   }
   if(!window._mailLinkWired){
     var mailLink=document.getElementById('mailLink');
-    if(mailLink) mailLink.addEventListener('click',()=>{ window.location.href='mailto:zongyufred@gmail.com'; });
+    if(mailLink) mailLink.addEventListener('click',()=>{ window.location.href='mailto:zongxie22@gmail.com'; });
     window._mailLinkWired=true;
   }
   /* Reset category filter so it matches the current language's data */
@@ -3522,10 +3522,16 @@ async function redeemCode(){
   /* Use the async version which checks localStorage AND the global
    * Firestore used_license_keys collection (prevents reuse across
    * different accounts and devices) */
-  var alreadyUsed = await isLicenseUsedAsync(key);
-  if(alreadyUsed){
+  var usedResult = await isLicenseUsedAsync(key);
+  if(usedResult.used){
     m.className='msg err';
-    m.textContent=PPI18n.t('activate.code.used');
+    if(usedResult.byOtherAccount){
+      /* Different account used this code — show "already activated" message */
+      m.textContent=PPI18n.t('activate.code.used.other');
+    }else{
+      /* Same account already used this code */
+      m.textContent=PPI18n.t('activate.code.used');
+    }
     return;
   }
 
@@ -3673,19 +3679,28 @@ function isLicenseUsed(key){
 /* Async version: also checks the global Firestore used_license_keys collection.
  * This is the authoritative check — it prevents the same activation code
  * from being used by different accounts on different devices.
- * MUST be used in redeemCode() before processing any license key. */
+ * MUST be used in redeemCode() before processing any license key.
+ *
+ * Returns an object: { used: boolean, byOtherAccount: boolean }
+ *   used=true, byOtherAccount=false → same account already used this key
+ *   used=true, byOtherAccount=true  → a DIFFERENT account already used this key
+ *   used=false → key has never been used
+ */
 async function isLicenseUsedAsync(key){
-  /* First, do the fast synchronous check */
-  if(isLicenseUsed(key)) return true;
+  /* First, do the fast synchronous check (local storage) */
+  if(isLicenseUsed(key)) return {used:true, byOtherAccount:false};
   var normalizedKey = key.trim().toUpperCase();
   /* Check Firestore: global used_license_keys collection (cross-account) */
   if(fbReady && db){
     try{
       var globalDoc = await db.collection('used_license_keys').doc(normalizedKey).get();
       if(globalDoc.exists){
-        /* This key was already used by someone — mark it locally too */
+        /* This key was already used — check if by this account or another */
+        var globalData = globalDoc.data()||{};
+        var isOtherAccount = globalData.usedBy && currentUser && globalData.usedBy !== currentUser.uid;
+        /* Mark it locally too */
         markLicenseUsed(key);
-        return true;
+        return {used:true, byOtherAccount: isOtherAccount};
       }
     }catch(e){
       console.warn('[PromptRunic] Could not check global used keys:', e);
@@ -3701,14 +3716,14 @@ async function isLicenseUsedAsync(key){
         if(cloudUsedKeys.indexOf(normalizedKey) >= 0){
           /* This key was already used by this account — mark locally */
           markLicenseUsed(key);
-          return true;
+          return {used:true, byOtherAccount:false};
         }
       }
     }catch(e){
       console.warn('[PromptRunic] Could not check user used keys:', e);
     }
   }
-  return false;
+  return {used:false, byOtherAccount:false};
 }
 function markLicenseUsed(key){
   var normalizedKey = key.trim().toUpperCase();

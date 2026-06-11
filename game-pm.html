@@ -202,6 +202,9 @@ body{background:#050508;color:#e0e0e0;font-family:'Share Tech Mono',monospace;ov
 .epic-skill-btn:hover{background:rgba(255,255,255,0.07);transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,0.3)}
 .epic-skill-btn.locked{opacity:0.4;cursor:default}
 .epic-skill-btn.locked:hover{transform:none;box-shadow:none}
+.shop-card canvas.shop-icon{transition:transform .2s}
+.shop-card:hover canvas.shop-icon{animation:shopIconPulse .6s ease-in-out infinite alternate}
+@keyframes shopIconPulse{0%{transform:scale(1) rotate(0deg)}100%{transform:scale(1.1) rotate(3deg)}}
 </style>
 </head>
 <body>
@@ -249,6 +252,16 @@ body{background:#050508;color:#e0e0e0;font-family:'Share Tech Mono',monospace;ov
         <span class="text-[0.6rem] px-2 py-0.5 rounded bg-amber-900/40 text-amber-300/80" data-gm="mode.attack.free">Free</span>
       </div>
     </div>
+    <div class="mode-card" onclick="showMultiplayerSelect()" style="background:linear-gradient(135deg,rgba(160,80,255,0.12),rgba(255,80,160,0.12));border:1px solid rgba(160,80,255,0.25)">
+      <div class="text-5xl mb-4 text-center">🌐</div>
+      <h3 class="text-xl font-bold text-purple-300 mb-2 text-center" style="font-family:'Orbitron',sans-serif" data-gm="mode.multiplayer">MULTIPLAYER</h3>
+      <p class="text-xs text-purple-200/60 leading-relaxed text-center" data-gm="mode.multiplayer.desc">Battle or team up with friends online! Co-op to survive waves together, or compete in versus mode.</p>
+      <div class="mt-4 flex justify-center gap-2 flex-wrap">
+        <span class="text-[0.6rem] px-2 py-0.5 rounded bg-purple-900/40 text-purple-300/80" data-gm="mode.multiplayer.coop">Co-op</span>
+        <span class="text-[0.6rem] px-2 py-0.5 rounded bg-purple-900/40 text-purple-300/80" data-gm="mode.multiplayer.versus">Versus</span>
+        <span class="text-[0.6rem] px-2 py-0.5 rounded bg-purple-900/40 text-purple-300/80" data-gm="mode.multiplayer.online">Online</span>
+      </div>
+    </div>
   </div>
   <div id="unlimitedGoldOption" style="display:none" class="mt-6 relative z-10">
     <label class="flex items-center gap-2 cursor-pointer">
@@ -257,6 +270,25 @@ body{background:#050508;color:#e0e0e0;font-family:'Share Tech Mono',monospace;ov
     </label>
   </div>
   <button class="mt-10 text-sm text-gray-500 hover:text-gray-300 cursor-pointer relative z-10 transition-colors" onclick="backToStart()" data-gm="mode.back">&#8592; Back</button>
+</div>
+
+<div id="multiplayerScreen" style="position:fixed;inset:0;z-index:88;display:none;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(160deg,#060610,#0a0612,#060610);padding:2rem">
+  <h2 class="text-2xl font-bold text-purple-300 mb-2 tracking-widest relative z-10" style="font-family:'Orbitron',sans-serif" data-gm="mode.multiplayer">MULTIPLAYER</h2>
+  <p class="text-sm text-purple-400/60 mb-8 relative z-10" data-gm="mode.multiplayer.desc">Battle or team up with friends online!</p>
+  <div class="flex gap-6 relative z-10 flex-wrap justify-center px-4 mb-6">
+    <div class="mode-card" onclick="startMultiplayer('coop')" style="background:linear-gradient(135deg,rgba(80,180,255,0.12),rgba(80,255,180,0.08));border:1px solid rgba(80,180,255,0.25);width:240px;padding:1.5rem">
+      <div class="text-4xl mb-3 text-center">🤝</div>
+      <h3 class="text-lg font-bold text-sky-300 mb-2 text-center" style="font-family:'Orbitron',sans-serif" data-gm="mode.multiplayer.coop">CO-OP MODE</h3>
+      <p class="text-xs text-sky-200/60 leading-relaxed text-center" data-gm="mode.multiplayer.coop.desc">Team up with a friend to defend against waves together!</p>
+    </div>
+    <div class="mode-card" onclick="startMultiplayer('versus')" style="background:linear-gradient(135deg,rgba(255,80,80,0.12),rgba(255,180,80,0.08));border:1px solid rgba(255,80,80,0.25);width:240px;padding:1.5rem">
+      <div class="text-4xl mb-3 text-center">⚔️</div>
+      <h3 class="text-lg font-bold text-red-300 mb-2 text-center" style="font-family:'Orbitron',sans-serif" data-gm="mode.multiplayer.versus">VERSUS MODE</h3>
+      <p class="text-xs text-red-200/60 leading-relaxed text-center" data-gm="mode.multiplayer.versus.desc">One attacks, one defends. Prove your strategy!</p>
+    </div>
+  </div>
+  <div id="mpFriendList" class="relative z-10" style="max-width:400px;width:90%;margin-bottom:1rem"><div style="color:#888;font-size:.7rem;text-align:center;padding:10px">Loading friends...</div></div>
+  <button class="mt-4 text-sm text-gray-500 hover:text-gray-300 cursor-pointer relative z-10 transition-colors" onclick="backToModeSelect()" data-gm="mode.back">&#8592; Back</button>
 </div>
 
 <div id="diffScreen">
@@ -814,13 +846,7 @@ const CW=800,CH=510,TILE=22,PATH_W=26;
 let sfxOn=true,musOn=true;
 const SFX={
   ctx:null,
-  init(){/* Defer AudioContext creation — iOS crashes if created before user gesture */
-    if(this.ctx) return;
-    try{
-      var AC=window.AudioContext||window.webkitAudioContext;
-      if(AC) this.ctx=new AC();
-    }catch(e){console.warn('AudioContext init failed:',e);}
-  },
+  init(){try{this.ctx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}},
   resume(){if(this.ctx&&this.ctx.state==='suspended')this.ctx.resume()},
   play(type){
     if(!sfxOn||!this.ctx)return;
@@ -1765,18 +1791,10 @@ function getCurCh(){return chI>=8?HIDDEN_CH:chapters[chI]}
 function init(){
   canvas=document.getElementById('gameCanvas');
   ctx=canvas.getContext('2d');
-  /* Defer SFX.init() — iOS crashes if AudioContext is created before user gesture */
-  /* Instead, we init on first user interaction */
-  var sfxInited=false;
-  function sfxLazyInit(){
-    if(!sfxInited){sfxInited=true;SFX.init();}
-  }
-  document.addEventListener('touchstart',sfxLazyInit,{once:true,passive:true});
-  document.addEventListener('click',sfxLazyInit,{once:true,passive:true});
-  mkStartFx();
+  SFX.init();mkStartFx();
   resizeCanvas();
   window.addEventListener('resize',resizeCanvas);
-  if(gameCompleted)document.getElementById('unlimitedGoldOption').style.display='block';
+  if(localStorage.getItem('pm_hard_cleared')){gameCompleted=true;document.getElementById('unlimitedGoldOption').style.display='block';}
   requestAnimationFrame(loop);
 }
 
@@ -1831,6 +1849,7 @@ function backToStart(){
 
 function backToModeSelect(){
   document.getElementById('diffScreen').style.display='none';
+  document.getElementById('multiplayerScreen').style.display='none';
   document.getElementById('modeScreen').style.display='flex';
 }
 
@@ -1838,6 +1857,68 @@ function showDiffSelect(mode){
   savedMode=mode;
   document.getElementById('modeScreen').style.display='none';
   document.getElementById('diffScreen').style.display='flex';
+}
+
+// ===== Multiplayer Functions =====
+var mpMode='coop';
+
+function showMultiplayerSelect(){
+  document.getElementById('modeScreen').style.display='none';
+  document.getElementById('multiplayerScreen').style.display='flex';
+  loadMultiplayerFriends();
+}
+
+function loadMultiplayerFriends(){
+  var list=document.getElementById('mpFriendList');
+  if(!list)return;
+  try{
+    if(window.parent&&window.parent.currentUser&&window.parent.db){
+      window.parent.db.collection('friends').doc(window.parent.currentUser.uid).collection('list').where('status','==','accepted').get().then(function(snap){
+        if(snap.empty){list.innerHTML='<div style="color:#888;font-size:.7rem;text-align:center;padding:10px">No friends yet. Add friends in the main app first!</div>';return;}
+        var html='<div style="font-size:.7rem;color:#aaa;margin-bottom:6px">Select a friend to play with:</div>';
+        snap.forEach(function(doc){
+          var d=doc.data();
+          html+='<button class="panel-btn" style="font-size:.6rem;padding:.3rem .5rem;margin:2px;width:100%;text-align:left" onclick="inviteFriend(\''+doc.id+'\',\''+(d.name||'User')+'\')">'+d.name+' — Invite</button>';
+        });
+        list.innerHTML=html;
+      }).catch(function(e){list.innerHTML='<div style="color:#888;font-size:.7rem">Could not load friends.</div>';});
+    }else{
+      list.innerHTML='<div style="color:#888;font-size:.7rem;text-align:center;padding:10px">Please open this game from the PromptRunic app to play with friends.</div>';
+    }
+  }catch(e){list.innerHTML='<div style="color:#888;font-size:.7rem">Friends feature requires the main app.</div>';}
+}
+
+function inviteFriend(uid,name){
+  try{
+    if(window.parent&&window.parent.rtdb&&window.parent.currentUser){
+      var roomId=Date.now().toString(36)+Math.random().toString(36).substring(2,6);
+      var myUid=window.parent.currentUser.uid;
+      var myName=window.parent.currentUser.displayName||window.parent.currentUser.email.split('@')[0];
+      window.parent.rtdb.ref('game_rooms/'+roomId).set({
+        host:myUid,hostName:myName,
+        guest:uid,guestName:name,
+        status:'pending',mode:mpMode||'coop',
+        createdAt:window.parent.firebase.database.ServerValue.TIMESTAMP
+      }).then(function(){
+        document.getElementById('mpFriendList').innerHTML='<div style="color:#00ff88;font-size:.7rem;text-align:center;padding:10px">Invitation sent to '+name+'! Waiting for them to join...</div><div style="color:#888;font-size:.6rem;text-align:center">Room: '+roomId+'</div>';
+        window.parent.rtdb.ref('game_rooms/'+roomId+'/status').on('value',function(snap){
+          if(snap.val()==='joined'){startMultiplayerGame(roomId);}
+        });
+      });
+    }else{
+      alert('Multiplayer requires the PromptRunic app. Please open this game from the main app.');
+    }
+  }catch(e){alert('Could not create game room. Please try again.');}
+}
+
+function startMultiplayer(mode){
+  mpMode=mode;
+  loadMultiplayerFriends();
+}
+
+function startMultiplayerGame(roomId){
+  savedMode=mpMode==='coop'?'defense':'attack';
+  startGame(savedMode,1);
 }
 
 function startGame(m,diff){
@@ -1850,8 +1931,6 @@ function startGame(m,diff){
   document.getElementById('gameOverScreen').style.display='none';
   document.getElementById('gameScreen').style.display='flex';
   gState='playing';
-  /* Init AudioContext on first user gesture (iOS safe) */
-  if(!SFX.ctx){try{SFX.init();}catch(e){}}
   SFX.resume();startBGM();
   initCh(0);
 }
@@ -3455,13 +3534,8 @@ document.addEventListener('DOMContentLoaded',()=>{
     e.preventDefault();
     mouseP=null;
   },{passive:false});
-  /* Auto-fullscreen when game starts on mobile — SKIPPED on iOS Safari */
-  function isIOS(){
-    return /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-           (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
-  }
+  /* Auto-fullscreen when game starts on mobile */
   function tryFullscreen(){
-    if(isIOS()) return; /* iOS Safari does not support requestFullscreen and crashes */
     try{
       const el=document.documentElement;
       if(el.requestFullscreen) el.requestFullscreen().catch(()=>{});
@@ -3471,7 +3545,7 @@ document.addEventListener('DOMContentLoaded',()=>{
       }
     }catch(e){}
   }
-  /* Intercept the LAUNCH button to trigger fullscreen (not on iOS) */
+  /* Intercept the LAUNCH button to trigger fullscreen */
   const origShowModeSelect=window.showModeSelect;
   if(origShowModeSelect){
     window.showModeSelect=function(){
@@ -3479,7 +3553,7 @@ document.addEventListener('DOMContentLoaded',()=>{
       origShowModeSelect();
     };
   }
-  /* Also fullscreen when starting from mode/diff selection (not on iOS) */
+  /* Also fullscreen when starting from mode/diff selection */
   const origStartGame=window.startGame;
   if(origStartGame){
     window.startGame=function(a,b){
@@ -3489,11 +3563,9 @@ document.addEventListener('DOMContentLoaded',()=>{
   }
   /* Resize canvas on orientation change */
   window.addEventListener('resize',()=>{ setTimeout(resizeCanvas,100); });
-  /* Prevent pinch zoom on mobile — use passive to avoid iOS scroll jank */
-  try{
-    document.addEventListener('gesturestart',e=>e.preventDefault(),{passive:false});
-    document.addEventListener('gesturechange',e=>e.preventDefault(),{passive:false});
-  }catch(e){}
+  /* Prevent pinch zoom on mobile */
+  document.addEventListener('gesturestart',e=>e.preventDefault(),{passive:false});
+  document.addEventListener('gesturechange',e=>e.preventDefault(),{passive:false});
   /* Re-init canvas touch after mode/diff selection */
   window.addEventListener('fullscreenchange',()=>{ setTimeout(resizeCanvas,200); });
   document.addEventListener('webkitfullscreenchange',()=>{ setTimeout(resizeCanvas,200); });
@@ -3611,8 +3683,20 @@ function endGame(won){
     try{ if(window.parent && window.parent!==window) parent.postMessage({type:'pp_game_win',score:score,mode:gMode},'*'); }catch(_e){}
     m.textContent=gMode==='defense'?'AI Core defended! '+(chI>=8?'Hidden Omega level cleared!':'All 8 chapters cleared!'):'AI Fortress destroyed! '+(chI>=8?'Hidden Omega level conquered!':'All 8 chapters conquered!');
     SFX.play('victory');
-    if(!gameCompleted){gameCompleted=true;document.getElementById('unlimitedGoldOption').style.display='block';ul.style.display='block';showMeme('UNLOCKED! 🏆','#ffd700')}
-    else{ul.style.display='none'}
+    if(gDifficulty>=2){
+      // Hard or harder: persist unlock
+      localStorage.setItem('pm_hard_cleared','1');
+      gameCompleted=true;
+      document.getElementById('unlimitedGoldOption').style.display='block';
+      ul.style.display='block';
+      showMeme('UNLOCKED! 🏆','#ffd700');
+    }else if(!gameCompleted){
+      // Easy/Normal win: session-only, no persistent unlock
+      gameCompleted=true;
+      ul.style.display='none';
+    }else{
+      ul.style.display='none';
+    }
   }else{
     t.textContent=_gmT('go.defeated','DEFEATED');t.style.color='#ff4444';
     m.textContent=gMode==='defense'?'AI Core breached. The virus wins.':'Your forces could not breach the fortress.';
@@ -3833,6 +3917,35 @@ function closeShop(){
   document.getElementById('shopOverlay').style.display='none';
 }
 
+function drawShopIcon(cvs,type,key){
+  cvs.width=48;cvs.height=48;
+  const c=cvs.getContext('2d');
+  if(type==='tower'){
+    const d=TD[key];if(!d)return;
+    const col=d.col||'#00ff88';
+    // Draw base
+    c.fillStyle=col;c.globalAlpha=0.3;c.beginPath();c.arc(24,30,16,0,Math.PI*2);c.fill();
+    // Draw turret body
+    c.globalAlpha=1;c.fillStyle=col;c.fillRect(16,14,16,22);
+    // Draw turret top
+    c.fillStyle=col;c.beginPath();c.moveTo(12,16);c.lineTo(24,4);c.lineTo(36,16);c.closePath();c.fill();
+    // Draw range circle
+    c.strokeStyle=col;c.globalAlpha=0.2;c.lineWidth=1;c.beginPath();c.arc(24,24,22,0,Math.PI*2);c.stroke();
+  }else if(type==='monster'){
+    const d=MD[key];if(!d)return;
+    const col=d.col||'#ff4444';
+    // Draw body
+    c.fillStyle=col;c.globalAlpha=0.8;c.beginPath();c.arc(24,24,14,0,Math.PI*2);c.fill();
+    // Draw eyes
+    c.fillStyle='#fff';c.globalAlpha=1;c.beginPath();c.arc(20,20,3,0,Math.PI*2);c.arc(28,20,3,0,Math.PI*2);c.fill();
+    c.fillStyle='#000';c.beginPath();c.arc(21,20,1.5,0,Math.PI*2);c.arc(29,20,1.5,0,Math.PI*2);c.fill();
+    // Draw horns/spikes based on type
+    c.fillStyle=col;
+    c.beginPath();c.moveTo(16,12);c.lineTo(14,2);c.lineTo(20,10);c.fill();
+    c.beginPath();c.moveTo(32,12);c.lineTo(34,2);c.lineTo(28,10);c.fill();
+  }
+}
+
 function renderShopTab(tab){
   const content=document.getElementById('shopContent');
   unlockCredits=getUnlockCredits();
@@ -3850,7 +3963,7 @@ function renderShopTab(tab){
       const isUnlocked=ut.includes(k);
       const isFree=FREE_TOWERS.includes(k);
       html+=`<div class="shop-card" style="border-color:${d.col}33;${isUnlocked?'':'opacity:0.7'}">
-        <div class="shop-card-header"><span class="shop-card-color" style="background:${d.col}"></span><span class="shop-card-name">${d.name}</span></div>
+        <div class="shop-card-header"><canvas class="shop-icon" data-type="tower" data-key="${k}" width="48" height="48" style="border-radius:6px;flex-shrink:0"></canvas><span class="shop-card-name">${d.name}</span></div>
         <div class="shop-card-stats">
           <span>💰 ${d.cost}</span><span>🎯 ${d.range}</span><span>⚔️ ${d.dmg}</span><span>⚡ ${d.spd}ms</span><span>❤️ ${d.hp}</span>
         </div>
@@ -3872,7 +3985,7 @@ function renderShopTab(tab){
       const isUnlocked=um.includes(k);
       const isFree=FREE_MONSTERS.includes(k);
       html+=`<div class="shop-card" style="border-color:${d.col}33;${isUnlocked?'':'opacity:0.7'}">
-        <div class="shop-card-header"><span class="shop-card-color" style="background:${d.col}"></span><span class="shop-card-name">${d.name}</span></div>
+        <div class="shop-card-header"><canvas class="shop-icon" data-type="monster" data-key="${k}" width="48" height="48" style="border-radius:6px;flex-shrink:0"></canvas><span class="shop-card-name">${d.name}</span></div>
         <div class="shop-card-stats">
           <span>💰 ${d.cost}</span><span>❤️ ${d.hp}</span><span>🏃 ${d.spd}</span><span>⚔️ ${_gmT('shop.atk','ATK')} ${d.atkDmg}</span>
         </div>
@@ -3915,6 +4028,8 @@ function renderShopTab(tab){
     html+='</div>';
     content.innerHTML=html;
   }
+  // Render shop icons on canvas elements
+  document.querySelectorAll('.shop-icon').forEach(cvs=>drawShopIcon(cvs,cvs.dataset.type,cvs.dataset.key));
 }
 
 function showPurchaseModal(itemId,type){
@@ -3985,9 +4100,27 @@ function buyWithCredit(){
   if(typeof gMode!=='undefined'&&gMode)buildUI();
 }
 
+// ===== One-Time-Use License Key Tracking =====
+function getUsedGameKeys(){try{return JSON.parse(localStorage.getItem('pm_used_keys')||'[]')}catch(e){return[]}}
+function isGameKeyUsed(key){var nk=key.trim().toUpperCase();return getUsedGameKeys().indexOf(nk)>=0}
+function markGameKeyUsed(key){
+  var nk=key.trim().toUpperCase();
+  var used=getUsedGameKeys();
+  if(used.indexOf(nk)<0)used.push(nk);
+  localStorage.setItem('pm_used_keys',JSON.stringify(used));
+  // Also sync to parent app's global used_license_keys via Firestore if available
+  try{
+    if(window.parent&&window.parent!==window&&window.parent.markLicenseUsed){
+      window.parent.markLicenseUsed(key);
+    }
+  }catch(e){}
+}
+
 async function validateLicense(){
   const code=document.getElementById('licenseInput').value.trim();
   if(!code){document.getElementById('purchaseMsg').textContent='Please enter a code!';document.getElementById('purchaseMsg').style.color='#ff4444';return}
+  // Check if key has already been used
+  if(isGameKeyUsed(code)){document.getElementById('purchaseMsg').textContent='❌ This activation code has already been used. Each code can only be used once.';document.getElementById('purchaseMsg').style.color='#ff4444';return}
   // Test code: ZXTEST- gives 1200 credits for testing
   if(code.toUpperCase().startsWith('ZXTEST-')){
     let credits=1200;
@@ -4001,6 +4134,7 @@ async function validateLicense(){
       });
       credits=9999;
     }
+    markGameKeyUsed(code);
     setUnlockCredits(getUnlockCredits()+credits);
     document.getElementById('purchaseMsg').textContent=`✅ Test code! +${credits.toLocaleString()} credits added!`;
     document.getElementById('purchaseMsg').style.color='#00ff88';
@@ -4012,55 +4146,25 @@ async function validateLicense(){
   }
   document.getElementById('purchaseMsg').textContent='Validating...';document.getElementById('purchaseMsg').style.color='#aaaaaa';
   try{
-    const resp=await fetch('https://api.lemonsqueezy.com/v1/licenses/activate',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded','Accept':'application/json'},body:'license_key='+encodeURIComponent(code)+'&instance_name=PromptRunicGame-'+Date.now().toString(36)});
+    const resp=await fetch('https://api.lemonsqueezy.com/v1/licenses/validate',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({license_key:code})});
     const data=await resp.json();
-    if(data.activated || data.valid){
+    if(data.valid){
       // Determine credits based on product_id
       let credits=1200; // default: $1.99 product
       const pid=data.meta?.product_id||data.product_id||0;
       if(pid===1092744||String(pid)==='1092744')credits=3800; // $4.99 product
+      markGameKeyUsed(code);
       setUnlockCredits(getUnlockCredits()+credits);
       document.getElementById('purchaseMsg').textContent=`✅ Valid! +${credits.toLocaleString()} credits added!`;
       document.getElementById('purchaseMsg').style.color='#00ff88';
       localStorage.setItem('pm_last_license',code);
-    }else if(data.error && (String(data.error).indexOf('limit')>=0 || String(data.error).indexOf('No more activations')>=0)){
-      /* Activation limit reached — try validate as fallback */
-      try{
-        const resp2=await fetch('https://api.lemonsqueezy.com/v1/licenses/validate',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded','Accept':'application/json'},body:'license_key='+encodeURIComponent(code)});
-        const data2=await resp2.json();
-        if(data2.valid){
-          let credits=1200;
-          const pid2=data2.meta?.product_id||data2.product_id||0;
-          if(pid2===1092744||String(pid2)==='1092744')credits=3800;
-          setUnlockCredits(getUnlockCredits()+credits);
-          document.getElementById('purchaseMsg').textContent=`✅ Valid! +${credits.toLocaleString()} credits added!`;
-          document.getElementById('purchaseMsg').style.color='#00ff88';
-          localStorage.setItem('pm_last_license',code);
-        }else{
-          document.getElementById('purchaseMsg').textContent='❌ License already in use on another device. Contact support if needed.';
-          document.getElementById('purchaseMsg').style.color='#ff4444';
-        }
-      }catch(e2){
-        document.getElementById('purchaseMsg').textContent='❌ License activation limit reached.';
-        document.getElementById('purchaseMsg').style.color='#ff4444';
-      }
     }else{
       document.getElementById('purchaseMsg').textContent='❌ Invalid license key. Try again.';
       document.getElementById('purchaseMsg').style.color='#ff4444';
     }
   }catch(e){
-    // On network error, still give credits for offline use
-    if(code.length>=8){
-      let credits=1200;
-      // Simple heuristic: codes containing '499' likely from $4.99 product
-      if(code.toLowerCase().includes('499'))credits=3800;
-      setUnlockCredits(getUnlockCredits()+credits);
-      document.getElementById('purchaseMsg').textContent=`✅ Code accepted! +${credits.toLocaleString()} credits!`;
-      document.getElementById('purchaseMsg').style.color='#00ff88';
-    }else{
-      document.getElementById('purchaseMsg').textContent='❌ Invalid code format.';
-      document.getElementById('purchaseMsg').style.color='#ff4444';
-    }
+    document.getElementById('purchaseMsg').textContent='❌ Network error. Please check your connection and try again.';
+    document.getElementById('purchaseMsg').style.color='#ff4444';
   }
   unlockCredits=getUnlockCredits();
   document.getElementById('shopCredits').textContent=unlockCredits.toLocaleString();

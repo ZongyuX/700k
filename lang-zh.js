@@ -239,6 +239,7 @@ var ZH = {
   'activate.promo.5000c': '已添加 5,000 金币到你的账户！',
   'activate.promo.used': '此推广码已在该账号上使用过。',
   'activate.code.used': '此激活码已在你的账号上使用过。每个激活码只能激活一次。',
+  'activate.code.used.other': '此激活码已经被使用激活。每个激活码只能使用一次。',
   'activate.limit': '此许可证密钥已达到激活上限。如果你已在其他设备上激活，请先在该设备上停用，或联系客服。',
 
   /* ---- Auth Modal ---- */

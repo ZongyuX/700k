@@ -235,6 +235,7 @@ var EN = {
   'activate.promo.5000c': '5,000 coins added to your account!',
   'activate.promo.used': 'This promo code has already been used on this account.',
   'activate.code.used': 'This activation code has already been used on your account. Each code can only be activated once.',
+  'activate.code.used.other': 'This activation code has already been used and activated. Each code can only be used once.',
   'activate.limit': 'This license key has reached its activation limit. If you already activated on another device, please deactivate it there first, or contact support.',
 
   /* ---- Auth Modal ---- */
