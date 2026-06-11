@@ -2111,52 +2111,85 @@
   </div>
 </div>
 
-<!-- Friends Panel (sidebar) -->
-<div class="friends-panel" id="friendsPanel" style="position:fixed;top:60px;right:0;width:340px;max-width:90vw;height:calc(100vh - 60px);background:var(--panel);border-left:1px solid var(--border);z-index:10000;box-shadow:-4px 0 24px rgba(0,0,0,.4);overflow:hidden;flex-direction:column;display:none">
-  <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--border)">
-    <h4 style="margin:0;font-size:14px">👥 Friends</h4>
-    <div style="display:flex;gap:6px">
-      <button id="friendSearchToggle" style="background:none;border:1px solid var(--border);color:var(--accent2);padding:2px 8px;border-radius:6px;font-size:11px;cursor:pointer">🔍 Search</button>
-      <button id="friendReqToggle" style="background:none;border:1px solid var(--border);color:var(--gold);padding:2px 8px;border-radius:6px;font-size:11px;cursor:pointer;position:relative">📨 Requests<span id="friendReqBadge" style="display:none;position:absolute;top:-4px;right:-4px;width:14px;height:14px;border-radius:50%;background:#ef4444;color:#fff;font-size:8px;text-align:center;line-height:14px"></span></button>
-      <button id="friendsPanelClose" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:6px;transition:.15s" onmouseenter="this.style.background='rgba(255,255,255,.08)'" onmouseleave="this.style.background='none'">&times;</button>
+<!-- ===== QQ-Style Friends Panel (sidebar) ===== -->
+<div class="friends-panel" id="friendsPanel" style="position:fixed;top:0;right:0;width:360px;max-width:100vw;height:100vh;background:var(--panel);border-left:1px solid var(--border);z-index:10000;box-shadow:-4px 0 24px rgba(0,0,0,.5);overflow:hidden;flex-direction:column;display:none">
+  <!-- Header -->
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px 10px;background:linear-gradient(135deg,rgba(124,92,255,.15),rgba(34,211,238,.08));border-bottom:1px solid var(--border)">
+    <div style="display:flex;align-items:center;gap:8px">
+      <div style="width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:16px">💬</div>
+      <h4 style="margin:0;font-size:15px;font-weight:700;letter-spacing:.3px">Messages</h4>
+    </div>
+    <button id="friendsPanelClose" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:8px;transition:.15s" onmouseenter="this.style.background='rgba(255,255,255,.08)'" onmouseleave="this.style.background='none'">&times;</button>
+  </div>
+  <!-- Tab Bar -->
+  <div id="friendsTabBar" style="display:flex;border-bottom:1px solid var(--border);background:var(--panel2)">
+    <button class="qq-tab active" data-tab="chats" style="flex:1;padding:10px 0;font-size:13px;font-weight:600;background:none;border:none;color:var(--accent2);cursor:pointer;border-bottom:2px solid var(--accent2);transition:.2s;position:relative">💬 Chats</button>
+    <button class="qq-tab" data-tab="contacts" style="flex:1;padding:10px 0;font-size:13px;font-weight:600;background:none;border:none;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:.2s;position:relative">👥 Contacts<span id="friendReqBadge" style="display:none;position:absolute;top:4px;right:16px;width:16px;height:16px;border-radius:50%;background:#ef4444;color:#fff;font-size:9px;font-weight:700;text-align:center;line-height:16px"></span></button>
+    <button class="qq-tab" data-tab="discover" style="flex:1;padding:10px 0;font-size:13px;font-weight:600;background:none;border:none;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:.2s">🔍 Discover</button>
+  </div>
+  <!-- Tab Content: Chats -->
+  <div id="tabChats" style="flex:1;overflow-y:auto;padding:0">
+    <div id="conversationsList" style="padding:0"></div>
+  </div>
+  <!-- Tab Content: Contacts -->
+  <div id="tabContacts" style="flex:1;overflow-y:auto;display:none;padding:0">
+    <!-- Friend Requests Section -->
+    <div id="contactReqSection" style="border-bottom:1px solid var(--border)">
+      <div id="contactReqHeader" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;cursor:pointer" onclick="toggleContactReqSection()">
+        <span style="font-size:12px;font-weight:700;color:var(--gold)">📨 Friend Requests</span>
+        <span id="contactReqCount" style="font-size:11px;color:var(--muted)"></span>
+        <span id="contactReqArrow" style="font-size:10px;color:var(--muted);transition:.2s">▼</span>
+      </div>
+      <div id="contactReqList" style="display:none;padding:0 14px 10px;max-height:200px;overflow-y:auto"></div>
+    </div>
+    <!-- Pending Sent Section -->
+    <div id="contactPendingSection" style="border-bottom:1px solid var(--border);display:none">
+      <div style="padding:8px 14px 4px"><span style="font-size:12px;font-weight:700;color:var(--gold)">⏳ Pending Sent</span></div>
+      <div id="contactPendingList" style="padding:0 14px 10px"></div>
+    </div>
+    <!-- Friends List -->
+    <div id="contactFriendsList" style="padding:0"></div>
+  </div>
+  <!-- Tab Content: Discover -->
+  <div id="tabDiscover" style="flex:1;overflow-y:auto;display:none;padding:0">
+    <div style="padding:14px 14px 8px">
+      <div style="font-size:12px;font-weight:700;color:var(--accent2);margin-bottom:10px">🔍 Find Friends</div>
+      <div style="display:flex;gap:6px">
+        <input type="text" id="friendSearchInput" placeholder="Search by username or email..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:10px;font-size:13px;outline:none;transition:border .2s" onfocus="this.style.borderColor='var(--accent2)'" onblur="this.style.borderColor='var(--border)'" />
+        <button id="friendSearchBtn" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:9px 16px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;transition:.15s;white-space:nowrap" onmouseenter="this.style.transform='scale(1.04)'" onmouseleave="this.style.transform='scale(1)'">Search</button>
+      </div>
+    </div>
+    <div id="friendSearchResults" style="padding:0 14px 14px"></div>
+    <!-- Suggested Users -->
+    <div style="padding:0 14px 14px">
+      <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px">✨ Suggested for You</div>
+      <div id="suggestedUsers"></div>
     </div>
   </div>
-  <!-- Search users sub-panel -->
-  <div id="friendSearchPanel" style="display:none;padding:10px 14px;border-bottom:1px solid var(--border)">
-    <div style="display:flex;gap:6px">
-      <input type="text" id="friendSearchInput" placeholder="Search by username or email" style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:8px;font-size:13px" />
-      <button id="friendSearchBtn" style="background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff;border:none;padding:7px 12px;border-radius:8px;font-size:13px;cursor:pointer">Go</button>
-    </div>
-    <div id="friendSearchResults" style="margin-top:8px;max-height:200px;overflow-y:auto"></div>
-  </div>
-  <!-- Friend requests sub-panel -->
-  <div id="friendReqPanel" style="display:none;padding:10px 14px;border-bottom:1px solid var(--border)">
-    <div id="friendReqList" style="max-height:200px;overflow-y:auto"></div>
-  </div>
-  <div id="friendsList" style="flex:1;overflow-y:auto;padding:8px 10px"></div>
-  <!-- Unread indicator -->
+  <!-- Unread indicator bar at bottom -->
   <div id="unreadIndicator" style="display:none;padding:8px 14px;border-top:1px solid var(--border);text-align:center;font-size:12px;color:var(--accent2);cursor:pointer;background:rgba(124,92,255,.06)"></div>
 </div>
 
-<!-- Chat Window (per friend) -->
-<div class="chat-window" id="chatWindow" style="display:none!important;position:fixed;bottom:20px;right:360px;width:340px;max-width:90vw;background:var(--panel);border:1px solid var(--border);border-radius:14px;z-index:10001;box-shadow:0 8px 32px rgba(0,0,0,.5);overflow:hidden;resize:both;min-width:260px;min-height:320px">
-  <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border);cursor:move" id="chatWindowHeader">
-    <div style="display:flex;align-items:center;gap:8px;cursor:pointer" id="chatFriendInfo">
-      <div id="chatFriendAvatar" style="width:28px;height:28px;border-radius:8px;overflow:hidden;border:1px solid var(--border)"></div>
+<!-- ===== Chat Window (per friend) — QQ-style floating ===== -->
+<div class="chat-window" id="chatWindow" style="display:none!important;position:fixed;bottom:20px;right:380px;width:360px;max-width:90vw;background:var(--panel);border:1px solid var(--border);border-radius:16px;z-index:10001;box-shadow:0 8px 32px rgba(0,0,0,.5);overflow:hidden;resize:both;min-width:280px;min-height:340px">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,rgba(124,92,255,.1),rgba(34,211,238,.05));cursor:move" id="chatWindowHeader">
+    <div style="display:flex;align-items:center;gap:10px;cursor:pointer" id="chatFriendInfo">
+      <div id="chatFriendAvatar" style="width:34px;height:34px;border-radius:10px;overflow:hidden;border:1px solid var(--border)"></div>
       <div>
-        <span id="chatFriendName" style="font-size:13px;font-weight:700">Friend</span>
-        <span id="chatFriendStatus" style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#555;margin-left:4px;vertical-align:middle"></span>
+        <span id="chatFriendName" style="font-size:14px;font-weight:700">Friend</span>
+        <span id="chatFriendStatus" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#555;margin-left:5px;vertical-align:middle"></span>
+        <div id="chatFriendSub" style="font-size:10px;color:var(--muted)">offline</div>
       </div>
     </div>
-    <div style="display:flex;gap:6px">
-      <button onclick="toggleChatMinimize()" style="background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;padding:2px 4px">_</button>
-      <button id="chatWindowClose" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:2px 8px;border-radius:4px;transition:.15s">&times;</button>
+    <div style="display:flex;gap:4px">
+      <button onclick="toggleChatMinimize()" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 6px;border-radius:6px;transition:.15s" onmouseenter="this.style.background='rgba(255,255,255,.08)'" onmouseleave="this.style.background='none'">─</button>
+      <button id="chatWindowClose" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:.15s" onmouseenter="this.style.background='rgba(239,68,68,.15)';this.style.color='#ef4444'" onmouseleave="this.style.background='none';this.style.color='var(--muted)'">&times;</button>
     </div>
   </div>
-  <div id="chatMessages" style="height:280px;overflow-y:auto;padding:10px 14px;font-size:13px;display:flex;flex-direction:column;gap:6px"></div>
-  <div id="chatInputRow" style="display:flex;gap:6px;padding:8px 10px;border-top:1px solid var(--border)">
-    <input type="text" id="chatInput" placeholder="Type a message..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:8px;font-size:13px" />
-    <button onclick="sendChatMessage()" style="background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff;border:none;padding:7px 14px;border-radius:8px;font-size:13px;cursor:pointer">Send</button>
+  <div id="chatMessages" style="height:300px;overflow-y:auto;padding:12px 16px;font-size:13px;display:flex;flex-direction:column;gap:8px"></div>
+  <div id="chatInputRow" style="display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--border);background:var(--panel2)">
+    <input type="text" id="chatInput" placeholder="Type a message..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:10px;font-size:13px;outline:none;transition:border .2s" onfocus="this.style.borderColor='var(--accent2)'" onblur="this.style.borderColor='var(--border)'" />
+    <button onclick="sendChatMessage()" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:9px 18px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;transition:.15s" onmouseenter="this.style.transform='scale(1.04)'" onmouseleave="this.style.transform='scale(1)'">Send</button>
   </div>
 </div>
 
@@ -4936,8 +4969,9 @@ document.addEventListener('DOMContentLoaded',function(){
 });
 
 /* ============================================================
- *  FRIENDS SYSTEM — Firestore + Realtime Database
+ *  FRIENDS SYSTEM — QQ-Style — Firestore + Realtime Database
  *  Search users, friend requests, online status, RTDB chat
+ *  Tab navigation: Chats / Contacts / Discover
  * ============================================================ */
 var _chatFriendUid=null;
 var _chatUnsubscribe=null;
@@ -4946,10 +4980,43 @@ var _friendReqUnsubscribe=null;
 var _convUnsubscribe=null;
 var _totalUnread=0;
 var _origTitle=document.title;
+var _currentFriendsTab='chats';
+var _contactReqOpen=false;
 
 /* Helper: get chat room ID for two users */
 function getChatRoomId(uid1,uid2){
   return [uid1,uid2].sort().join('_');
+}
+
+/* ---- Tab switching ---- */
+function switchFriendsTab(tab){
+  _currentFriendsTab=tab;
+  var tabs=document.querySelectorAll('#friendsTabBar .qq-tab');
+  tabs.forEach(function(t){
+    if(t.getAttribute('data-tab')===tab){
+      t.style.color='var(--accent2)';
+      t.style.borderBottom='2px solid var(--accent2)';
+    }else{
+      t.style.color='var(--muted)';
+      t.style.borderBottom='2px solid transparent';
+    }
+  });
+  document.getElementById('tabChats').style.display=tab==='chats'?'block':'none';
+  document.getElementById('tabContacts').style.display=tab==='contacts'?'block':'none';
+  document.getElementById('tabDiscover').style.display=tab==='discover'?'block':'none';
+  /* Load data for the tab */
+  if(tab==='chats'){loadConversations();}
+  if(tab==='contacts'){loadFriendsList();loadFriendRequests();}
+  if(tab==='discover'){loadSuggestedUsers();}
+}
+
+/* ---- Toggle contact request section ---- */
+function toggleContactReqSection(){
+  _contactReqOpen=!_contactReqOpen;
+  var list=document.getElementById('contactReqList');
+  var arrow=document.getElementById('contactReqArrow');
+  list.style.display=_contactReqOpen?'block':'none';
+  arrow.textContent=_contactReqOpen?'▲':'▼';
 }
 
 /* ---- Toggle friends panel ---- */
@@ -4957,6 +5024,7 @@ function toggleFriendsPanel(){
   var p=document.getElementById('friendsPanel');
   if(p.style.display==='none'||!p.style.display){
     p.style.display='flex';
+    switchFriendsTab(_currentFriendsTab);
     loadFriendsList();
     loadFriendRequests();
     listenForConversations();
@@ -4981,7 +5049,7 @@ function toggleChatMinimize(){
 }
 function closeChatWindow(){
   var cw=document.getElementById('chatWindow');
-  if(cw) cw.style.cssText='display:none!important;position:fixed;bottom:20px;right:360px;width:340px;max-width:90vw;background:var(--panel);border:1px solid var(--border);border-radius:14px;z-index:10001;box-shadow:0 8px 32px rgba(0,0,0,.5);overflow:hidden;resize:both;min-width:260px;min-height:320px';
+  if(cw) cw.style.cssText='display:none!important;position:fixed;bottom:20px;right:380px;width:360px;max-width:90vw;background:var(--panel);border:1px solid var(--border);border-radius:16px;z-index:10001;box-shadow:0 8px 32px rgba(0,0,0,.5);overflow:hidden;resize:both;min-width:280px;min-height:340px';
   if(_chatUnsubscribe){
     try{_chatUnsubscribe();}catch(e){}
     _chatUnsubscribe=null;
@@ -4995,7 +5063,7 @@ async function searchUsers(){
   var query=document.getElementById('friendSearchInput').value.trim();
   if(!query){document.getElementById('friendSearchResults').innerHTML='';return;}
   var results=document.getElementById('friendSearchResults');
-  results.innerHTML='<div style="color:var(--muted);font-size:12px;padding:8px">Searching...</div>';
+  results.innerHTML='<div style="color:var(--muted);font-size:12px;padding:12px;text-align:center">Searching...</div>';
   try{
     var html='';
     var seen={};
@@ -5032,6 +5100,18 @@ async function searchUsers(){
       var snap4=await db.collection('users').where('displayName','>=',query).where('displayName','<=',query+'\uf8ff').limit(10).get();
       snap4.forEach(function(d){if(!seen[d.id]&&d.id!==currentUser.uid){seen[d.id]=1;users.push({uid:d.id,data:d.data()});}});
     }catch(e){console.warn('displayname search',e);}
+    /* Search game-related user data: try users where game.displayName matches */
+    try{
+      var snap5=await db.collection('users').where('game.displayName','>=',query).where('game.displayName','<=',query+'\uf8ff').limit(10).get();
+      snap5.forEach(function(d){
+        if(!seen[d.id]&&d.id!==currentUser.uid){
+          seen[d.id]=1;
+          var dd=d.data()||{};
+          var gd=dd.game||{};
+          users.push({uid:d.id,data:{displayName:gd.displayName||dd.displayName||dd.email||'User',email:dd.email||'',avatar:gd.avatar||0,lvl:gd.lvl||1,bio:dd.bio||''}});
+        }
+      });
+    }catch(e){console.warn('game displayname search',e);}
     /* Also search demo/fake users from PPDemo — appear identical to real users */
     if(window.PPDemo&&PPDemo.users){
       var ql=query.toLowerCase();
@@ -5044,7 +5124,7 @@ async function searchUsers(){
         }
       });
     }
-    if(!users.length){results.innerHTML='<div style="color:var(--muted);font-size:12px;padding:8px">No users found for "'+esc(query)+'"</div>';return;}
+    if(!users.length){results.innerHTML='<div style="color:var(--muted);font-size:12px;padding:12px;text-align:center">No users found for "'+esc(query)+'"</div>';return;}
     users.forEach(function(u){
       var d=u.data||{};
       var name=d.displayName||d.email||'User';
@@ -5060,9 +5140,9 @@ async function searchUsers(){
       var alreadySent=isDemo&&_demoSentHas(u.uid);
       var btnHtml=alreadySent?
         '<button id="'+btnId+'" style="background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.3);color:var(--accent2);padding:4px 10px;border-radius:6px;font-size:11px;cursor:default" disabled>Sent</button>':
-        '<button id="'+btnId+'" onclick="event.stopPropagation();sendFriendRequestTo(\''+u.uid+'\',\''+esc(name).replace(/'/g,"\\'")+'\',\''+btnId+'\')" style="background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer">+ Add</button>';
-      html+='<div style="display:flex;align-items:center;gap:8px;padding:8px;border-radius:8px;border:1px solid var(--border);margin-bottom:4px;background:var(--panel2);cursor:pointer" onclick="viewSearchUser(\''+u.uid+'\',\''+esc(name).replace(/'/g,"\\'")+'\')">'+
-        '<div style="width:32px;height:32px;border-radius:8px;overflow:hidden;border:1px solid var(--border)">'+svg+'</div>'+
+        '<button id="'+btnId+'" onclick="event.stopPropagation();sendFriendRequestTo(\''+u.uid+'\',\''+esc(name).replace(/'/g,"\\'")+'\',\''+btnId+'\')" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer">+ Add</button>';
+      html+='<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;border:1px solid var(--border);margin-bottom:6px;background:var(--panel2);cursor:pointer;transition:background .15s" onmouseenter="this.style.background=\'rgba(124,92,255,.08)\'" onmouseleave="this.style.background=\'var(--panel2)\'" onclick="viewSearchUser(\''+u.uid+'\',\''+esc(name).replace(/'/g,"\\'")+'\')">'+
+        '<div style="width:36px;height:36px;border-radius:10px;overflow:hidden;border:1px solid var(--border)">'+svg+'</div>'+
         '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(name)+'</div>'+
         subLine+bioLine+
         '</div>'+
@@ -5070,7 +5150,33 @@ async function searchUsers(){
       '</div>';
     });
     results.innerHTML=html;
-  }catch(e){console.warn('search users',e);results.innerHTML='<div style="color:var(--muted);font-size:12px">Error searching. Try again.</div>';}
+  }catch(e){console.warn('search users',e);results.innerHTML='<div style="color:var(--muted);font-size:12px;padding:12px;text-align:center">Error searching. Try again.</div>';}
+}
+
+/* ---- Load suggested users for Discover tab ---- */
+function loadSuggestedUsers(){
+  var container=document.getElementById('suggestedUsers');
+  if(!container) return;
+  if(window.PPDemo&&PPDemo.users&&PPDemo.users.length){
+    var html='';
+    PPDemo.users.slice(0,5).forEach(function(u){
+      var svg=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(u.avatar||0):'';
+      var alreadySent=_demoSentHas(u._uid);
+      var btnId='sugBtn_'+u._uid.replace(/[^a-zA-Z0-9]/g,'_');
+      var btnHtml=alreadySent?
+        '<button id="'+btnId+'" style="background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.3);color:var(--accent2);padding:4px 10px;border-radius:6px;font-size:11px;cursor:default" disabled>Sent</button>':
+        '<button id="'+btnId+'" onclick="sendFriendRequestTo(\''+u._uid+'\',\''+esc(u.name).replace(/'/g,"\\'")+'\',\''+btnId+'\')" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer">+ Add</button>';
+      html+='<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)">'+
+        '<div style="width:34px;height:34px;border-radius:10px;overflow:hidden;border:1px solid var(--border)">'+svg+'</div>'+
+        '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(u.name)+'</div>'+
+        '<div style="font-size:10px;color:var(--muted)">Lvl '+(u.lvl||1)+'</div></div>'+
+        btnHtml+
+      '</div>';
+    });
+    container.innerHTML=html;
+  }else{
+    container.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:10px">No suggestions yet</div>';
+  }
 }
 
 /* View a searched user's profile summary in a popup */
@@ -5123,7 +5229,7 @@ function viewSearchUser(uid,name){
     var demoAlreadySent=_demoSentHas(uid);
     var profileBtnHtml=demoAlreadySent?
       '<button id="profileAddBtn" style="margin-top:12px;background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.3);color:var(--accent2);padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:default" disabled>Sent</button>':
-      '<button id="profileAddBtn" onclick="sendFriendRequestTo(\''+uid+'\',\''+esc(dName).replace(/'/g,"\\'")+'\',\'profileAddBtn\');document.getElementById(\'searchUserProfile\').classList.remove(\'show\')" style="margin-top:12px;background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff;border:none;padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">+ Add Friend</button>';
+      '<button id="profileAddBtn" onclick="sendFriendRequestTo(\''+uid+'\',\''+esc(dName).replace(/'/g,"\\'")+'\',\'profileAddBtn\');document.getElementById(\'searchUserProfile\').classList.remove(\'show\')" style="margin-top:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">+ Add Friend</button>';
     content.innerHTML='<div style="text-align:center">'+
       '<div style="width:64px;height:64px;border-radius:14px;overflow:hidden;border:1px solid var(--border);margin:0 auto 8px">'+svg+'</div>'+
       '<div style="font-size:16px;font-weight:800">'+esc(dName)+'</div>'+
@@ -5148,7 +5254,7 @@ function viewSearchUser(uid,name){
       '<div style="font-size:16px;font-weight:800">'+esc(displayName)+'</div>'+
       '<div style="font-size:12px;color:var(--muted)">'+esc(email)+'</div>'+
       (bio?'<div style="margin-top:8px;font-size:13px;color:var(--text);font-style:italic;padding:8px;border-top:1px solid var(--border)">"'+esc(bio)+'"</div>':'')+
-      '<button id="profileAddBtn" onclick="sendFriendRequestTo(\''+uid+'\',\''+esc(displayName).replace(/'/g,"\\'")+'\',\'profileAddBtn\');document.getElementById(\'searchUserProfile\').classList.remove(\'show\')" style="margin-top:12px;background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff;border:none;padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">+ Add Friend</button>'+
+      '<button id="profileAddBtn" onclick="sendFriendRequestTo(\''+uid+'\',\''+esc(displayName).replace(/'/g,"\\'")+'\',\'profileAddBtn\');document.getElementById(\'searchUserProfile\').classList.remove(\'show\')" style="margin-top:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">+ Add Friend</button>'+
     '</div>';
     overlay.classList.add('show');
   }).catch(function(e){console.warn('view user',e);toast('Could not load profile','info');});
@@ -5163,6 +5269,41 @@ function _demoSentSave(uid,name){
 }
 function _demoSentHas(uid){return !!_demoSentMap()[uid];}
 
+/* ---- Set button to "Sent" state (used by sendFriendRequestTo) ---- */
+function _setBtnSent(btnId,isProfileBtn){
+  var btn=document.getElementById(btnId);
+  if(btn){
+    if(isProfileBtn){
+      btn.textContent='Sent';
+      btn.style.cssText='margin-top:12px;background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.3);color:var(--accent2);padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:default';
+    }else{
+      btn.textContent='Sent';
+      btn.style.cssText='background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.3);color:var(--accent2);padding:4px 10px;border-radius:6px;font-size:11px;cursor:default';
+    }
+    btn.disabled=true;
+    btn.onclick=null;
+  }
+  /* Also update the other button type if it exists */
+  if(!isProfileBtn){
+    var pBtn=document.getElementById('profileAddBtn');
+    if(pBtn){_setBtnSent('profileAddBtn',true);}
+  }else{
+    /* Try updating search result buttons too */
+    var allBtns=document.querySelectorAll('[id^="addBtn_"]');
+    allBtns.forEach(function(b){_setBtnSent(b.id,false);});
+  }
+}
+
+/* ---- Revert button to "+ Add" state on error ---- */
+function _revertBtnAdd(btnId){
+  var btn=document.getElementById(btnId);
+  if(btn){
+    btn.textContent='+ Add';
+    btn.style.cssText='background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer';
+    btn.disabled=false;
+  }
+}
+
 /* ---- Send friend request ---- */
 async function sendFriendRequestTo(uid,name,btnId){
   if(!fbReady||!currentUser){toast('Please sign in first','info');return;}
@@ -5171,38 +5312,14 @@ async function sendFriendRequestTo(uid,name,btnId){
   if(uid.indexOf('demo_')===0){
     if(_demoSentHas(uid)){toast('Request already sent','info');return;}
     _demoSentSave(uid,name);
-    /* Update button to "Sent" state immediately */
-    if(btnId){
-      var dBtn=document.getElementById(btnId);
-      if(dBtn){
-        dBtn.textContent='Sent';
-        dBtn.style.cssText='background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.3);color:var(--accent2);padding:4px 10px;border-radius:6px;font-size:11px;cursor:default';
-        dBtn.disabled=true;
-        dBtn.onclick=null;
-      }
-    }
-    /* Also update profile popup button if open */
-    var pBtn=document.getElementById('profileAddBtn');
-    if(pBtn){
-      pBtn.textContent='Sent';
-      pBtn.style.cssText='margin-top:12px;background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.3);color:var(--accent2);padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:default';
-      pBtn.disabled=true;
-      pBtn.onclick=null;
-    }
+    /* Update ALL buttons to "Sent" state immediately */
+    _setBtnSent(btnId,btnId==='profileAddBtn');
     toast('Friend request sent to '+name);
     loadFriendsList();
     return;
   }
-  /* Real user: Immediately update button to "Sent" state */
-  if(btnId){
-    var btn=document.getElementById(btnId);
-    if(btn){
-      btn.textContent='Sent';
-      btn.style.cssText='background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.3);color:var(--accent2);padding:4px 10px;border-radius:6px;font-size:11px;cursor:default';
-      btn.disabled=true;
-      btn.onclick=null;
-    }
-  }
+  /* Real user: Immediately update button to "Sent" state BEFORE async write */
+  _setBtnSent(btnId,btnId==='profileAddBtn');
   try{
     /* Check if already friends or pending */
     var existing=await db.collection('friends').doc(currentUser.uid).collection('list').doc(uid).get();
@@ -5227,35 +5344,58 @@ async function sendFriendRequestTo(uid,name,btnId){
   }catch(e){
     console.warn('send friend req',e);
     toast('Error sending request','info');
-    if(btnId){
-      var btn3=document.getElementById(btnId);
-      if(btn3){btn3.textContent='+ Add';btn3.style.cssText='background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer';btn3.disabled=false;}
-    }
+    /* Revert button on error */
+    _revertBtnAdd(btnId);
   }
 }
 
 /* ---- Load friend requests ---- */
-function loadFriendRequests(){
+async function loadFriendRequests(){
   if(!fbReady||!currentUser) return;
-  var list=document.getElementById('friendReqList');
-  db.collection('friends').doc(currentUser.uid).collection('list').where('status','==','pending_received').orderBy('addedAt','desc').get().then(function(snap){
-    if(snap.empty){list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:10px">No pending requests</div>';updateReqBadge(0);return;}
-    var html='';
-    var count=0;
+  var list=document.getElementById('contactReqList');
+  var countEl=document.getElementById('contactReqCount');
+  try{
+    var snap;
+    /* Try without orderBy first (avoids composite index requirement) */
+    try{
+      snap=await db.collection('friends').doc(currentUser.uid).collection('list').where('status','==','pending_received').get();
+    }catch(e1){
+      /* Fallback: try simple get and filter client-side */
+      console.warn('pending_received query failed, trying fallback',e1);
+      snap=await db.collection('friends').doc(currentUser.uid).collection('list').get();
+    }
+    var items=[];
     snap.forEach(function(doc){
-      count++;
       var d=doc.data();
-      var uid=d.uid||doc.id;
-      var name=d.name||'User';
-      html+='<div style="display:flex;align-items:center;gap:8px;padding:8px;border-radius:8px;border:1px solid var(--border);margin-bottom:4px;background:var(--panel2)">'+
-        '<div style="flex:1;font-size:13px">'+esc(name)+'</div>'+
-        '<button onclick="acceptFriendRequest(\''+uid+'\',\''+esc(name).replace(/'/g,"\\'")+'\')" style="background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);color:#7ee2a4;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer">Accept</button>'+
-        '<button onclick="declineFriendRequest(\''+uid+'\')" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:#ef4444;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer">Decline</button>'+
+      if(d.status==='pending_received'){
+        items.push({uid:d.uid||doc.id,name:d.name||'User',addedAt:d.addedAt||null});
+      }
+    });
+    /* Sort client-side by addedAt descending */
+    items.sort(function(a,b){
+      var ta=a.addedAt?((a.addedAt.toDate?a.addedAt.toDate():a.addedAt).getTime()):0;
+      var tb=b.addedAt?((b.addedAt.toDate?b.addedAt.toDate():b.addedAt).getTime()):0;
+      return tb-ta;
+    });
+    updateReqBadge(items.length);
+    if(countEl) countEl.textContent=items.length?'('+items.length+')':'';
+    if(!items.length){
+      list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:10px">No pending requests</div>';
+      return;
+    }
+    var html='';
+    items.forEach(function(item){
+      html+='<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;border:1px solid var(--border);margin-bottom:4px;background:var(--panel2)">'+
+        '<div style="flex:1;font-size:13px;font-weight:600">'+esc(item.name)+'</div>'+
+        '<button onclick="acceptFriendRequest(\''+item.uid+'\',\''+esc(item.name).replace(/'/g,"\\'")+'\')" style="background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);color:#7ee2a4;padding:5px 12px;border-radius:8px;font-size:11px;cursor:pointer;font-weight:600">Accept</button>'+
+        '<button onclick="declineFriendRequest(\''+item.uid+'\')" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:#ef4444;padding:5px 12px;border-radius:8px;font-size:11px;cursor:pointer;font-weight:600">Decline</button>'+
       '</div>';
     });
     list.innerHTML=html;
-    updateReqBadge(count);
-  }).catch(function(e){console.warn('load req',e);list.innerHTML='<div style="color:var(--muted);font-size:12px">Error loading</div>';});
+  }catch(e){
+    console.warn('load req',e);
+    list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:10px">Could not load requests</div>';
+  }
 }
 
 function updateReqBadge(count){
@@ -5290,20 +5430,52 @@ async function declineFriendRequest(uid){
   catch(e){console.warn('decline friend',e);}
 }
 
-/* ---- Load friends list with online/offline ---- */
+/* ---- Load friends list with online/offline (Contacts tab) ---- */
 async function loadFriendsList(){
-  var list=document.getElementById('friendsList');
-  if(!fbReady||!currentUser){list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">Sign in to see friends</div>';return;}
+  var list=document.getElementById('contactFriendsList');
+  if(!fbReady||!currentUser){
+    list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">Sign in to see friends</div>';
+    return;
+  }
   list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">Loading...</div>';
   try{
-    /* Load accepted friends */
-    var snap=await db.collection('friends').doc(currentUser.uid).collection('list').where('status','==','accepted').orderBy('addedAt','desc').get();
-    /* Load pending sent requests */
-    var pendingSnap=await db.collection('friends').doc(currentUser.uid).collection('list').where('status','==','pending_sent').orderBy('addedAt','desc').get();
+    /* Load accepted friends — NO orderBy (avoids composite index requirement) */
+    var snap;
+    try{
+      snap=await db.collection('friends').doc(currentUser.uid).collection('list').where('status','==','accepted').get();
+    }catch(e1){
+      console.warn('accepted query failed, trying fallback',e1);
+      /* Fallback: get all and filter client-side */
+      var allSnap=await db.collection('friends').doc(currentUser.uid).collection('list').get();
+      var filteredDocs=[];
+      allSnap.forEach(function(doc){
+        if(doc.data().status==='accepted') filteredDocs.push(doc);
+      });
+      snap={docs:filteredDocs,forEach:function(cb){filteredDocs.forEach(cb);}};
+    }
+    /* Load pending sent requests — NO orderBy */
+    var pendingSnap;
+    try{
+      pendingSnap=await db.collection('friends').doc(currentUser.uid).collection('list').where('status','==','pending_sent').get();
+    }catch(e2){
+      console.warn('pending_sent query failed, trying fallback',e2);
+      var allSnap2=await db.collection('friends').doc(currentUser.uid).collection('list').get();
+      var filteredDocs2=[];
+      allSnap2.forEach(function(doc){
+        if(doc.data().status==='pending_sent') filteredDocs2.push(doc);
+      });
+      pendingSnap={docs:filteredDocs2,forEach:function(cb){filteredDocs2.forEach(cb);}};
+    }
     var pending=[];
     pendingSnap.forEach(function(doc){
       var d=doc.data();
-      pending.push({uid:d.uid||doc.id,name:d.name||'User',avatar:0});
+      pending.push({uid:d.uid||doc.id,name:d.name||'User',avatar:0,addedAt:d.addedAt||null});
+    });
+    /* Sort pending client-side */
+    pending.sort(function(a,b){
+      var ta=a.addedAt?((a.addedAt.toDate?a.addedAt.toDate():a.addedAt).getTime()):0;
+      var tb=b.addedAt?((b.addedAt.toDate?b.addedAt.toDate():b.addedAt).getTime()):0;
+      return tb-ta;
     });
     /* Also include demo user pending requests from localStorage */
     var demoMap=_demoSentMap();
@@ -5322,6 +5494,25 @@ async function loadFriendsList(){
         pending.push({uid:dUid,name:demoMap[dUid].name||'User',avatar:dAvatar,demo:true});
       }
     }
+    /* Show pending section */
+    var pendingSection=document.getElementById('contactPendingSection');
+    var pendingListEl=document.getElementById('contactPendingList');
+    if(pending.length&&pendingSection&&pendingListEl){
+      pendingSection.style.display='block';
+      var ph='';
+      pending.forEach(function(f){
+        var fSvg=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(f.avatar||0):'';
+        ph+='<div style="display:flex;align-items:center;gap:8px;padding:6px 4px;border-radius:8px;opacity:.6">'+
+          '<div style="width:28px;height:28px;border-radius:8px;overflow:hidden;border:1px solid var(--border)">'+fSvg+'</div>'+
+          '<span style="font-size:13px;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(f.name)+'</span>'+
+          '<span style="font-size:10px;color:var(--gold);font-style:italic">Sent</span>'+
+        '</div>';
+      });
+      pendingListEl.innerHTML=ph;
+    }else if(pendingSection){
+      pendingSection.style.display='none';
+    }
+
     var online=[];
     var offline=[];
     for(var i=0;i<snap.docs.length;i++){
@@ -5343,41 +5534,93 @@ async function loadFriendsList(){
       else offline.push(fObj);
     }
     var html='';
-    /* Pending sent requests section */
-    if(pending.length){
-      html+='<div style="font-size:11px;color:var(--gold);font-weight:700;padding:4px 0">PENDING ('+pending.length+')</div>';
-      pending.forEach(function(f){
-        var fSvg=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(f.avatar||0):'';
-        html+='<div style="display:flex;align-items:center;gap:8px;padding:6px 4px;border-radius:8px;opacity:.6">'+
-          '<div style="width:28px;height:28px;border-radius:8px;overflow:hidden;border:1px solid var(--border)">'+fSvg+'</div>'+
-          '<span style="font-size:13px;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(f.name)+'</span>'+
-          '<span style="font-size:10px;color:var(--gold);font-style:italic">Sent</span>'+
-        '</div>';
-      });
-    }
     if(online.length){
-      html+='<div style="font-size:11px;color:var(--accent2);font-weight:700;padding:4px 0">ONLINE ('+online.length+')</div>';
+      html+='<div style="font-size:11px;color:var(--accent2);font-weight:700;padding:10px 14px 4px">🟢 ONLINE ('+online.length+')</div>';
       online.forEach(function(f){html+=friendRow(f);});
     }
     if(offline.length){
-      html+='<div style="font-size:11px;color:var(--muted);font-weight:700;padding:8px 0 4px">OFFLINE ('+offline.length+')</div>';
+      html+='<div style="font-size:11px;color:var(--muted);font-weight:700;padding:10px 14px 4px">⚫ OFFLINE ('+offline.length+')</div>';
       offline.forEach(function(f){html+=friendRow(f);});
     }
     if(!online.length&&!offline.length&&!pending.length){
-      list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">No friends yet. Use Search to find and add friends!</div>';
+      list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:30px 14px">No friends yet.<br>Go to Discover tab to find and add friends!</div>';
     }else{
       list.innerHTML=html;
     }
-  }catch(e){console.warn('load friends',e);list.innerHTML='<div style="color:var(--muted);font-size:12px">Error loading friends</div>';}
+  }catch(e){
+    console.warn('load friends',e);
+    /* Graceful fallback — don't show scary error */
+    list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:30px 14px">Could not load friends list.<br>Please try again later.</div>';
+  }
+}
+
+/* ---- Load conversations (Chats tab) ---- */
+async function loadConversations(){
+  var list=document.getElementById('conversationsList');
+  if(!list) return;
+  if(!fbReady||!currentUser||!rtdb){
+    list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:30px">Sign in to see chats</div>';
+    return;
+  }
+  list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">Loading...</div>';
+  try{
+    var convRef=rtdb.ref('user_conversations/'+currentUser.uid).orderByChild('lastMessageTime');
+    convRef.once('value',function(snap){
+      var convs=[];
+      snap.forEach(function(child){
+        var c=child.val();
+        if(c.friendId&&c.friendName) convs.push(c);
+      });
+      /* Reverse to show most recent first */
+      convs.reverse();
+      if(!convs.length){
+        list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:30px 14px">No conversations yet.<br>Start a chat from Contacts!</div>';
+        return;
+      }
+      var html='';
+      convs.forEach(function(c){
+        var unread=(c.unreadCount&&c.unreadCount>0)?c.unreadCount:0;
+        var badge=unread?'<div style="min-width:18px;height:18px;border-radius:9px;background:#ef4444;color:#fff;font-size:10px;font-weight:700;text-align:center;line-height:18px;padding:0 4px;flex-shrink:0">'+unread+'</div>':'';
+        var lastMsg=c.lastMessage||'';
+        if(lastMsg.length>30) lastMsg=lastMsg.substring(0,30)+'...';
+        var ts=c.lastMessageTime?new Date(c.lastMessageTime):null;
+        var timeStr=ts?ts.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'';
+        var dateStr='';
+        if(ts){
+          var today=new Date();
+          if(ts.toDateString()===today.toDateString()) dateStr=timeStr;
+          else dateStr=ts.toLocaleDateString([],{month:'short',day:'numeric'});
+        }
+        html+='<div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;transition:background .15s" onmouseenter="this.style.background=\'rgba(124,92,255,.08)\'" onmouseleave="this.style.background=\'transparent\'" onclick="openChatWith(\''+c.friendId+'\',\''+esc(c.friendName).replace(/'/g,"\\'")+'\',0)">'+
+          '<div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,rgba(124,92,255,.2),rgba(34,211,238,.1));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">💬</div>'+
+          '<div style="flex:1;min-width:0">'+
+            '<div style="display:flex;justify-content:space-between;align-items:center">'+
+              '<span style="font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(c.friendName)+'</span>'+
+              '<span style="font-size:10px;color:var(--muted);flex-shrink:0;margin-left:8px">'+dateStr+'</span>'+
+            '</div>'+
+            '<div style="font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px">'+esc(lastMsg)+'</div>'+
+          '</div>'+
+          badge+
+        '</div>';
+      });
+      list.innerHTML=html;
+    },function(e){
+      console.warn('load convs',e);
+      list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">Could not load conversations</div>';
+    });
+  }catch(e){
+    console.warn('load convs',e);
+    list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">Could not load conversations</div>';
+  }
 }
 
 function friendRow(f){
   var dot=f.online?'#22d3ee':'#555';
   var svg=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(f.avatar||0):'';
-  return '<div style="display:flex;align-items:center;gap:8px;padding:6px 4px;border-radius:8px;cursor:pointer;transition:background .15s" onmouseenter="this.style.background=\'rgba(124,92,255,.1)\'" onmouseleave="this.style.background=\'transparent\'" onclick="openChatWith(\''+f.uid+'\',\''+esc(f.name).replace(/'/g,"\\'")+'\','+f.avatar+')">'+
-    '<div style="width:28px;height:28px;border-radius:8px;overflow:hidden;border:1px solid var(--border);position:relative">'+svg+
-    '<span style="position:absolute;bottom:-1px;right:-1px;width:8px;height:8px;border-radius:50%;background:'+dot+';border:2px solid var(--panel)"></span></div>'+
-    '<span style="font-size:13px;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(f.name)+'</span>'+
+  return '<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;border-radius:0;cursor:pointer;transition:background .15s;border-bottom:1px solid rgba(255,255,255,.03)" onmouseenter="this.style.background=\'rgba(124,92,255,.08)\'" onmouseleave="this.style.background=\'transparent\'" onclick="openChatWith(\''+f.uid+'\',\''+esc(f.name).replace(/'/g,"\\'")+'\','+f.avatar+')">'+
+    '<div style="width:36px;height:36px;border-radius:10px;overflow:hidden;border:1px solid var(--border);position:relative">'+svg+
+    '<span style="position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;border-radius:50%;background:'+dot+';border:2px solid var(--panel)"></span></div>'+
+    '<span style="font-size:13px;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500">'+esc(f.name)+'</span>'+
     '<span style="font-size:10px;color:var(--muted)">💬</span>'+
   '</div>';
 }
@@ -5386,11 +5629,12 @@ function friendRow(f){
 window.openChatWith=function(fUid,fName,fAvatar){
   _chatFriendUid=fUid;
   document.getElementById('chatFriendName').textContent=fName;
+  document.getElementById('chatFriendSub').textContent='Chat';
   /* Set avatar */
   var avEl=document.getElementById('chatFriendAvatar');
   var svg=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(fAvatar||0):'';
   avEl.innerHTML=svg;
-  document.getElementById('chatWindow').style.cssText='display:block!important;position:fixed;bottom:20px;right:360px;width:340px;max-width:90vw;background:var(--panel);border:1px solid var(--border);border-radius:14px;z-index:10001;box-shadow:0 8px 32px rgba(0,0,0,.5);overflow:hidden;resize:both;min-width:260px;min-height:320px';
+  document.getElementById('chatWindow').style.cssText='display:block!important;position:fixed;bottom:20px;right:380px;width:360px;max-width:90vw;background:var(--panel);border:1px solid var(--border);border-radius:16px;z-index:10001;box-shadow:0 8px 32px rgba(0,0,0,.5);overflow:hidden;resize:both;min-width:280px;min-height:340px';
   document.getElementById('chatMessages').style.display='flex';
   document.getElementById('chatInputRow').style.display='flex';
   document.getElementById('chatMessages').innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">Loading messages...</div>';
@@ -5407,9 +5651,9 @@ window.openChatWith=function(fUid,fName,fAvatar){
       var align=isMe?'right':'left';
       var bg=isMe?'rgba(124,92,255,.15)':'rgba(34,211,238,.08)';
       var ts=m.timestamp?new Date(m.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'';
-      html+='<div style="align-self:'+align+';max-width:80%;padding:6px 10px;border-radius:10px;background:'+bg+';font-size:13px">'+
+      html+='<div style="align-self:'+align+';max-width:80%;padding:8px 12px;border-radius:12px;background:'+bg+';font-size:13px">'+
         '<div>'+esc(m.text||'')+'</div>'+
-        '<div style="font-size:9px;color:var(--muted);margin-top:2px">'+ts+'</div>'+
+        '<div style="font-size:9px;color:var(--muted);margin-top:3px">'+ts+'</div>'+
       '</div>';
     });
     var el=document.getElementById('chatMessages');
@@ -5418,6 +5662,8 @@ window.openChatWith=function(fUid,fName,fAvatar){
   },function(e){console.warn('chat listen',e);});
   /* Mark messages as read */
   rtdb.ref('user_conversations/'+currentUser.uid+'/'+chatId).update({unreadCount:0}).catch(function(){});
+  /* Also refresh conversations list if on chats tab */
+  if(_currentFriendsTab==='chats') loadConversations();
 };
 
 /* ---- Send chat message (RTDB) ---- */
@@ -5504,6 +5750,10 @@ function listenForConversations(){
         existingBadge.remove();
       }
     }
+    /* Refresh conversations list if on chats tab */
+    if(_currentFriendsTab==='chats'&&document.getElementById('friendsPanel').style.display==='flex'){
+      loadConversations();
+    }
   },function(e){console.warn('conv listen',e);});
 }
 
@@ -5525,15 +5775,11 @@ document.getElementById('friendSearchBtn').addEventListener('click',searchUsers)
 document.getElementById('friendSearchInput').addEventListener('keydown',function(e){
   if(e.key==='Enter'){e.preventDefault();searchUsers();}
 });
-document.getElementById('friendSearchToggle').addEventListener('click',function(){
-  var p=document.getElementById('friendSearchPanel');
-  p.style.display=p.style.display==='none'?'block':'none';
-  if(p.style.display==='block') document.getElementById('friendSearchInput').focus();
-});
-document.getElementById('friendReqToggle').addEventListener('click',function(){
-  var p=document.getElementById('friendReqPanel');
-  p.style.display=p.style.display==='none'?'block':'none';
-  if(p.style.display==='block') loadFriendRequests();
+/* Tab bar clicks */
+document.querySelectorAll('#friendsTabBar .qq-tab').forEach(function(tab){
+  tab.addEventListener('click',function(){
+    switchFriendsTab(this.getAttribute('data-tab'));
+  });
 });
 document.getElementById('unreadIndicator').addEventListener('click',function(){
   /* Open the conversation with unread messages */
