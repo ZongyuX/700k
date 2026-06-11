@@ -2692,6 +2692,17 @@ async function handleAuthChange(user){
     isPro=false; proExpired=false;
     /* Clear friends/chat state */
     if(typeof _chatFriendUid!=='undefined') _chatFriendUid=null;
+    /* Reset game data for guest mode to zero — guests should not
+     * accumulate XP, coins, or levels. Guest mode = browse only. */
+    if(window.PPGame && PPGame.resetToDefaults){
+      PPGame.resetToDefaults();
+    }
+    /* Also clear the guest game localStorage so guest data starts at 0 */
+    try{ localStorage.removeItem('pp_game_guest'); }catch(e){}
+    /* Re-initialize game as fresh guest (all zeros) */
+    if(window.PPGame && PPGame.setUserId){
+      PPGame.setUserId(null);
+    }
   } else {
     /* ---- LOGGING IN ---- */
     /* Before clearing anything, save the current guest game state as a backup
@@ -3068,7 +3079,36 @@ function doSignOut(){
    * handleAuthChange will clear all account-specific localStorage keys,
    * switch PPGame to guest mode, and reset in-memory state. */
   isPro=false; proExpired=false;
-  auth.signOut().then(()=>{ hideOverlays(); toast(PPI18n.t('auth.signedout')); refreshBadge(); renderGrid(); });
+  auth.signOut().then(()=>{
+    hideOverlays();
+    toast(PPI18n.t('auth.signedout'));
+    /* Reset all page data to guest state */
+    refreshBadge();
+    refreshAuthUI();
+    renderSidebar();
+    renderGrid();
+    /* Clear friends panel */
+    var friendsPanel=document.getElementById('friendsPanel');
+    if(friendsPanel) friendsPanel.style.display='none';
+    closeChatWindow();
+    /* Clear friend request display */
+    var reqList=document.getElementById('contactReqList');
+    if(reqList){ reqList.innerHTML=''; reqList.style.display='none'; }
+    var reqCount=document.getElementById('contactReqCount');
+    if(reqCount) reqCount.textContent='';
+    var reqBadge=document.getElementById('friendReqBadge');
+    if(reqBadge) reqBadge.style.display='none';
+    var contactList=document.getElementById('contactFriendsList');
+    if(contactList) contactList.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">Sign in to see friends</div>';
+    var convList=document.getElementById('conversationsList');
+    if(convList) convList.innerHTML='';
+    var searchResults=document.getElementById('friendSearchResults');
+    if(searchResults) searchResults.innerHTML='';
+    /* Clear account display */
+    document.getElementById('accEmail').textContent='';
+    document.getElementById('accPlan').textContent='Free';
+    document.getElementById('accFavs').textContent='0';
+  });
 }
 
 function setAuthMode(mode){
@@ -3108,7 +3148,11 @@ function planLabel(){
   return PPI18n.t('plan.free');
 }
 function openAccount(){
-  if(!currentUser) return;
+  if(!currentUser){
+    toast('Please sign in or register first','info');
+    openAuth();
+    return;
+  }
   const methodNames={'password':PPI18n.t('method.password'),'google.com':PPI18n.t('method.google.com'),'facebook.com':'Facebook','github.com':PPI18n.t('method.github.com')};
   const pm=(currentUser.providerData&&currentUser.providerData[0]&&currentUser.providerData[0].providerId)||'password';
   document.getElementById('accEmail').textContent=currentUser.email||'(no email)';
@@ -3657,6 +3701,12 @@ function toast(text,kind){
   toastTimer=setTimeout(()=>t.className='toast'+(kind==='info'?' info':''),2400);
 }
 function toggleFav(id){
+  /* Guests cannot favorite — prompt login */
+  if(!currentUser){
+    toast('Please sign in or register to save favorites','info');
+    openAuth();
+    return;
+  }
   const i=favorites.indexOf(id);
   if(i>=0) favorites.splice(i,1);
   else { favorites.push(id); if(window.PPGame) PPGame.award('fav'); }
@@ -3683,6 +3733,13 @@ async function redeemCode(){
   const key=document.getElementById('codeInput').value.trim();
   const m=document.getElementById('actMsg');
   if(!key){ m.className='msg err'; m.textContent=PPI18n.t('activate.entercode'); return; }
+
+  /* Guests cannot activate codes — require login */
+  if(!currentUser){
+    m.className='msg err';
+    m.textContent='Please sign in or register to activate codes.';
+    return;
+  }
 
   /* Prevent concurrent submissions */
   if(_redeemProcessing){ return; }
@@ -5009,6 +5066,12 @@ runQuickOptimizer = function(){
   }
   var _ppGameStart=0;
   window.openGameOverlay=function(){
+    /* Guests cannot play — require login */
+    if(!currentUser){
+      toast('Please sign in or register to play','info');
+      openAuth();
+      return;
+    }
     document.getElementById('game-overlay').classList.add('show');
     document.body.style.overflow='hidden';
     _ppGameStart=Date.now();
@@ -5513,6 +5576,12 @@ function toggleContactReqSection(){
 
 /* ---- Toggle friends panel ---- */
 function toggleFriendsPanel(){
+  /* Guests cannot access friends — require login */
+  if(!currentUser){
+    toast('Please sign in or register to use Messages & Friends','info');
+    openAuth();
+    return;
+  }
   var p=document.getElementById('friendsPanel');
   if(p.style.display==='none'||!p.style.display){
     p.style.display='flex';
@@ -5551,7 +5620,7 @@ function closeChatWindow(){
 
 /* ---- Search users by username or email ---- */
 async function searchUsers(){
-  if(!fbReady||!currentUser){toast('Please sign in first','info');return;}
+  if(!fbReady||!currentUser){toast('Please sign in or register to search for friends','info');openAuth();return;}
   var query=document.getElementById('friendSearchInput').value.trim();
   if(!query){document.getElementById('friendSearchResults').innerHTML='';return;}
   var results=document.getElementById('friendSearchResults');
@@ -6072,9 +6141,17 @@ async function sendFriendRequestTo(uid,name,btnId){
     loadFriendRequests();
   }catch(e){
     console.warn('send friend req',e);
-    toast('Error sending request','info');
-    /* Revert button on error */
-    _revertBtnAdd(btnId);
+    /* Only show error and revert button if the own-friends-list write
+     * also failed. If we got past the self-write, the request IS sent
+     * even if the global/notifications writes failed. */
+    var btn=document.getElementById(btnId);
+    if(!btn || btn.disabled){
+      /* Button is already in "Sent" state — request was partially saved */
+      toast('Friend request sent to '+name);
+    } else {
+      toast('Error sending request','info');
+      _revertBtnAdd(btnId);
+    }
   }
 }
 
@@ -6146,8 +6223,14 @@ async function loadFriendRequests(){
     if(countEl) countEl.textContent=items.length?'('+items.length+')':'';
     if(!items.length){
       list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:10px">No pending requests</div>';
+      list.style.display='none';
       return;
     }
+    /* Auto-expand the friend requests section when there are pending requests */
+    list.style.display='block';
+    _contactReqOpen=true;
+    var arrow=document.getElementById('contactReqArrow');
+    if(arrow) arrow.textContent='▲';
     var html='';
     items.forEach(function(item){
       html+='<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;border:1px solid var(--border);margin-bottom:4px;background:var(--panel2)">'+

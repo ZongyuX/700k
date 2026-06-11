@@ -367,8 +367,12 @@ function checkAch(){
   });
 }
 
-/* public: award XP for an action. type: open|copy|send|fav|search  */
+/* public: award XP for an action. type: open|copy|send|fav|search
+ * Guests do NOT earn XP, coins, or levels. Only logged-in users
+ * accumulate progress. */
 function award(type, detail){
+  /* Block all XP/coin awards for guests (not logged in) */
+  if(!_gameUid) return;
   var t = dayStr(0);
   if(type==='open'){
     game.cnt.open++;
@@ -1261,6 +1265,12 @@ function buildPanel(){
 }
 function closePanel(){ if(panel) panel.classList.remove('show'); }
 function openPanel(){
+  /* Guests cannot access the game panel — require login */
+  if(!_gameUid){
+    try{ if(typeof toast==='function') toast('Please sign in or register to view your progress','info'); }catch(e){}
+    try{ if(typeof openAuth==='function') openAuth(); }catch(e){}
+    return;
+  }
   if(!panel) buildPanel();
   paintPanel();
   panel.classList.add('show');
@@ -1577,7 +1587,14 @@ function buildArcadeBtn(){
   arcBtn=D.createElement('button');
   arcBtn.className='pp-chip';
   arcBtn.title='Arcade — coins, avatars & battles';
-  arcBtn.addEventListener('click', openArcade);
+  arcBtn.addEventListener('click', function(){
+    if(!_gameUid){
+      try{ if(typeof toast==='function') toast('Please sign in or register to view your progress','info'); }catch(e){}
+      try{ if(typeof openAuth==='function') openAuth(); }catch(e){}
+      return;
+    }
+    openArcade();
+  });
   bar.insertBefore(arcBtn, bar.firstChild);
   paintArcadeBtn();
 }
