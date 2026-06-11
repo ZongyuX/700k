@@ -2633,8 +2633,14 @@ function initFirebase(){
   try{
     firebase.initializeApp(firebaseConfig);
     auth=firebase.auth();
+    window.auth=auth;
     db=firebase.firestore();
+    window.db=db;
     rtdb=firebase.database();
+    /* Expose to window so the game iframe (game-pm.html) can access
+     * Firebase RTDB for multiplayer lobby functionality. */
+    window.rtdb=rtdb;
+    window.firebase=firebase;
     fbReady=true;
     auth.onAuthStateChanged(handleAuthChange);
   }catch(e){
@@ -2645,6 +2651,8 @@ function initFirebase(){
 
 async function handleAuthChange(user){
   currentUser=user||null;
+  /* Expose currentUser to window so the game iframe can access it */
+  window.currentUser=currentUser;
 
   /* Helper: clear all account-specific localStorage keys */
   function clearAccountKeys(){

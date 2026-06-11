@@ -493,6 +493,35 @@ body{background:#050508;color:#e0e0e0;font-family:'Share Tech Mono',monospace;ov
       'mode.attack.free':'免费',
       'mode.unlimited':'无限金币模式',
       'mode.back':'返回',
+      // Multiplayer
+      'mode.multiplayer':'双人模式',
+      'mode.multiplayer.desc':'在线与好友组队或对战！合作模式共同抵御波次，对抗模式一攻一守。',
+      'mode.multiplayer.coop':'合作',
+      'mode.multiplayer.versus':'对抗',
+      'mode.multiplayer.online':'在线',
+      // Lobby
+      'lobby.sit':'坐下',
+      'lobby.ready':'准备',
+      'lobby.starting':'正在开始...',
+      'lobby.waiting.ready':'等待准备...',
+      'lobby.waiting.opponent':'等待对手加入...',
+      'lobby.start.solo':'开始单机',
+      'lobby.leave':'离开',
+      'lobby.seat.occupied':'座位已占用！',
+      'lobby.leave.first':'请先离开当前桌子！',
+      'lobby.solo.unavailable':'大厅不可用 — 单人模式',
+      'lobby.unavailable':'大厅不可用 — 点击座位开始单人游戏，或在 PromptRunic 主页打开多人模式。',
+      'lobby.could.not.join':'无法加入桌子，开始单人游戏...',
+      'lobby.table':'桌子',
+      'lobby.waiting.bar':'等待对手中...',
+      'lobby.back':'返回大厅',
+      'lobby.map.select':'选择地图',
+      'lobby.map.1':'网络要塞',
+      'lobby.map.2':'数据洪流',
+      'lobby.map.3':'暗影迷宫',
+      'lobby.map.4':'量子领域',
+      'lobby.map.5':'熔岩深渊',
+      'lobby.opponent.found':'找到对手！正在开始多人游戏...',
       // Difficulty Screen
       'diff.title':'选择难度',
       'diff.subtitle':'选择你的挑战等级',
@@ -659,6 +688,35 @@ body{background:#050508;color:#e0e0e0;font-family:'Share Tech Mono',monospace;ov
       'mode.attack.free':'Gratis',
       'mode.unlimited':'MODO ORO INFINITO',
       'mode.back':'Volver',
+      // Multiplayer
+      'mode.multiplayer':'MULTIJUGADOR',
+      'mode.multiplayer.desc':'¡En línea, combate o coopera con amigos! Supervive oleadas en modo cooperativo o compite en modo versus.',
+      'mode.multiplayer.coop':'Cooperativo',
+      'mode.multiplayer.versus':'Versus',
+      'mode.multiplayer.online':'En línea',
+      // Lobby
+      'lobby.sit':'Sentarse',
+      'lobby.ready':'Listo',
+      'lobby.starting':'Iniciando...',
+      'lobby.waiting.ready':'Esperando que estén listos...',
+      'lobby.waiting.opponent':'Esperando oponente...',
+      'lobby.start.solo':'Jugar solo',
+      'lobby.leave':'Salir',
+      'lobby.seat.occupied':'¡Asiento ocupado!',
+      'lobby.leave.first':'¡Sal de tu mesa actual primero!',
+      'lobby.solo.unavailable':'Lobby no disponible — modo individual',
+      'lobby.unavailable':'Lobby no disponible — haz clic en un asiento para jugar solo, o abre desde la app PromptRunic para multijugador.',
+      'lobby.could.not.join':'No se pudo unir a la mesa. Iniciando juego individual...',
+      'lobby.table':'Mesa',
+      'lobby.waiting.bar':'Esperando oponente...',
+      'lobby.back':'Volver al lobby',
+      'lobby.map.select':'Seleccionar mapa',
+      'lobby.map.1':'Fortaleza de Red',
+      'lobby.map.2':'Flujo de Datos',
+      'lobby.map.3':'Laberinto Sombra',
+      'lobby.map.4':'Reino Cuántico',
+      'lobby.map.5':'Abismo de Lava',
+      'lobby.opponent.found':'¡Oponente encontrado! Iniciando juego multijugador...',
       // Difficulty Screen
       'diff.title':'SELECCIONAR DIFICULTAD',
       'diff.subtitle':'Elige tu nivel de desafío',
@@ -802,6 +860,37 @@ body{background:#050508;color:#e0e0e0;font-family:'Share Tech Mono',monospace;ov
       'md.default.desc':'Un monstruo ofensivo feroz.',
       // Canvas
       'canvas.fortress':'FORTALEZA'
+    },
+    en: {
+      // Multiplayer
+      'mode.multiplayer':'MULTIPLAYER',
+      'mode.multiplayer.desc':'Battle or team up with friends online! Co-op to survive waves together, or compete in versus mode.',
+      'mode.multiplayer.coop':'Co-op',
+      'mode.multiplayer.versus':'Versus',
+      'mode.multiplayer.online':'Online',
+      // Lobby
+      'lobby.sit':'Sit',
+      'lobby.ready':'Ready',
+      'lobby.starting':'Starting...',
+      'lobby.waiting.ready':'Waiting for ready...',
+      'lobby.waiting.opponent':'Waiting for opponent...',
+      'lobby.start.solo':'Start Solo',
+      'lobby.leave':'Leave',
+      'lobby.seat.occupied':'Seat is occupied!',
+      'lobby.leave.first':'Leave your current table first!',
+      'lobby.solo.unavailable':'Playing solo — lobby unavailable',
+      'lobby.unavailable':'Lobby unavailable — click a seat to play solo, or open from the PromptRunic app for multiplayer.',
+      'lobby.could.not.join':'Could not join table. Starting solo game...',
+      'lobby.table':'Table',
+      'lobby.waiting.bar':'Waiting for opponent...',
+      'lobby.back':'Back to Lobby',
+      'lobby.map.select':'Select Map',
+      'lobby.map.1':'Cyber Fortress',
+      'lobby.map.2':'Data Stream',
+      'lobby.map.3':'Shadow Maze',
+      'lobby.map.4':'Quantum Realm',
+      'lobby.map.5':'Lava Abyss',
+      'lobby.opponent.found':'Opponent found! Starting multiplayer...'
     }
   };
 
@@ -1951,7 +2040,7 @@ function buildTableHTML(tableNum,state){
 
   /* Table number + mode badge */
   html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">';
-  html+='<span style="font-family:\'Orbitron\',sans-serif;font-size:.6rem;font-weight:700;color:#888;letter-spacing:.05em">TABLE '+tableNum+'</span>';
+  html+='<span style="font-family:\'Orbitron\',sans-serif;font-size:.6rem;font-weight:700;color:#888;letter-spacing:.05em">'+_gmT('lobby.table','TABLE')+' '+tableNum+'</span>';
   html+='<span style="font-size:.5rem;padding:.1rem .4rem;border-radius:3px;background:'+(isCoop?'rgba(80,180,255,0.15)':'rgba(255,80,80,0.15)')+';color:'+modeColor+';border:1px solid '+modeColor+'33">'+modeLabel+'</span>';
   html+='</div>';
 
@@ -1963,9 +2052,9 @@ function buildTableHTML(tableNum,state){
   var s1Border=seat1?(seat1Ready?'rgba(0,255,136,0.4)':'rgba(80,180,255,0.25)'):'rgba(255,255,255,0.06)';
   var s1Color=seat1?(seat1Ready?'#00ff88':'#50b4ff'):'#555';
   html+='<div onclick="sitDown('+tableNum+',1)" style="flex:1;padding:.35rem .4rem;border-radius:6px;background:'+s1Bg+';border:1px solid '+s1Border+';text-align:center;cursor:'+(seat1?'default':'pointer')+';transition:all .15s;min-height:40px;display:flex;flex-direction:column;justify-content:center" onmouseenter="if(!this.dataset.occupied)this.style.borderColor=\'rgba(0,255,136,0.4)\'" onmouseleave="if(!this.dataset.occupied)this.style.borderColor=\''+s1Border+'\'" data-occupied="'+(seat1?'1':'0')+'">';
-  html+='<div style="font-size:.5rem;color:'+s1Color+';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(seat1?(seat1Ready?'✅ ':'👤 ')+seat1Name:'🪑 Sit')+'</div>';
+  html+='<div style="font-size:.5rem;color:'+s1Color+';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(seat1?(seat1Ready?'✅ ':'👤 ')+seat1Name:'🪑 '+_gmT('lobby.sit','Sit'))+'</div>';
   if(seat1&&!seat1Ready&&seat1.uid===getMyUid()){
-    html+='<button onclick="event.stopPropagation();toggleReady('+tableNum+')" style="margin-top:4px;padding:4px 12px;border-radius:6px;background:linear-gradient(135deg,#ffd700,#ffaa00);color:#050508;font-size:.55rem;font-weight:700;cursor:pointer;border:none;font-family:\'Orbitron\',sans-serif;letter-spacing:.05em">✋ READY</button>';
+    html+='<button onclick="event.stopPropagation();toggleReady('+tableNum+')" style="margin-top:4px;padding:4px 12px;border-radius:6px;background:linear-gradient(135deg,#ffd700,#ffaa00);color:#050508;font-size:.55rem;font-weight:700;cursor:pointer;border:none;font-family:\'Orbitron\',sans-serif;letter-spacing:.05em">✋ '+_gmT('lobby.ready','READY')+'</button>';
   }
   html+='</div>';
 
@@ -1974,9 +2063,9 @@ function buildTableHTML(tableNum,state){
   var s2Border=seat2?(seat2Ready?'rgba(0,255,136,0.4)':'rgba(255,150,80,0.25)'):'rgba(255,255,255,0.06)';
   var s2Color=seat2?(seat2Ready?'#00ff88':'#ff9650'):'#555';
   html+='<div onclick="sitDown('+tableNum+',2)" style="flex:1;padding:.35rem .4rem;border-radius:6px;background:'+s2Bg+';border:1px solid '+s2Border+';text-align:center;cursor:'+(seat2?'default':'pointer')+';transition:all .15s;min-height:40px;display:flex;flex-direction:column;justify-content:center" onmouseenter="if(!this.dataset.occupied)this.style.borderColor=\'rgba(0,255,136,0.4)\'" onmouseleave="if(!this.dataset.occupied)this.style.borderColor=\''+s2Border+'\'" data-occupied="'+(seat2?'1':'0')+'">';
-  html+='<div style="font-size:.5rem;color:'+s2Color+';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(seat2?(seat2Ready?'✅ ':'👤 ')+seat2Name:'🪑 Sit')+'</div>';
+  html+='<div style="font-size:.5rem;color:'+s2Color+';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(seat2?(seat2Ready?'✅ ':'👤 ')+seat2Name:'🪑 '+_gmT('lobby.sit','Sit'))+'</div>';
   if(seat2&&!seat2Ready&&seat2.uid===getMyUid()){
-    html+='<button onclick="event.stopPropagation();toggleReady('+tableNum+')" style="margin-top:4px;padding:4px 12px;border-radius:6px;background:linear-gradient(135deg,#ffd700,#ffaa00);color:#050508;font-size:.55rem;font-weight:700;cursor:pointer;border:none;font-family:\'Orbitron\',sans-serif;letter-spacing:.05em">✋ READY</button>';
+    html+='<button onclick="event.stopPropagation();toggleReady('+tableNum+')" style="margin-top:4px;padding:4px 12px;border-radius:6px;background:linear-gradient(135deg,#ffd700,#ffaa00);color:#050508;font-size:.55rem;font-weight:700;cursor:pointer;border:none;font-family:\'Orbitron\',sans-serif;letter-spacing:.05em">✋ '+_gmT('lobby.ready','READY')+'</button>';
   }
   html+='</div>';
 
@@ -1986,17 +2075,17 @@ function buildTableHTML(tableNum,state){
   var amSeated=(seat1&&seat1.uid===getMyUid())||(seat2&&seat2.uid===getMyUid());
   var onlyMeSeated=amSeated&&!isFull;
   if(bothReady){
-    html+='<div style="text-align:center;margin-top:.3rem;font-size:.45rem;color:#00ff88;font-weight:700;animation:sPulse 1s ease-in-out infinite">▶ STARTING...</div>';
+    html+='<div style="text-align:center;margin-top:.3rem;font-size:.45rem;color:#00ff88;font-weight:700;animation:sPulse 1s ease-in-out infinite">▶ '+_gmT('lobby.starting','STARTING...')+'</div>';
   }else if(isFull){
-    html+='<div style="text-align:center;margin-top:.3rem;font-size:.45rem;color:#ffd700">Waiting for ready...</div>';
+    html+='<div style="text-align:center;margin-top:.3rem;font-size:.45rem;color:#ffd700">'+_gmT('lobby.waiting.ready','Waiting for ready...')+'</div>';
   }else if(onlyMeSeated){
-    html+='<div style="text-align:center;margin-top:.3rem;font-size:.45rem;color:#888">Waiting for opponent...</div>';
-    html+='<button onclick="event.stopPropagation();startSoloWhileWaiting('+tableNum+','+mpMySeat+')" style="margin-top:4px;padding:5px 14px;border-radius:8px;background:linear-gradient(135deg,#50b4ff,#7c5cff);color:#fff;font-size:.6rem;font-weight:700;cursor:pointer;border:none;font-family:\'Orbitron\',sans-serif;letter-spacing:.05em;text-shadow:0 1px 2px rgba(0,0,0,.3)">🎮 Start Solo</button>';
+    html+='<div style="text-align:center;margin-top:.3rem;font-size:.45rem;color:#888">'+_gmT('lobby.waiting.opponent','Waiting for opponent...')+'</div>';
+    html+='<button onclick="event.stopPropagation();startSoloWhileWaiting('+tableNum+','+mpMySeat+')" style="margin-top:4px;padding:5px 14px;border-radius:8px;background:linear-gradient(135deg,#50b4ff,#7c5cff);color:#fff;font-size:.6rem;font-weight:700;cursor:pointer;border:none;font-family:\'Orbitron\',sans-serif;letter-spacing:.05em;text-shadow:0 1px 2px rgba(0,0,0,.3)">🎮 '+_gmT('lobby.start.solo','Start Solo')+'</button>';
   }
 
   /* Leave button (only if I'm seated at this table) */
   if(amSeated){
-    html+='<div style="text-align:center;margin-top:.2rem"><span style="font-size:.4rem;color:#ff6666;cursor:pointer" onclick="event.stopPropagation();standUp('+tableNum+')">✕ Leave</span></div>';
+    html+='<div style="text-align:center;margin-top:.2rem"><span style="font-size:.4rem;color:#ff6666;cursor:pointer" onclick="event.stopPropagation();standUp('+tableNum+')">✕ '+_gmT('lobby.leave','Leave')+'</span></div>';
   }
 
   html+='</div>';
@@ -2044,13 +2133,13 @@ function sitDown(tableNum,seatNum){
   }
   /* Check if already seated at another table */
   if(mpMyTable>0&&mpMyTable!==tableNum){
-    toast('Leave your current table first!','info');
+    toast(_gmT('lobby.leave.first','Leave your current table first!'),'info');
     return;
   }
   var rtdb=getRtdb();
   if(!rtdb){
     /* No Firebase: start solo game immediately */
-    toast('Playing solo — lobby unavailable','info');
+    toast(_gmT('lobby.solo.unavailable','Playing solo — lobby unavailable'),'info');
     startSoloWhileWaiting(tableNum,seatNum);
     return;
   }
@@ -2061,10 +2150,10 @@ function sitDown(tableNum,seatNum){
     var seat2=data.seat2||null;
     /* Check if the requested seat is taken */
     if(seatNum===1&&seat1&&seat1.uid!==myUid){
-      toast('Seat 1 is occupied!','info');return;
+      toast(_gmT('lobby.seat.occupied','Seat is occupied!'),'info');return;
     }
     if(seatNum===2&&seat2&&seat2.uid!==myUid){
-      toast('Seat 2 is occupied!','info');return;
+      toast(_gmT('lobby.seat.occupied','Seat is occupied!'),'info');return;
     }
     /* Sit down */
     var update={};
@@ -2079,7 +2168,7 @@ function sitDown(tableNum,seatNum){
     rtdb.ref('lobby/'+mpMode+'/table_'+tableNum+'/seat'+seatNum).onDisconnect().remove();
   }).catch(function(e){
     console.warn('sitDown error:',e);
-    toast('Could not join table. Starting solo game...','info');
+    toast(_gmT('lobby.could.not.join','Could not join table. Starting solo game...'),'info');
     startSoloWhileWaiting(tableNum,seatNum);
   });
 }
@@ -2110,7 +2199,7 @@ function listenToLobby(){
   var rtdb=getRtdb();
   if(!rtdb){
     var container=document.getElementById('lobbyTables');
-    if(container) container.innerHTML='<div style="color:#888;font-size:.7rem;text-align:center;padding:20px">Lobby unavailable — click a seat to play solo, or open from the PromptRunic app for multiplayer.</div>';
+    if(container) container.innerHTML='<div style="color:#888;font-size:.7rem;text-align:center;padding:20px">'+_gmT('lobby.unavailable','Lobby unavailable — click a seat to play solo, or open from the PromptRunic app for multiplayer.')+'</div>';
     return;
   }
   mpLobbyRef=rtdb.ref('lobby/'+mpMode);
@@ -2128,7 +2217,7 @@ function listenToLobby(){
           if(mpSoloWhileWaiting){
             mpSoloWhileWaiting=false;
             removeLobbyStatusBar();
-            toast('Opponent found! Starting multiplayer...','info');
+            toast(_gmT('lobby.opponent.found','Opponent found! Starting multiplayer...'),'info');
           }
           startMultiplayerGame(mpMyTable,s1.uid,s2.uid);
         }
@@ -2213,13 +2302,84 @@ function getFirestore(){
 /* Start a solo game while waiting for an opponent at a lobby table */
 function startSoloWhileWaiting(tableNum,seatNum){
   mpSoloWhileWaiting=true;
-  /* Hide lobby screen, show game */
+  /* Hide lobby screen, show map selection */
   document.getElementById('multiplayerScreen').style.display='none';
+  showMapSelect(tableNum);
+}
+
+/* Show map selection screen before starting the game */
+function showMapSelect(tableNum){
+  var screen=document.getElementById('mapSelectScreen');
+  if(!screen){
+    screen=document.createElement('div');
+    screen.id='mapSelectScreen';
+    screen.style.cssText='position:fixed;inset:0;z-index:89;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(160deg,#060610,#0a0612,#060610)';
+    var maps=[
+      {id:1,name:_gmT('lobby.map.1','Cyber Fortress'),color:'#00ff88',bg:'rgba(0,255,136,0.08)'},
+      {id:2,name:_gmT('lobby.map.2','Data Stream'),color:'#00ccff',bg:'rgba(0,204,255,0.08)'},
+      {id:3,name:_gmT('lobby.map.3','Shadow Maze'),color:'#aa44ff',bg:'rgba(170,68,255,0.08)'},
+      {id:4,name:_gmT('lobby.map.4','Quantum Realm'),color:'#ff8800',bg:'rgba(255,136,0,0.08)'},
+      {id:5,name:_gmT('lobby.map.5','Lava Abyss'),color:'#ff4400',bg:'rgba(255,68,0,0.08)'}
+    ];
+    var html='<h2 style="font-family:Orbitron,sans-serif;font-size:1.5rem;font-weight:900;color:#ffd700;letter-spacing:.15em;margin-bottom:1.5rem">'+_gmT('lobby.map.select','Select Map')+'</h2>';
+    html+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;max-width:700px;width:90%;padding:0 1rem">';
+    maps.forEach(function(m){
+      html+='<div onclick="selectMapAndStart('+m.id+','+(tableNum||0)+')" style="background:'+m.bg+';border:2px solid '+m.color+'44;border-radius:14px;padding:1.5rem;text-align:center;cursor:pointer;transition:all .2s;min-height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center" onmouseenter="this.style.borderColor=\''+m.color+'\';this.style.transform=\'translateY(-4px)\';this.style.boxShadow=\'0 8px 25px '+m.color+'33\'" onmouseleave="this.style.borderColor=\''+m.color+'44\';this.style.transform=\'none\';this.style.boxShadow=\'none\'">';
+      html+='<div style="font-family:Orbitron,sans-serif;font-size:.8rem;font-weight:700;color:'+m.color+'">'+m.name+'</div>';
+      html+='<div style="font-size:.55rem;color:#888;margin-top:.3rem">'+_gmT('dn.'+(m.id-1),'')+'</div>';
+      html+='</div>';
+    });
+    html+='</div>';
+    html+='<button onclick="backToLobbyFromMap()" style="margin-top:1.5rem;padding:.5rem 1.5rem;border-radius:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);color:#888;font-size:.7rem;cursor:pointer;font-family:Orbitron,sans-serif;transition:all .2s" onmouseenter="this.style.borderColor=\'rgba(255,100,100,0.4)\';this.style.color=\'#ff6666\'" onmouseleave="this.style.borderColor=\'rgba(255,255,255,0.15)\';this.style.color=\'#888\'">&#8592; '+_gmT('mode.back','Back')+'</button>';
+    screen.innerHTML=html;
+    document.body.appendChild(screen);
+  }else{
+    /* Refresh translations */
+    var mapNames=[
+      _gmT('lobby.map.1','Cyber Fortress'),
+      _gmT('lobby.map.2','Data Stream'),
+      _gmT('lobby.map.3','Shadow Maze'),
+      _gmT('lobby.map.4','Quantum Realm'),
+      _gmT('lobby.map.5','Lava Abyss')
+    ];
+    var titleEl=screen.querySelector('h2');
+    if(titleEl) titleEl.textContent=_gmT('lobby.map.select','Select Map');
+    var mapDivs=screen.querySelectorAll('[onclick^="selectMapAndStart"]');
+    mapDivs.forEach(function(div,i){
+      if(mapNames[i]){
+        var nameDiv=div.querySelector('div');
+        if(nameDiv) nameDiv.textContent=mapNames[i];
+      }
+    });
+  }
+  screen.style.display='flex';
+  _currentTableNum=tableNum;
+}
+var _currentTableNum=0;
+
+/* Select a map and start the game */
+function selectMapAndStart(mapId,tableNum){
+  var screen=document.getElementById('mapSelectScreen');
+  if(screen) screen.style.display='none';
+  /* Set the chapter based on map selection */
+  if(typeof chI!=='undefined') chI=mapId-1;
   /* Start the game in single-player mode with current difficulty */
   showDiffSelect(savedMode||'defense');
   /* Add a floating status bar to indicate we're waiting for opponent */
-  addLobbyStatusBar(tableNum);
+  if(tableNum>0) addLobbyStatusBar(tableNum);
 }
+
+/* Go back to lobby from map select */
+function backToLobbyFromMap(){
+  var screen=document.getElementById('mapSelectScreen');
+  if(screen) screen.style.display='none';
+  mpSoloWhileWaiting=false;
+  document.getElementById('multiplayerScreen').style.display='flex';
+}
+
+/* Make these functions global */
+window.selectMapAndStart=selectMapAndStart;
+window.backToLobbyFromMap=backToLobbyFromMap;
 
 /* Add a floating bar at the top of the game screen showing lobby status */
 function addLobbyStatusBar(tableNum){
@@ -2228,7 +2388,7 @@ function addLobbyStatusBar(tableNum){
   var bar=document.createElement('div');
   bar.id='lobbyStatusBar';
   bar.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);z-index:10000;background:rgba(0,0,0,.85);border:1px solid rgba(80,180,255,.4);border-top:none;border-radius:0 0 10px 10px;padding:6px 18px;font-family:\'Orbitron\',sans-serif;font-size:.6rem;color:#50b4ff;display:flex;align-items:center;gap:10px;pointer-events:auto';
-  bar.innerHTML='<span>⏳ Waiting for opponent...</span><button onclick="returnToLobbyFromSolo('+tableNum+')" style="padding:3px 10px;border-radius:5px;background:rgba(255,100,100,.2);color:#ff6666;border:1px solid rgba(255,100,100,.4);cursor:pointer;font-size:.5rem;font-family:\'Orbitron\',sans-serif">Back to Lobby</button>';
+  bar.innerHTML='<span>⏳ '+_gmT('lobby.waiting.bar','Waiting for opponent...')+'</span><button onclick="returnToLobbyFromSolo('+tableNum+')" style="padding:3px 10px;border-radius:5px;background:rgba(255,100,100,.2);color:#ff6666;border:1px solid rgba(255,100,100,.4);cursor:pointer;font-size:.5rem;font-family:\'Orbitron\',sans-serif">'+_gmT('lobby.back','Back to Lobby')+'</button>';
   document.body.appendChild(bar);
 }
 
