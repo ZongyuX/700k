@@ -216,25 +216,17 @@ function validateLicense(key){
       return processLicenseResponse(d, key);
     }
 
-    /* If activation fails because limit is reached, try validate instead.
-     * This means the key was already activated on this or another device.
-     * We still want to let the user use it if it's valid. */
+    /* If activation fails because limit is reached, the key was already
+     * activated on this or another device/account. Since each code can
+     * only be used ONCE (one-time-use enforcement), we must NOT allow
+     * reuse via VALIDATE fallback. Return error instead.
+     *
+     * If the user legitimately has an active Pro subscription from this
+     * key, their Pro state will already be synced from the cloud doc —
+     * they do not need to enter the code again. */
     if(d && d.error && (String(d.error).indexOf('limit') >= 0 || String(d.error).indexOf('No more activations') >= 0 || String(d.error).indexOf('activation') >= 0)){
-      console.log('[PromptRunic] Activation limit reached, trying VALIDATE instead...');
-      return fetch(VALIDATE_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Accept': 'application/json'
-        },
-        body: 'license_key=' + encodeURIComponent(key)
-      })
-      .then(function(r){ return r.json(); })
-      .then(function(d2){
-        console.log('[PromptRunic] VALIDATE response (after limit):', JSON.stringify(d2, null, 2));
-        if(!d2 || d2.valid !== true) return { ok:false, error:'limit' };
-        return processLicenseResponse(d2, key);
-      });
+      console.log('[PromptRunic] Activation limit reached — key already used. Blocking reuse.');
+      return { ok:false, error:'limit' };
     }
 
     /* If activation failed for other reasons but the response still indicates

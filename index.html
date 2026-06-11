@@ -3506,10 +3506,15 @@ function openActivate(){
   }
   document.getElementById('actOverlay').classList.add('show');
 }
+var _redeemProcessing = false;
+
 async function redeemCode(){
   const key=document.getElementById('codeInput').value.trim();
   const m=document.getElementById('actMsg');
   if(!key){ m.className='msg err'; m.textContent=PPI18n.t('activate.entercode'); return; }
+
+  /* Prevent concurrent submissions */
+  if(_redeemProcessing){ return; }
 
   /* Require login for any activation (Pro, coins, credits) */
   if(!currentUser){
@@ -3535,6 +3540,7 @@ async function redeemCode(){
     return;
   }
 
+  _redeemProcessing = true;
   m.className='msg'; m.textContent=PPI18n.t('activate.checking'); m.style.display='block';
 
   /* ---- Promo codes (advertising / marketing) ---- */
@@ -3545,73 +3551,99 @@ async function redeemCode(){
 
   /* ZX14D- : free 14-day Pro trial */
   if(promoKey.indexOf('ZX14D-')===0){
-    if(isPromoUsed('ZX14D')) return promoAlreadyUsed(m,'ZX14D');
+    if(isPromoUsed('ZX14D')){ _redeemProcessing=false; return promoAlreadyUsed(m,'ZX14D'); }
     markPromoUsed('ZX14D');
-    markLicenseUsed(key);
+    await markLicenseUsedAsync(key);
+    _redeemProcessing=false;
     return unlockTimed(key,m,14,PPI18n.t('activate.promo.14d'));
   }
 
   /* ZX1M- : free 1-month (30-day) Pro */
   if(promoKey.indexOf('ZX1M-')===0){
-    if(isPromoUsed('ZX1M')) return promoAlreadyUsed(m,'ZX1M');
+    if(isPromoUsed('ZX1M')){ _redeemProcessing=false; return promoAlreadyUsed(m,'ZX1M'); }
     markPromoUsed('ZX1M');
-    markLicenseUsed(key);
+    await markLicenseUsedAsync(key);
+    _redeemProcessing=false;
     return unlockTimed(key,m,30,PPI18n.t('activate.promo.1m'));
   }
 
   /* ZX5000C- : add 5000 coins */
   if(promoKey.indexOf('ZX5000C-')===0){
-    if(isPromoUsed('ZX5000C')) return promoAlreadyUsed(m,'ZX5000C');
+    if(isPromoUsed('ZX5000C')){ _redeemProcessing=false; return promoAlreadyUsed(m,'ZX5000C'); }
     markPromoUsed('ZX5000C');
-    markLicenseUsed(key);
+    await markLicenseUsedAsync(key);
     if(window.PPGame && PPGame.addCoins) PPGame.addCoins(5000);
     m.className='msg ok';
     m.textContent=PPI18n.t('activate.promo.5000c');
+    _redeemProcessing=false;
     return;
   }
 
   if(!window.PPLemon || !PPLemon.validateLicense){
     m.className='msg err';
     m.textContent=PPI18n.t('activate.notready');
+    _redeemProcessing=false;
     return;
   }
   /* verify the license key with Lemon Squeezy */
   try{
     const res=await PPLemon.validateLicense(key);
     console.log('[PromptRunic] redeemCode result:', JSON.stringify(res));
+
+    /* ---- DOUBLE-CHECK: after Lemon Squeezy validation, verify key
+     * was not already used (prevents race condition and ensures
+     * Firestore-based tracking is checked even if local check missed it) ---- */
+    var secondCheck = await isLicenseUsedAsync(key);
+    if(secondCheck.used){
+      m.className='msg err';
+      if(secondCheck.byOtherAccount){
+        m.textContent=PPI18n.t('activate.code.used.other');
+      }else{
+        m.textContent=PPI18n.t('activate.code.used');
+      }
+      _redeemProcessing=false;
+      return;
+    }
+
     if(res.ok && res.kind==='pro'){
       /* Mark the key as used BEFORE unlocking to prevent reuse */
-      markLicenseUsed(key);
+      await markLicenseUsedAsync(key);
       /* Lifetime (days===0) → permanent; subscription (days>0) → set expiry */
       if(res.days && res.days > 0){
+        _redeemProcessing=false;
         return unlockTimed(key,m,res.days,PPI18n.t('activate.unlocked.sub').replace('{d}',res.days));
       }
+      _redeemProcessing=false;
       return unlock(key,m,PPI18n.t('activate.unlocked'));
     }
     if(res.ok && res.kind==='coins'){
       /* Mark the key as used BEFORE adding coins to prevent reuse */
-      markLicenseUsed(key);
+      await markLicenseUsedAsync(key);
       if(window.PPGame && PPGame.addCoins) PPGame.addCoins(res.coins);
       m.className='msg ok';
       m.textContent=PPI18n.t('activate.coincode').replace('{n}',res.coins);
+      _redeemProcessing=false;
       return;
     }
     if(res.ok){
       /* Valid key but couldn't determine type (unknown product).
        * Still mark as used so it can't be re-entered. */
-      markLicenseUsed(key);
+      await markLicenseUsedAsync(key);
       console.warn('[PromptRunic] Valid key but unknown product type. product_id=' +
         (res.product_id||'?') + ', product_name=' + (res.product_name||'?'));
       m.className='msg err';
       m.textContent=PPI18n.t('activate.notpro') + ' (Product: ' + (res.product_name||res.product_id||'unknown') + ')';
+      _redeemProcessing=false;
       return;
     }
     if(res.error==='network'){
       m.className='msg err'; m.textContent=PPI18n.t('activate.network');
+      _redeemProcessing=false;
       return;
     }
     if(res.error==='limit'){
       m.className='msg err'; m.textContent=PPI18n.t('activate.limit');
+      _redeemProcessing=false;
       return;
     }
     m.className='msg err'; m.textContent=PPI18n.t('activate.invalid');
@@ -3619,6 +3651,7 @@ async function redeemCode(){
     console.error('[PromptRunic] redeemCode exception:', e);
     m.className='msg err'; m.textContent=PPI18n.t('activate.network');
   }
+  _redeemProcessing=false;
 }
 
 /* Check / mark promo code usage (per account or per browser) */
@@ -3690,6 +3723,7 @@ async function isLicenseUsedAsync(key){
   /* First, do the fast synchronous check (local storage) */
   if(isLicenseUsed(key)) return {used:true, byOtherAccount:false};
   var normalizedKey = key.trim().toUpperCase();
+
   /* Check Firestore: global used_license_keys collection (cross-account) */
   if(fbReady && db){
     try{
@@ -3704,6 +3738,21 @@ async function isLicenseUsedAsync(key){
       }
     }catch(e){
       console.warn('[PromptRunic] Could not check global used keys:', e);
+      /* Fallback: check the user's subcollection (in case global collection
+       * is blocked by Firestore rules) */
+      if(currentUser){
+        try{
+          var subDoc = await db.collection('users').doc(currentUser.uid).collection('used_license_keys').doc(normalizedKey).get();
+          if(subDoc.exists){
+            markLicenseUsed(key);
+            var subData = subDoc.data()||{};
+            var isOther = subData.usedBy && subData.usedBy !== currentUser.uid;
+            return {used:true, byOtherAccount: isOther};
+          }
+        }catch(e2){
+          console.warn('[PromptRunic] Could not check user subcollection used keys:', e2);
+        }
+      }
     }
   }
   /* Check Firestore: current user's usedKeys array (in case local was cleared) */
@@ -3726,6 +3775,9 @@ async function isLicenseUsedAsync(key){
   return {used:false, byOtherAccount:false};
 }
 function markLicenseUsed(key){
+  /* Synchronous version — writes to localStorage immediately, then
+   * fires off async Firestore writes (fire-and-forget).
+   * For the await version, use markLicenseUsedAsync() instead. */
   var normalizedKey = key.trim().toUpperCase();
   var usedKeys=[];
   try{ usedKeys=JSON.parse(lsGet('pp_used_keys')||'[]'); }catch(e){ usedKeys=[]; }
@@ -3733,27 +3785,73 @@ function markLicenseUsed(key){
   lsSet('pp_used_keys',JSON.stringify(usedKeys));
   /* Per-key flag */
   lsSet('pp_used_key_'+normalizedKey,'1');
-  /* Sync to user's cloud doc so it persists across devices */
-  if(currentUser && fbReady){
-    try{
+  /* Fire-and-forget Firestore writes */
+  _markLicenseUsedCloud(normalizedKey);
+}
+
+/* Async version: awaits all Firestore writes to ensure the key is
+ * properly recorded before returning. This is the RECOMMENDED version
+ * to use in redeemCode() to guarantee one-time-use enforcement. */
+async function markLicenseUsedAsync(key){
+  var normalizedKey = key.trim().toUpperCase();
+  /* 1. Write to localStorage (immediate, reliable) */
+  var usedKeys=[];
+  try{ usedKeys=JSON.parse(lsGet('pp_used_keys')||'[]'); }catch(e){ usedKeys=[]; }
+  if(usedKeys.indexOf(normalizedKey)<0) usedKeys.push(normalizedKey);
+  lsSet('pp_used_keys',JSON.stringify(usedKeys));
+  lsSet('pp_used_key_'+normalizedKey,'1');
+
+  /* 2. Await cloud writes to guarantee persistence */
+  await _markLicenseUsedCloud(normalizedKey);
+}
+
+/* Internal: write used key to Firestore (both user doc and global registry).
+ * Returns a Promise so callers can await it if needed. */
+function _markLicenseUsedCloud(normalizedKey){
+  if(!currentUser || !fbReady) return Promise.resolve();
+
+  var promises = [];
+
+  /* Write to user's cloud doc */
+  try{
+    promises.push(
       userDocRef().set({
         usedKeys:firebase.firestore.FieldValue.arrayUnion(normalizedKey),
         updatedAt:firebase.firestore.FieldValue.serverTimestamp()
-      },{merge:true});
-    }catch(e){ console.warn('markLicenseUsed cloud sync',e); }
-    /* Also write to the GLOBAL used_license_keys collection.
-     * This is the authoritative cross-account registry — once a key is
-     * written here, no other account can ever use it again.
-     * The document ID is the normalized key itself, and we store who
-     * used it and when for auditing. */
-    try{
+      },{merge:true}).catch(function(e){
+        console.warn('markLicenseUsed cloud sync failed:', e);
+      })
+    );
+  }catch(e){ console.warn('markLicenseUsed cloud sync',e); }
+
+  /* Write to the GLOBAL used_license_keys collection.
+   * This is the authoritative cross-account registry — once a key is
+   * written here, no other account can ever use it again. */
+  try{
+    promises.push(
       db.collection('used_license_keys').doc(normalizedKey).set({
         usedBy: currentUser.uid,
         usedAt: firebase.firestore.FieldValue.serverTimestamp(),
         key: normalizedKey
-      });
-    }catch(e){ console.warn('markLicenseUsed global registry',e); }
-  }
+      }).catch(function(e){
+        console.warn('markLicenseUsed global registry failed:', e);
+        /* If the global registry write fails (e.g., Firestore rules),
+         * try an alternative path: write to a subcollection under the
+         * user's own document where rules are more permissive. */
+        try{
+          db.collection('users').doc(currentUser.uid).collection('used_license_keys').doc(normalizedKey).set({
+            usedBy: currentUser.uid,
+            usedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            key: normalizedKey
+          }).catch(function(e2){
+            console.warn('markLicenseUsed user subcollection fallback failed:', e2);
+          });
+        }catch(e3){}
+      })
+    );
+  }catch(e){ console.warn('markLicenseUsed global registry',e); }
+
+  return Promise.all(promises);
 }
 
 function unlock(key,m,text){
@@ -5645,46 +5743,60 @@ async function sendFriendRequestTo(uid,name,btnId){
   /* Real user: Immediately update button to "Sent" state BEFORE async write */
   _setBtnSent(btnId,btnId==='profileAddBtn');
   try{
-    /* Check if already friends or pending */
+    /* Check if already friends in our own list */
     var existing=await db.collection('friends').doc(currentUser.uid).collection('list').doc(uid).get();
     if(existing.exists){
       var st=existing.data().status;
-      if(st==='pending_sent'){toast('Request already sent','info');return;}
+      if(st==='pending_sent'||st==='pending_received'){toast('Request already sent','info');return;}
       if(st==='accepted'){toast('Already friends','info');return;}
     }
-    /* Try batch write first (both directions in one transaction) */
+
+    /* Check if there's already a pending request in the global collection */
+    var existingReq=await db.collection('friend_requests')
+      .where('from','==',currentUser.uid)
+      .where('to','==',uid)
+      .where('status','==','pending')
+      .get();
+    if(!existingReq.empty){
+      toast('Request already sent','info');
+      return;
+    }
+
+    /* Also check for a reverse pending request (they sent us one first) */
+    var reverseReq=await db.collection('friend_requests')
+      .where('from','==',uid)
+      .where('to','==',currentUser.uid)
+      .where('status','==','pending')
+      .get();
+    if(!reverseReq.empty){
+      toast('This user already sent you a request — check your incoming requests!','info');
+      return;
+    }
+
+    var myName=currentUser.displayName||currentUser.email.split('@')[0];
+
+    /* Write a friend request to the GLOBAL friend_requests collection.
+     * This avoids the need to write to the other user's subcollection
+     * (which Firestore rules typically block).
+     * The other user reads their incoming requests from this collection. */
+    await db.collection('friend_requests').add({
+      from: currentUser.uid,
+      fromName: myName,
+      to: uid,
+      toName: name,
+      status: 'pending',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    /* Also write to our own friends list as "pending_sent" */
     try{
-      var batch=db.batch();
-      batch.set(db.collection('friends').doc(currentUser.uid).collection('list').doc(uid),{
-        uid:uid,name:name,status:'pending_sent',addedAt:firebase.firestore.FieldValue.serverTimestamp()
-      },{merge:true});
-      var myName=currentUser.displayName||currentUser.email.split('@')[0];
-      batch.set(db.collection('friends').doc(uid).collection('list').doc(currentUser.uid),{
-        uid:currentUser.uid,name:myName,status:'pending_received',addedAt:firebase.firestore.FieldValue.serverTimestamp()
-      },{merge:true});
-      await batch.commit();
-    }catch(batchErr){
-      /* Batch write failed (likely Firestore rules don't allow writing to
-       * other user's sub-collection). Fall back to writing only the current
-       * user's side, and write the other side separately. */
-      console.warn('Batch friend write failed, trying individual writes:', batchErr);
-      /* Write current user's side (this should always work — own sub-collection) */
       await db.collection('friends').doc(currentUser.uid).collection('list').doc(uid).set({
         uid:uid,name:name,status:'pending_sent',addedAt:firebase.firestore.FieldValue.serverTimestamp()
       },{merge:true});
-      /* Try writing the other user's side separately (may fail if rules block it) */
-      var myName2=currentUser.displayName||currentUser.email.split('@')[0];
-      try{
-        await db.collection('friends').doc(uid).collection('list').doc(currentUser.uid).set({
-          uid:currentUser.uid,name:myName2,status:'pending_received',addedAt:firebase.firestore.FieldValue.serverTimestamp()
-        },{merge:true});
-      }catch(otherErr){
-        /* If we can't write the other user's side, that's OK — the request
-         * is still recorded on our side. The other user will see it when
-         * they check their incoming requests or when both sides sync. */
-        console.warn('Could not write other user friend side (expected if rules restrict cross-user writes):', otherErr);
-      }
+    }catch(selfWriteErr){
+      console.warn('Could not write to own friends list (non-critical):', selfWriteErr);
     }
+
     toast('Friend request sent to '+name);
     loadFriendsList();
     loadFriendRequests();
@@ -5702,22 +5814,39 @@ async function loadFriendRequests(){
   var list=document.getElementById('contactReqList');
   var countEl=document.getElementById('contactReqCount');
   try{
-    var snap;
-    /* Try without orderBy first (avoids composite index requirement) */
-    try{
-      snap=await db.collection('friends').doc(currentUser.uid).collection('list').where('status','==','pending_received').get();
-    }catch(e1){
-      /* Fallback: try simple get and filter client-side */
-      console.warn('pending_received query failed, trying fallback',e1);
-      snap=await db.collection('friends').doc(currentUser.uid).collection('list').get();
-    }
     var items=[];
-    snap.forEach(function(doc){
-      var d=doc.data();
-      if(d.status==='pending_received'){
-        items.push({uid:d.uid||doc.id,name:d.name||'User',addedAt:d.addedAt||null});
-      }
-    });
+
+    /* Method 1: Read from global friend_requests collection (primary) */
+    try{
+      var reqSnap=await db.collection('friend_requests')
+        .where('to','==',currentUser.uid)
+        .where('status','==','pending')
+        .get();
+      reqSnap.forEach(function(doc){
+        var d=doc.data();
+        items.push({uid:d.from,name:d.fromName||'User',addedAt:d.createdAt||null,requestDocId:doc.id});
+      });
+    }catch(reqErr){
+      console.warn('friend_requests query failed, trying fallback',reqErr);
+    }
+
+    /* Method 2: Also check own friends list for pending_received (legacy) */
+    try{
+      var snap=await db.collection('friends').doc(currentUser.uid).collection('list').get();
+      snap.forEach(function(doc){
+        var d=doc.data();
+        if(d.status==='pending_received'){
+          /* Avoid duplicates */
+          var alreadyExists=items.some(function(it){return it.uid===(d.uid||doc.id);});
+          if(!alreadyExists){
+            items.push({uid:d.uid||doc.id,name:d.name||'User',addedAt:d.addedAt||null,requestDocId:null});
+          }
+        }
+      });
+    }catch(e1){
+      console.warn('friends list pending_received query failed',e1);
+    }
+
     /* Sort client-side by addedAt descending */
     items.sort(function(a,b){
       var ta=a.addedAt?((a.addedAt.toDate?a.addedAt.toDate():a.addedAt).getTime()):0;
@@ -5734,8 +5863,8 @@ async function loadFriendRequests(){
     items.forEach(function(item){
       html+='<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;border:1px solid var(--border);margin-bottom:4px;background:var(--panel2)">'+
         '<div style="flex:1;font-size:13px;font-weight:600">'+esc(item.name)+'</div>'+
-        '<button onclick="acceptFriendRequest(\''+item.uid+'\',\''+esc(item.name).replace(/'/g,"\\'")+'\')" style="background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);color:#7ee2a4;padding:5px 12px;border-radius:8px;font-size:11px;cursor:pointer;font-weight:600">Accept</button>'+
-        '<button onclick="declineFriendRequest(\''+item.uid+'\')" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:#ef4444;padding:5px 12px;border-radius:8px;font-size:11px;cursor:pointer;font-weight:600">Decline</button>'+
+        '<button onclick="acceptFriendRequest(\''+item.uid+'\',\''+esc(item.name).replace(/'/g,"\\'")+'\',\''+(item.requestDocId||'')+'\')" style="background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);color:#7ee2a4;padding:5px 12px;border-radius:8px;font-size:11px;cursor:pointer;font-weight:600">Accept</button>'+
+        '<button onclick="declineFriendRequest(\''+item.uid+'\',\''+(item.requestDocId||'')+'\')" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:#ef4444;padding:5px 12px;border-radius:8px;font-size:11px;cursor:pointer;font-weight:600">Decline</button>'+
       '</div>';
     });
     list.innerHTML=html;
@@ -5753,28 +5882,87 @@ function updateReqBadge(count){
 }
 
 /* Accept friend request */
-async function acceptFriendRequest(uid,name){
+async function acceptFriendRequest(uid,name,requestDocId){
   if(!fbReady||!currentUser) return;
   var myName=currentUser.displayName||currentUser.email.split('@')[0];
-  var batch=db.batch();
-  batch.set(db.collection('friends').doc(currentUser.uid).collection('list').doc(uid),{
-    uid:uid,name:name,status:'accepted',addedAt:firebase.firestore.FieldValue.serverTimestamp()
-  },{merge:true});
-  batch.set(db.collection('friends').doc(uid).collection('list').doc(currentUser.uid),{
-    uid:currentUser.uid,name:myName,status:'accepted',addedAt:firebase.firestore.FieldValue.serverTimestamp()
-  },{merge:true});
-  try{await batch.commit();toast(name+' is now your friend!');loadFriendRequests();loadFriendsList();}
-  catch(e){console.warn('accept friend',e);toast('Error accepting request','info');}
+  try{
+    /* Write to our own friends list as "accepted" */
+    await db.collection('friends').doc(currentUser.uid).collection('list').doc(uid).set({
+      uid:uid,name:name,status:'accepted',addedAt:firebase.firestore.FieldValue.serverTimestamp()
+    },{merge:true});
+
+    /* Try to write to the other user's friends list too (may fail due to rules) */
+    try{
+      await db.collection('friends').doc(uid).collection('list').doc(currentUser.uid).set({
+        uid:currentUser.uid,name:myName,status:'accepted',addedAt:firebase.firestore.FieldValue.serverTimestamp()
+      },{merge:true});
+    }catch(otherWriteErr){
+      console.warn('Could not write to other user friends list (non-critical):', otherWriteErr);
+    }
+
+    /* Update the friend_requests document to "accepted" */
+    if(requestDocId){
+      try{
+        await db.collection('friend_requests').doc(requestDocId).update({status:'accepted'});
+      }catch(reqUpdateErr){
+        console.warn('Could not update friend_requests doc (non-critical):', reqUpdateErr);
+      }
+    }else{
+      /* No requestDocId — try to find and update the request */
+      try{
+        var reqSnap=await db.collection('friend_requests')
+          .where('from','==',uid)
+          .where('to','==',currentUser.uid)
+          .where('status','==','pending')
+          .get();
+        reqSnap.forEach(function(doc){
+          doc.ref.update({status:'accepted'});
+        });
+      }catch(e){}
+    }
+
+    toast(name+' is now your friend!');
+    loadFriendRequests();
+    loadFriendsList();
+  }catch(e){
+    console.warn('accept friend',e);
+    toast('Error accepting request','info');
+  }
 }
 
 /* Decline friend request */
-async function declineFriendRequest(uid){
+async function declineFriendRequest(uid,requestDocId){
   if(!fbReady||!currentUser) return;
-  var batch=db.batch();
-  batch.delete(db.collection('friends').doc(currentUser.uid).collection('list').doc(uid));
-  batch.delete(db.collection('friends').doc(uid).collection('list').doc(currentUser.uid));
-  try{await batch.commit();loadFriendRequests();loadFriendsList();}
-  catch(e){console.warn('decline friend',e);}
+  try{
+    /* Remove from our own friends list */
+    try{
+      await db.collection('friends').doc(currentUser.uid).collection('list').doc(uid).delete();
+    }catch(e){}
+
+    /* Update the friend_requests document to "declined" */
+    if(requestDocId){
+      try{
+        await db.collection('friend_requests').doc(requestDocId).update({status:'declined'});
+      }catch(e){}
+    }else{
+      /* No requestDocId — try to find and update the request */
+      try{
+        var reqSnap=await db.collection('friend_requests')
+          .where('from','==',uid)
+          .where('to','==',currentUser.uid)
+          .where('status','==','pending')
+          .get();
+        reqSnap.forEach(function(doc){
+          doc.ref.update({status:'declined'});
+        });
+      }catch(e){}
+    }
+
+    loadFriendRequests();
+    loadFriendsList();
+  }catch(e){
+    console.warn('decline friend',e);
+  }
 }
 
 /* ---- Load friends list with online/offline (Contacts tab) ---- */
