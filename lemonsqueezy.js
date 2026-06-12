@@ -86,6 +86,21 @@ var CREDIT_PRODUCT_MAP = {
 var VALIDATE_URL = 'https://api.lemonsqueezy.com/v1/licenses/validate';
 var ACTIVATE_URL = 'https://api.lemonsqueezy.com/v1/licenses/activate';
 
+/* Generate a unique instance name for this browser/device.
+ * Lemon Squeezy requires instance_name for the activate endpoint.
+ * We use a persistent random ID stored in localStorage so re-activations
+ * from the same browser reuse the same instance (avoiding slot waste). */
+function getInstanceName(){
+  var key = 'pp_lemon_instance';
+  var name = '';
+  try{ name = localStorage.getItem(key); }catch(e){}
+  if(!name){
+    name = 'PromptRunic-' + Math.random().toString(36).substring(2,10);
+    try{ localStorage.setItem(key, name); }catch(e){}
+  }
+  return name;
+}
+
 /* --------------------------------------------------------------- helpers */
 function openUrl(u){
   if(!u){
@@ -103,26 +118,26 @@ function classifyProduct(productId){
   if(PRO_PRODUCT_IDS.indexOf(productId) >= 0){
     var days = PLAN_DURATION_DAYS[productId];
     if(typeof days === 'undefined') days = 0;
-    return { kind:'pro', days: days };
+    return { ok:true, kind:'pro', days: days, productId: productId };
   }
   /* Check coin packs */
   if(COIN_PRODUCT_MAP[productId]){
-    return { kind:'coins', coins: COIN_PRODUCT_MAP[productId] };
+    return { ok:true, kind:'coins', coins: COIN_PRODUCT_MAP[productId], productId: productId };
   }
   /* Check credit packs */
   if(CREDIT_PRODUCT_MAP[productId]){
-    return { kind:'credits', credits: CREDIT_PRODUCT_MAP[productId] };
+    return { ok:true, kind:'credits', credits: CREDIT_PRODUCT_MAP[productId], productId: productId };
   }
   /* If product_id is NOT in Pro list and we have Pro IDs defined,
    * it must be a coin pack by process of elimination.
-   * Default coin amounts: try to infer from checkout URL order. */
+   * Return the product_id so the caller can look up the exact amount. */
   if(PRO_PRODUCT_IDS.length > 0){
     /* Default: not Pro = coin pack. Use 1200 as fallback.
-     * The user should fill in COIN_PRODUCT_MAP for accurate amounts. */
-    return { kind:'coins', coins: 1200 };
+     * The caller should check productId for more accurate amounts. */
+    return { ok:true, kind:'coins', coins: 1200, productId: productId };
   }
   /* PRO_PRODUCT_IDS not set — treat any valid key as Pro */
-  return { kind:'pro', days: 0 };
+  return { ok:true, kind:'pro', days: 0, productId: productId };
 }
 
 /* Verify a license key. Resolves to one of:
@@ -137,17 +152,24 @@ function classifyProduct(productId){
  * Only fall back to activate if validate fails and we need product_id info.
  */
 function validateLicense(key){
+  var instanceName = getInstanceName();
+
   /* Step 1: Try the VALIDATE endpoint first (read-only, no activation count consumed) */
   return fetch(VALIDATE_URL, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
+      'Content-Type': 'application/json',
       'Accept': 'application/json'
     },
-    body: 'license_key=' + encodeURIComponent(key)
+    body: JSON.stringify({
+      license_key: key,
+      instance_name: instanceName
+    })
   })
   .then(function(r){ return r.json(); })
   .then(function(d){
+    console.log('[LemonSqueezy] validate response:', JSON.stringify(d).substring(0, 500));
+
     /* Check if validate returned a valid license */
     if(d && d.valid === true){
       var meta = d.meta || {};
@@ -210,16 +232,23 @@ function validateLicense(key){
 
 /* Try the ACTIVATE endpoint — consumes an activation slot but returns full info */
 function tryActivate(key){
+  var instanceName = getInstanceName();
+
   return fetch(ACTIVATE_URL, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
+      'Content-Type': 'application/json',
       'Accept': 'application/json'
     },
-    body: 'license_key=' + encodeURIComponent(key)
+    body: JSON.stringify({
+      license_key: key,
+      instance_name: instanceName
+    })
   })
   .then(function(r){ return r.json(); })
   .then(function(d){
+    console.log('[LemonSqueezy] activate response:', JSON.stringify(d).substring(0, 500));
+
     /* Successful activation */
     if(d && d.activated === true){
       var meta = d.meta || {};
@@ -281,7 +310,9 @@ window.PPLemon = {
     if(i<0 || i>=BUY_COINS.length){ openUrl(''); return; }
     openUrl(BUY_COINS[i]);
   },
-  validateLicense: validateLicense
+  validateLicense: validateLicense,
+  /* Expose helper for fun.js to check if product_id is in COIN_PRODUCT_MAP */
+  coinProductMapHas: function(productId){ return !!COIN_PRODUCT_MAP[productId]; }
 };
 
 })();

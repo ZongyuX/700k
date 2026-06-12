@@ -2680,11 +2680,45 @@ async function handleAuthChange(user){
   evalProState();
   if(currentUser){
     try{ await loadUserDoc(currentUser); }catch(e){ console.warn('loadUserDoc',e); }
+    /* Sync public profile so other users can find this user by search */
+    syncPublicProfile();
+    /* Save user name/email to localStorage for game iframe access */
+    try{
+      var uname=currentUser.displayName||currentUser.email.split('@')[0]||'';
+      if(uname) localStorage.setItem('pp_user_name',uname);
+      if(currentUser.email) localStorage.setItem('pp_user_email',currentUser.email);
+      if(currentUser.uid) localStorage.setItem('pp_user_uid',currentUser.uid);
+    }catch(e){}
+  }else{
+    /* Clear stored user info on sign-out */
+    try{ localStorage.removeItem('pp_user_name'); localStorage.removeItem('pp_user_email'); localStorage.removeItem('pp_user_uid'); }catch(e){}
   }
   refreshAuthUI();
   refreshBadge();
   renderSidebar();
   renderGrid();
+}
+
+/* Sync the current user's profile to the pp_public collection so that
+ * other users can discover them via the Find Friends search.
+ * This writes a minimal public document: name, email, avatar, lvl. */
+function syncPublicProfile(){
+  if(!fbReady||!currentUser) return;
+  var name=currentUser.displayName||currentUser.email.split('@')[0]||'';
+  var email=currentUser.email||'';
+  var avatar=0, lvl=1;
+  if(window.PPGame&&PPGame.exportState){
+    var gs=PPGame.exportState();
+    avatar=gs.avatar||0;
+    lvl=gs.lvl||1;
+  }
+  db.collection('pp_public').doc(currentUser.uid).set({
+    name:name,
+    email:email,
+    avatar:avatar,
+    lvl:lvl,
+    updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+  },{merge:true}).catch(function(e){ console.warn('syncPublicProfile',e); });
 }
 
 function userDocRef(){ return db.collection('users').doc(currentUser.uid); }
@@ -2834,12 +2868,20 @@ function doAuthSubmit(){
     lsSet('pp_optin', document.getElementById('authOptIn').checked?'1':'0');
     auth.createUserWithEmailAndPassword(email,pass).then(function(userCredential){
       var user = userCredential.user;
+      /* Set display name from email prefix if not provided */
+      var displayName = email.split('@')[0];
+      if(!user.displayName && displayName){
+        return user.updateProfile({displayName:displayName}).then(function(){
+          return user.sendEmailVerification();
+        });
+      }
       /* Send email verification */
-      return user.sendEmailVerification().then(function(){
-        done();
-        /* Sign out the user — they must verify email first before logging in */
-        return auth.signOut();
-      }).then(function(){
+      return user.sendEmailVerification();
+    }).then(function(){
+      done();
+      /* Sign out the user — they must verify email first before logging in */
+      return auth.signOut();
+    }).then(function(){
         m.className='msg ok';
         m.textContent='Registration successful! A verification email has been sent to ' + email + '. Please check your inbox and click the verification link before signing in.';
         /* Show resend button and start cooldown */
@@ -3707,7 +3749,9 @@ async function redeemCode(){
   }
   /* verify the license key with Lemon Squeezy */
   try{
+    console.log('[Pro Activation] Validating key with Lemon Squeezy...');
     const res=await PPLemon.validateLicense(key);
+    console.log('[Pro Activation] Validation result:', JSON.stringify(res));
     if(res.ok && res.kind==='pro'){
       /* Lifetime (days===0) → permanent; subscription (days>0) → set expiry */
       if(res.days && res.days > 0){
@@ -6773,6 +6817,8 @@ function listenForConversations(){
 function setOnlineStatus(){
   if(!fbReady||!currentUser) return;
   db.collection('users').doc(currentUser.uid).set({online:true,lastSeen:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).catch(function(){});
+  /* Also update pp_public for searchability */
+  if(typeof syncPublicProfile==='function') syncPublicProfile();
   /* Set offline on page unload */
   window.addEventListener('beforeunload',function(){
     db.collection('users').doc(currentUser.uid).set({online:false,lastSeen:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).catch(function(){});

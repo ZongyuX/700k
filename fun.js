@@ -1781,7 +1781,9 @@ async function redeemCoinCode(){
   }
   m.className='msg'; m.textContent='Verifying code with Lemon Squeezy...';
   try{
+    console.log('[Coin Activation] Validating key with Lemon Squeezy...');
     var res = await PPLemon.validateLicense(code);
+    console.log('[Coin Activation] Validation result:', JSON.stringify(res));
 
     /* ---- Cross-charge prevention ---- */
     if(res.ok && res.kind==='pro'){
@@ -1802,8 +1804,16 @@ async function redeemCoinCode(){
         return;
       }
       _markCodeUsed(code);
-      game.coins=(game.coins||0)+res.coins; save(); refresh(); paintArcadeBtn();
-      m.className='msg ok'; m.textContent='+'+res.coins+' coins added!';
+      var coinAmount = res.coins || 1200;
+      /* If the amount is the default 1200 (from process-of-elimination fallback),
+       * show a coin amount selector so the user can pick the right pack size.
+       * This happens when COIN_PRODUCT_MAP isn't filled in with real product IDs. */
+      if(coinAmount === 1200 && res.productId && !COIN_PRODUCT_MAP_HAS(res.productId)){
+        showCoinPackSelector(code, m);
+        return;
+      }
+      game.coins=(game.coins||0)+coinAmount; save(); refresh(); paintArcadeBtn();
+      m.className='msg ok'; m.textContent='+'+coinAmount+' coins added!';
       setTimeout(paintArcade, 900); return;
     }
     if(res.ok && res.kind==='unknown'){
@@ -1861,6 +1871,37 @@ function _markCodeUsed(code){
   var key = _gameUid ? ('pp_used_codes_'+_gameUid) : 'pp_used_codes';
   var uc=[];try{uc=JSON.parse(localStorage.getItem(key)||'[]');}catch(e){uc=[];}
   if(uc.indexOf(code)<0){uc.push(code);localStorage.setItem(key,JSON.stringify(uc));}
+}
+/* Helper: check if product_id is in COIN_PRODUCT_MAP (via PPLemon) */
+function COIN_PRODUCT_MAP_HAS(productId){
+  try{
+    if(window.PPLemon && PPLemon.coinProductMapHas) return PPLemon.coinProductMapHas(productId);
+  }catch(e){}
+  return false;
+}
+/* Show coin pack size selector when we can't determine the exact amount */
+function showCoinPackSelector(code, msgEl){
+  var packs=[
+    {label:'Coin Pack S — 1,200 coins',coins:1200},
+    {label:'Coin Pack M — 4,000 coins',coins:4000},
+    {label:'Coin Pack L — 12,000 coins',coins:12000}
+  ];
+  var h='<div style="margin-top:8px;font-size:12px;color:var(--text);font-weight:700">Select your coin pack size:</div>';
+  h+='<div style="display:flex;flex-direction:column;gap:6px;margin-top:6px">';
+  packs.forEach(function(p){
+    h+='<button onclick="applyCoinPack(\''+esc(code)+'\','+p.coins+',this.parentElement.parentElement)" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:8px 12px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;text-align:left">'+p.label+'</button>';
+  });
+  h+='</div>';
+  msgEl.className='msg';
+  msgEl.innerHTML='Your code is valid! '+h;
+}
+/* Apply selected coin pack amount */
+function applyCoinPack(code,amount,parentEl){
+  /* Code was already marked as used in redeemCoinCode, just add coins */
+  game.coins=(game.coins||0)+amount; save(); refresh(); paintArcadeBtn();
+  var msgEl=elById('ppCoinMsg');
+  if(msgEl){msgEl.className='msg ok';msgEl.textContent='+'+amount+' coins added!';}
+  setTimeout(paintArcade, 900);
 }
 
 /* ---- Account / Profile panel: removed — duplicate of header authBtn ---- */
