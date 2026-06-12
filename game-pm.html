@@ -1925,14 +1925,6 @@ var mpMySeat=-1;
 var mpMyTable=-1;
 var mpIsReady=false;
 var mpSoloWhileWaiting=false; /* true when playing solo while waiting for opponent */
-var mpGameId=null;        /* Firebase RTDB path for current multiplayer game state */
-var mpOpponentUid=null;   /* Opponent's UID for the current game */
-var mpIsHost=false;       /* Whether the current player is the host (seat 1) */
-var mpSyncTimer=0;        /* Timer for periodic state sync */
-var mpSyncInterval=2000;  /* Sync every 2 seconds to avoid excessive writes */
-var mpOpponentState=null; /* Last received opponent state */
-var mpGameStateRef=null;  /* Reference to the game state in RTDB */
-var mpStateListener=null; /* Listener for opponent state changes */
 
 function showMultiplayerSelect(){
   document.getElementById('modeScreen').style.display='none';
@@ -2060,18 +2052,7 @@ function buildTableHTML(tableNum,state){
 /* Get current user UID from parent app or guest */
 function getMyUid(){
   try{
-    /* Priority 1: parent's currentUser object */
-    if(window.parent&&window.parent.currentUser&&window.parent.currentUser.uid){
-      return window.parent.currentUser.uid;
-    }
-    /* Priority 2: parent's Firebase Auth currentUser */
-    if(window.parent&&window.parent.auth&&window.parent.auth.currentUser){
-      return window.parent.auth.currentUser.uid;
-    }
-  }catch(e){}
-  /* Fallback: try global auth on this window */
-  try{
-    if(window.auth&&window.auth.currentUser) return window.auth.currentUser.uid;
+    if(window.parent&&window.parent.currentUser) return window.parent.currentUser.uid;
   }catch(e){}
   /* Fallback: use guest UID stored in localStorage */
   var guestUid=localStorage.getItem('pm_guest_uid');
@@ -2085,22 +2066,8 @@ function getMyUid(){
 /* Get current user display name from parent app or guest */
 function getMyName(){
   try{
-    /* Priority 1: parent's currentUser */
     if(window.parent&&window.parent.currentUser){
-      var user=window.parent.currentUser;
-      return user.displayName||(user.email?user.email.split('@')[0]:null)||'Player';
-    }
-    /* Priority 2: parent's Firebase Auth */
-    if(window.parent&&window.parent.auth&&window.parent.auth.currentUser){
-      var authUser=window.parent.auth.currentUser;
-      return authUser.displayName||(authUser.email?authUser.email.split('@')[0]:null)||'Player';
-    }
-  }catch(e){}
-  /* Fallback: try global auth on this window */
-  try{
-    if(window.auth&&window.auth.currentUser){
-      var au=window.auth.currentUser;
-      return au.displayName||(au.email?au.email.split('@')[0]:null)||'Player';
+      return window.parent.currentUser.displayName||window.parent.currentUser.email.split('@')[0];
     }
   }catch(e){}
   /* Fallback: use guest name from localStorage */
@@ -2116,61 +2083,51 @@ function getMyName(){
 /* Sit down at a table seat */
 function sitDown(tableNum,seatNum){
   var myUid=getMyUid();
-  console.log('[MP] sitDown called, myUid:', myUid);
-
   if(!myUid){
+    /* Should not happen now since getMyUid generates a guest UID, but just in case */
     alert('Unable to identify player. Please refresh the page.');
     return;
   }
-
+  /* Check if already seated at another table */
   if(mpMyTable>0&&mpMyTable!==tableNum){
     toast('Leave your current table first!','info');
     return;
   }
-
   var rtdb=getRtdb();
-  console.log('[MP] rtdb instance:', rtdb);
-
   if(!rtdb){
+    /* No Firebase: show clear message and start solo game */
     toast('Multiplayer requires login. Please sign in from the PromptRunic app, or play solo mode.','info');
     startSoloWhileWaiting(tableNum,seatNum);
     return;
   }
-
-  var tableRef=rtdb.ref('lobby/'+mpMode+'/tables/'+tableNum);
-  console.log('[MP] tableRef path:', 'lobby/'+mpMode+'/tables/'+tableNum);
-
+  var tableRef=rtdb.ref('lobby/'+mpMode+'/table_'+tableNum);
   tableRef.once('value').then(function(snap){
-    console.log('[MP] table data:', snap.val());
     var data=snap.val()||{};
     var seat1=data.seat1||null;
     var seat2=data.seat2||null;
-
+    /* Check if the requested seat is taken */
     if(seatNum===1&&seat1&&seat1.uid!==myUid){
-      toast('Seat 1 is occupied!','info');
-      return;
+      toast('Seat 1 is occupied!','info');return;
     }
     if(seatNum===2&&seat2&&seat2.uid!==myUid){
-      toast('Seat 2 is occupied!','info');
-      return;
+      toast('Seat 2 is occupied!','info');return;
     }
-
+    /* Sit down */
     var update={};
     update['seat'+seatNum]={uid:myUid,name:getMyName(),ready:false};
     update['mode']=mpMode;
+    /* Use Date.now() instead of firebase.database.ServerValue.TIMESTAMP
+       since the Firebase SDK is not loaded inside the iframe */
     update['updatedAt']=Date.now();
-
-    console.log('[MP] updating table:', update);
     tableRef.update(update);
-
     mpMyTable=tableNum;
     mpMySeat=seatNum;
     mpIsReady=false;
-
-    tableRef.child('seat'+seatNum).onDisconnect().remove();
+    /* Set presence: auto-leave on disconnect */
+    rtdb.ref('lobby/'+mpMode+'/table_'+tableNum+'/seat'+seatNum).onDisconnect().remove();
   }).catch(function(e){
-    console.error('[MP] sitDown error details:', e);
-    toast('Could not join table: '+(e.message||'unknown error'),'info');
+    console.warn('sitDown error:',e);
+    toast('Could not join table. Starting solo game...','info');
     startSoloWhileWaiting(tableNum,seatNum);
   });
 }
@@ -2180,9 +2137,9 @@ function standUp(tableNum){
   var rtdb=getRtdb();
   if(!rtdb)return;
   if(mpMySeat>0){
-    rtdb.ref('lobby/'+mpMode+'/tables/'+tableNum+'/seat'+mpMySeat).remove();
+    rtdb.ref('lobby/'+mpMode+'/table_'+tableNum+'/seat'+mpMySeat).remove();
     /* Cancel the onDisconnect */
-    rtdb.ref('lobby/'+mpMode+'/tables/'+tableNum+'/seat'+mpMySeat).onDisconnect().cancel();
+    rtdb.ref('lobby/'+mpMode+'/table_'+tableNum+'/seat'+mpMySeat).onDisconnect().cancel();
   }
   mpMyTable=-1;mpMySeat=-1;mpIsReady=false;
 }
@@ -2192,7 +2149,7 @@ function toggleReady(tableNum){
   var rtdb=getRtdb();
   if(!rtdb||mpMySeat<1)return;
   mpIsReady=!mpIsReady;
-  rtdb.ref('lobby/'+mpMode+'/tables/'+tableNum+'/seat'+mpMySeat+'/ready').set(mpIsReady);
+  rtdb.ref('lobby/'+mpMode+'/table_'+tableNum+'/seat'+mpMySeat+'/ready').set(mpIsReady);
 }
 
 /* Listen to lobby changes via Firebase RTDB */
@@ -2204,13 +2161,13 @@ function listenToLobby(){
     if(container) container.innerHTML='<div style="color:#888;font-size:.7rem;text-align:center;padding:20px">Multiplayer requires login. Please sign in from the PromptRunic app, or play solo mode.</div>';
     return;
   }
-  mpLobbyRef=rtdb.ref('lobby/'+mpMode+'/tables');
+  mpLobbyRef=rtdb.ref('lobby/'+mpMode);
   mpLobbyListener=mpLobbyRef.on('value',function(snap){
     var data=snap.val()||{};
     updateLobbyUI(data);
     /* Check if my table has both players ready → start game */
     if(mpMyTable>0){
-      var tableData=data[mpMyTable]||data[''+mpMyTable];
+      var tableData=data['table_'+mpMyTable];
       if(tableData){
         var s1=tableData.seat1;
         var s2=tableData.seat2;
@@ -2236,7 +2193,7 @@ function updateLobbyUI(data){
   for(var i=1;i<=50;i++){
     var tableEl=document.getElementById('table_'+i);
     if(!tableEl)continue;
-    var tableData=data[i]||data[''+i]||{};
+    var tableData=data['table_'+i]||{};
     /* Clean up: if a seat has no uid, treat as empty */
     var seat1=tableData.seat1&&tableData.seat1.uid?tableData.seat1:null;
     var seat2=tableData.seat2&&tableData.seat2.uid?tableData.seat2:null;
@@ -2256,7 +2213,7 @@ function updateLobbyUI(data){
   if(statusEl){
     var totalPlayers=0;
     for(var i=1;i<=50;i++){
-      var t=data[i]||data[''+i];
+      var t=data['table_'+i];
       if(t){
         if(t.seat1&&t.seat1.uid)totalPlayers++;
         if(t.seat2&&t.seat2.uid)totalPlayers++;
@@ -2287,40 +2244,18 @@ var _parentFirebase=null;
 
 /* Get RTDB instance from parent */
 function getRtdb(){
-  // 方法1: 从父页面获取
   try{
-    if(window.parent&&window.parent.rtdb){
-      console.log('[MP] Using parent.rtdb');
-      return window.parent.rtdb;
-    }
-    if(window.parent&&window.parent.firebase&&window.parent.firebase.database){
-      console.log('[MP] Using parent.firebase.database()');
-      return window.parent.firebase.database();
-    }
-  }catch(e){ console.warn('[MP] parent access error:', e); }
-
-  // 方法2: 从当前窗口获取
-  try{
-    if(window.rtdb){
-      console.log('[MP] Using window.rtdb');
-      return window.rtdb;
-    }
-    if(window.firebase&&window.firebase.database){
-      console.log('[MP] Using window.firebase.database()');
-      return window.firebase.database();
-    }
-  }catch(e){ console.warn('[MP] window access error:', e); }
-
-  // 方法3: 尝试从父页面的全局 Firebase 实例获取
-  try{
-    if(window.parent&&window.parent.firebaseApp){
-      console.log('[MP] Using parent.firebaseApp');
-      return window.parent.firebaseApp.database();
+    if(window.parent&&window.parent!==window){
+      /* Store parent's firebase reference for ServerValue access */
+      if(window.parent.firebase&&!_parentFirebase){
+        _parentFirebase=window.parent.firebase;
+      }
+      if(window.parent.rtdb) return window.parent.rtdb;
+      if(window.parent.firebase){
+        return window.parent.firebase.database();
+      }
     }
   }catch(e){}
-
-  console.error('[MP] No Firebase RTDB instance found!');
-  toast('Multiplayer requires login. Please sign in from the PromptRunic app.','info');
   return null;
 }
 
@@ -2366,8 +2301,6 @@ function returnToLobbyFromSolo(tableNum){
   removeLobbyStatusBar();
   /* Stop current game */
   if(typeof stopGame==='function') stopGame();
-  /* Clean up multiplayer state if active */
-  if(mpGameId) cleanupMpGameState();
   /* Show lobby again */
   document.getElementById('gameScreen').style.display='none';
   document.getElementById('diffScreen').style.display='none';
@@ -2387,195 +2320,21 @@ function startMultiplayerGame(tableNum,uid1,uid2){
     if(myUid===uid1) savedMode='defense';
     else savedMode='attack';
   }
-  /* Determine host status and opponent */
-  mpIsHost=(myUid===uid1);
-  mpOpponentUid=mpIsHost?uid2:uid1;
-  /* Generate a unique game ID and create RTDB game state node */
+  /* Clean up lobby */
   var rtdb=getRtdb();
   if(rtdb){
-    mpGameId='game_'+tableNum+'_'+Date.now();
-    mpGameStateRef=rtdb.ref('game_states/'+mpGameId);
-    /* Initialize game state in RTDB */
-    var initialState={
-      players:{},
-      currentWave:0,
-      gameStatus:'waiting',
-      map:selectedMap||'verdant',
-      mode:mpMode,
-      lastUpdate:Date.now()
-    };
-    initialState.players[uid1]={
-      uid:uid1,
-      role:(mpMode==='coop')?'defense':'defense',
-      hp:20,
-      maxHp:20,
-      score:0,
-      coins:0,
-      waveIndex:0,
-      ready:false,
-      lastUpdate:Date.now()
-    };
-    initialState.players[uid2]={
-      uid:uid2,
-      role:(mpMode==='coop')?'defense':'attack',
-      hp:20,
-      maxHp:20,
-      score:0,
-      coins:0,
-      waveIndex:0,
-      ready:false,
-      lastUpdate:Date.now()
-    };
-    mpGameStateRef.set(initialState).then(function(){
-      console.log('[MP] Game state initialized:',mpGameId);
-      /* Mark my player as ready once the game actually starts */
-      mpGameStateRef.child('players/'+myUid+'/ready').set(true);
-      /* Start listening for opponent state changes */
-      listenToOpponentState();
-      /* Set up disconnect cleanup: remove player on disconnect */
-      mpGameStateRef.child('players/'+myUid).onDisconnect().remove();
-    }).catch(function(e){
-      console.warn('[MP] Failed to init game state:',e);
-    });
-    /* Mark lobby game as started so other listeners know */
-    rtdb.ref('lobby/'+mpMode+'/tables/'+tableNum).update({started:true,gameId:mpGameId});
+    /* Mark game as started so other listeners know */
+    rtdb.ref('lobby/'+mpMode+'/table_'+tableNum).update({started:true});
     /* Remove both seats after a short delay (so the UI updates) */
     setTimeout(function(){
-      rtdb.ref('lobby/'+mpMode+'/tables/'+tableNum).remove();
+      rtdb.ref('lobby/'+mpMode+'/table_'+tableNum).remove();
     },2000);
   }
   mpMyTable=-1;mpMySeat=-1;mpIsReady=false;
-  mpSyncTimer=0;
   stopLobbyListener();
   /* Hide lobby, show map selection before difficulty */
   document.getElementById('multiplayerScreen').style.display='none';
   document.getElementById('mapSelectScreen').style.display='flex';
-}
-
-/* ====== GAME STATE SYNC (Step 5 & 6) ====== */
-
-/* Sync local game state to Firebase RTDB periodically */
-function syncGameState(){
-  var rtdb=getRtdb();
-  if(!rtdb||!mpGameId||!mpGameStateRef) return;
-  if(gState!=='playing'||gameOver) return;
-  var myUid=getMyUid();
-  var gameState={
-    hp:baseHP,
-    maxHp:baseMaxHP,
-    score:score,
-    coins:coins,
-    waveIndex:waveI,
-    chapterIndex:chI,
-    ready:true,
-    lastUpdate:Date.now()
-  };
-  /* In versus attack mode, also sync enemy base HP */
-  if(gMode==='attack'){
-    gameState.enemyBaseHP=enemyBaseHP;
-    gameState.atkWave=atkWave;
-  }
-  /* In defense mode, sync tower count for opponent info */
-  if(gMode==='defense'){
-    gameState.towerCount=towers.filter(function(t){return !t.dead}).length;
-  }
-  mpGameStateRef.child('players/'+myUid).update(gameState).catch(function(e){
-    console.warn('[MP] syncGameState error:',e);
-  });
-  /* Also update the shared game status */
-  mpGameStateRef.update({
-    currentWave:Math.max(waveI,0),
-    gameStatus:'playing',
-    lastUpdate:Date.now()
-  }).catch(function(){});
-}
-
-/* Listen for opponent's state changes in real-time */
-function listenToOpponentState(){
-  if(!mpGameStateRef||!mpOpponentUid) return;
-  stopOpponentListener();
-  var opponentRef=mpGameStateRef.child('players/'+mpOpponentUid);
-  mpStateListener=opponentRef.on('value',function(snap){
-    var data=snap.val();
-    if(!data){
-      /* Opponent disconnected */
-      if(mpOpponentState){
-        toast('Opponent disconnected!','info');
-        mpOpponentState=null;
-      }
-      return;
-    }
-    var prev=mpOpponentState;
-    mpOpponentState=data;
-    /* Display opponent info in the game UI */
-    updateOpponentUI(data);
-    /* Check if opponent's HP dropped to 0 (they lost) */
-    if(data.hp!==undefined&&data.hp<=0&&(!prev||prev.hp>0)){
-      /* Opponent was defeated */
-      if(mpMode==='versus'){
-        toast('Opponent defeated! You win!','info');
-        if(!gameOver) endGame(true);
-      }
-    }
-  });
-}
-
-/* Stop listening to opponent state */
-function stopOpponentListener(){
-  if(mpStateListener&&mpGameStateRef&&mpOpponentUid){
-    try{
-      mpGameStateRef.child('players/'+mpOpponentUid).off('value',mpStateListener);
-    }catch(e){}
-  }
-  mpStateListener=null;
-}
-
-/* Update the game UI with opponent's state info */
-function updateOpponentUI(data){
-  var el=document.getElementById('mpOpponentBar');
-  if(!el){
-    /* Create the opponent info bar if it doesn't exist */
-    el=document.createElement('div');
-    el.id='mpOpponentBar';
-    el.style.cssText='position:fixed;top:36px;left:50%;transform:translateX(-50%);z-index:9999;background:rgba(0,0,0,.85);border:1px solid rgba(180,80,255,.4);border-top:none;border-radius:0 0 10px 10px;padding:4px 14px;font-family:\'Orbitron\',sans-serif;font-size:.5rem;color:#b060ff;display:flex;align-items:center;gap:10px;pointer-events:none';
-    document.body.appendChild(el);
-  }
-  var roleEmoji=data.role==='defense'?'🛡️':'⚔️';
-  var hp=data.hp!==undefined?data.hp:'?';
-  var maxHp=data.maxHp!==undefined?data.maxHp:'?';
-  var wv=data.waveIndex!==undefined?(data.waveIndex+1):'?';
-  var sc=data.score!==undefined?data.score:0;
-  el.innerHTML='<span>'+roleEmoji+' Opponent</span><span>HP:'+hp+'/'+maxHp+'</span><span>Wave:'+wv+'</span><span>Score:'+sc+'</span>';
-}
-
-/* Clean up multiplayer game state (called on game end or leave) */
-function cleanupMpGameState(){
-  var rtdb=getRtdb();
-  if(rtdb&&mpGameId&&mpGameStateRef){
-    var myUid=getMyUid();
-    /* Remove my player entry */
-    mpGameStateRef.child('players/'+myUid).remove().catch(function(){});
-    /* Cancel onDisconnect */
-    mpGameStateRef.child('players/'+myUid).onDisconnect().cancel().catch(function(){});
-    /* If no players left, remove the entire game state after a delay */
-    setTimeout(function(){
-      mpGameStateRef.once('value').then(function(snap){
-        var d=snap.val();
-        if(!d||!d.players||Object.keys(d.players).length===0){
-          mpGameStateRef.remove().catch(function(){});
-        }
-      }).catch(function(){});
-    },5000);
-  }
-  stopOpponentListener();
-  mpGameId=null;
-  mpGameStateRef=null;
-  mpOpponentUid=null;
-  mpOpponentState=null;
-  mpSyncTimer=0;
-  /* Remove opponent UI bar */
-  var bar=document.getElementById('mpOpponentBar');
-  if(bar) bar.remove();
 }
 
 /* Map selection: called when a map card is clicked */
@@ -2894,14 +2653,6 @@ function update(dt){
   if(gMode==='defense')updDef(dt);else updAtk(dt);
   updProjs(dt);updParts();updFT();updUI();
   if(unlimitedGold)coins=99999;
-  /* Multiplayer state sync: periodically push local state to Firebase */
-  if(mpGameId){
-    mpSyncTimer+=dt;
-    if(mpSyncTimer>=mpSyncInterval){
-      mpSyncTimer=0;
-      syncGameState();
-    }
-  }
 }
 
 function updBG(dt){
@@ -4369,16 +4120,6 @@ function triggerNextWave(){
 
 function endGame(won){
   gameOver=true;stopBGM();
-  /* Clean up multiplayer game state if active */
-  if(mpGameId){
-    /* Do a final sync before cleanup */
-    syncGameState();
-    /* Update game status to finished */
-    if(mpGameStateRef){
-      mpGameStateRef.update({gameStatus:won?'finished_win':'finished_lose',lastUpdate:Date.now()}).catch(function(){});
-    }
-    cleanupMpGameState();
-  }
   const s=document.getElementById('gameOverScreen');const t=document.getElementById('goTitle');const m=document.getElementById('goMsg');const sc=document.getElementById('goScore');const ul=document.getElementById('goUnlock');
   if(won){
     t.textContent=_gmT('go.victory','VICTORY');t.style.color='#00ff88';
@@ -4407,7 +4148,7 @@ function endGame(won){
   sc.textContent=`Final Score: ${score}`;s.style.display='flex';
 }
 
-function restartGame(){document.getElementById('gameOverScreen').style.display='none';chI=0;score=0;initCh(0);startBGM();if(mpGameId)cleanupMpGameState()}
+function restartGame(){document.getElementById('gameOverScreen').style.display='none';chI=0;score=0;initCh(0);startBGM()}
 
 function showAIMsg(text,isAI){
   const c=document.getElementById('aiMsgContainer');if(!c)return;

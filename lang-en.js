@@ -15,7 +15,6 @@ var EN = {
   'header.getpro': 'Get Pro',
   'header.community': 'Community',
   'header.friends': 'Friends',
-  'header.optimizer': 'Optimizer',
 
   /* ---- Hero ---- */
   'hero.h1.prefix': 'PromptRunic',
@@ -397,7 +396,6 @@ var EN = {
   'community.tab.badges': '🏅 Badges',
   'community.tab.avatars': '🎭 Avatars',
   'community.tab.games': '🎮 Games',
-  'community.tab.moods': 'Mood Wall',
   'community.tab.speed': '⏱️ Speed',
   'community.tab.mood': '😊 Mood Wall',
   'community.loading': 'Loading leaderboard…',
@@ -573,16 +571,7 @@ var EN = {
   'friends.reverse.request': 'This user already sent you a request',
   'friends.accept.error': 'Error accepting request',
   'friends.now.friend': 'is now your friend!',
-  'friends.withdrawn': 'Friend request withdrawn',
-  'friends.messages': 'Messages',
-  'friends.find': '🔍 Find Friends',
-  'friends.search.placeholder': 'Search by username or email...',
-  'friends.search': 'Search',
-  'friends.suggested': '✨ Suggested for You',
-  'friends.send': 'Send',
-  'friends.searching': 'Searching...',
-  'friends.no.results': 'No users found for',
-  'friends.search.error': 'Error searching. Try again.'
+  'friends.withdrawn': 'Friend request withdrawn'
 };
 
 if(typeof window.PPI18n!=='undefined') window.PPI18n.registerDict('en', EN);

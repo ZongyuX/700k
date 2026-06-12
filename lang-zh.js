@@ -15,7 +15,6 @@ var ZH = {
   'header.getpro': '获取专业版',
   'header.community': '社区',
   'header.friends': '好友',
-  'header.optimizer': '优化器',
 
   /* ---- Hero ---- */
   'hero.h1.prefix': 'PromptRunic',
@@ -401,7 +400,6 @@ var ZH = {
   'community.tab.badges': '🏅 徽章',
   'community.tab.avatars': '🎭 头像',
   'community.tab.games': '🎮 游戏',
-  'community.tab.moods': '心情墙',
   'community.tab.speed': '⏱️ 速度',
   'community.tab.mood': '😊 心情墙',
   'community.loading': '正在加载排行榜…',
@@ -577,16 +575,7 @@ var ZH = {
   'friends.reverse.request': '对方已向你发送请求',
   'friends.accept.error': '接受请求出错',
   'friends.now.friend': '已成为了你的好友！',
-  'friends.withdrawn': '好友请求已撤回',
-  'friends.messages': '消息',
-  'friends.find': '🔍 查找好友',
-  'friends.search.placeholder': '按用户名或邮箱搜索...',
-  'friends.search': '搜索',
-  'friends.suggested': '✨ 为你推荐',
-  'friends.send': '发送',
-  'friends.searching': '搜索中...',
-  'friends.no.results': '未找到用户',
-  'friends.search.error': '搜索出错，请重试。'
+  'friends.withdrawn': '好友请求已撤回'
 };
 
 if(typeof window.PPI18n!=='undefined') window.PPI18n.registerDict('zh', ZH);

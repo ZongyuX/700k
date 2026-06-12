@@ -260,7 +260,6 @@ var ACH = [];
   ];
   sp.forEach(function(a){ ACH.push({id:a[0],ic:a[1],nm:a[2],ds:a[3],nmZh:a[4],dsZh:a[5],t:a[6]}); });
 })();
-window._ACH = ACH;
 function getAchNm(a){ return isZh()?(a.nmZh||a.nm):a.nm; }
 function getAchDs(a){ return isZh()?(a.dsZh||a.ds):a.ds; }
 
@@ -1346,8 +1345,6 @@ window.PPGame = {
     save(); refresh();
   },
   openPanel: openPanel,
-  openProfile: function(){ openProfile(); },
-  paintProfile: function(){ paintProfile(); },
   refresh: refresh,
   dailyId: dailyId,
   avatarSVG: function(i){ return avatarSVG(i); },
@@ -1577,27 +1574,11 @@ function startTimer(){
 var arcBtn, arcPanel;
 function buildArcadeBtn(){
   var bar=D.querySelector('.hbtns'); if(!bar) return;
-  /* Remove any existing arcade button first */
-  var existing=bar.querySelector('.arcade-btn');
-  if(existing) existing.remove();
   arcBtn=D.createElement('button');
-  arcBtn.className='pp-chip arcade-btn';
+  arcBtn.className='pp-chip';
   arcBtn.title='Arcade — coins, avatars & battles';
-  arcBtn.style.cursor='pointer';
-  arcBtn.addEventListener('click',function(e){
-    e.stopPropagation();
-    openArcade();
-  });
-  /* Insert after the game button for better visibility, or before authBtn */
-  var gameBtn=bar.querySelector('#gameBtn');
-  var authBtn=bar.querySelector('#authBtn');
-  if(gameBtn && gameBtn.nextSibling){
-    bar.insertBefore(arcBtn, gameBtn.nextSibling);
-  }else if(authBtn){
-    bar.insertBefore(arcBtn, authBtn);
-  }else{
-    bar.appendChild(arcBtn);
-  }
+  arcBtn.addEventListener('click', openArcade);
+  bar.insertBefore(arcBtn, bar.firstChild);
   paintArcadeBtn();
 }
 function paintArcadeBtn(){ if(arcBtn) arcBtn.innerHTML='<span class="lv">🪙 '+(game.coins||0)+'</span>'; }
@@ -1607,7 +1588,7 @@ function openArcade(){
   if(!arcPanel){
     arcPanel=D.createElement('div');
     arcPanel.className='overlay'; arcPanel.id='ppArcade';
-    arcPanel.innerHTML='<div class="modal sm"><button class="x" id="ppArcX" data-close>&times;</button>'
+    arcPanel.innerHTML='<div class="modal sm"><button class="x" id="ppArcX">&times;</button>'
       +'<h2>Arcade</h2><div class="desc">Earn coins by levelling up, staying active and winning battles. Spend them on avatars.</div>'
       +'<div id="ppArcBody"></div></div>';
     D.body.appendChild(arcPanel);
@@ -1619,8 +1600,7 @@ function openArcade(){
 }
 function paintArcade(){
   var b=elById('ppArcBody'); if(!b) return;
-  var av=game.avatar||0;
-  var h='<div class="arc-top"><div class="arc-av">'+avatarSVG(av)+'</div>'
+  var h='<div class="arc-top"><div class="arc-av">'+avatarSVG(game.avatar||0)+'</div>'
     +'<div style="flex:1"><div class="arc-stat"><b>🪙 '+(game.coins||0)+'</b> <span>coins</span></div>'
     +'<div style="font-size:11px;color:var(--muted);margin-top:2px">Win duels and level up to earn coins. Change your avatar in Account.</div></div></div>';
 
@@ -1647,18 +1627,6 @@ function paintArcade(){
     +'<div class="msg" id="ppCoinMsg"></div>'
     +'<div class="note">Coins are a cosmetic currency for avatars and duels. They cannot be cashed out.</div>';
 
-  h+='<div class="arc-sec">🎭 CHOOSE YOUR AVATAR — 200 to collect</div>';
-  h+='<div class="avgrid">';
-  for(var i=0;i<200;i++){
-    var st=avatarStatus(i), cls='avcell'+(i===av?' on':'')+(st.locked?' lk':'');
-    var tag=st.type==='pro'?'<span class="tag2 pro">PRO</span>'
-          :st.type==='lvl'?'<span class="tag2 lvl">L'+st.req+'</span>'
-          :st.type==='coin'?'<span class="tag2 coin">'+st.req+'</span>':'';
-    h+='<div class="'+cls+'" data-av="'+i+'">'+avatarSVG(i)+(st.locked?tag:'')+'</div>';
-  }
-  h+='</div>';
-  h+='<div style="font-size:10.5px;color:var(--muted);margin-top:4px">15 free · 35 Pro · 75 level-locked · 75 buy with coins. Tap one to equip or unlock.</div>';
-
   b.innerHTML=h;
   elById('ppBattle').addEventListener('click', startBattle);
   Array.prototype.forEach.call(b.querySelectorAll('[data-pack]'),function(c){
@@ -1669,9 +1637,6 @@ function paintArcade(){
     });
   });
   elById('ppRedeemCoin').addEventListener('click', redeemCoinCode);
-  Array.prototype.forEach.call(b.querySelectorAll('[data-av]'),function(c){
-    c.addEventListener('click',function(){ tapAvatar(parseInt(c.getAttribute('data-av'))); paintArcade(); paintArcadeBtn(); });
-  });
 }
 function tapAvatar(i){
   var st=avatarStatus(i);
@@ -1853,17 +1818,22 @@ async function redeemCoinCode(){
   }
 }
 
-/* ---- Account / Profile panel: removed — duplicate of header authBtn ---- */
+/* ---- Account / Profile panel: avatar + stats + avatar picker ---- */
 var profBtn, profPanel;
 function buildProfileBtn(){
-  /* Removed: the Account button is now handled by the header authBtn.
-   * openProfile() is kept for backward compatibility but no button is created. */
+  var bar=D.querySelector('.hbtns'); if(!bar) return;
+  profBtn=D.createElement('button');
+  profBtn.className='pp-chip';
+  profBtn.title='Account settings & your profile';
+  profBtn.innerHTML='<span class="lv">👤 Account</span>';
+  profBtn.addEventListener('click', openProfile);
+  bar.insertBefore(profBtn, bar.firstChild);
 }
 function openProfile(){
   if(!profPanel){
     profPanel=D.createElement('div');
     profPanel.className='overlay'; profPanel.id='ppProfile';
-    profPanel.innerHTML='<div class="modal sm"><button class="x" id="ppProfX" data-close>&times;</button>'
+    profPanel.innerHTML='<div class="modal sm"><button class="x" id="ppProfX">&times;</button>'
       +'<h2>Account &amp; Profile</h2>'
       +'<div class="desc">Your avatar, level and stats — this is the profile other members can view.</div>'
       +'<div id="ppProfBody"></div></div>';
@@ -1900,13 +1870,10 @@ function paintProfile(){
   }
   h+='</div>';
   h+='<div style="font-size:10.5px;color:var(--muted);margin-top:4px">15 free · 35 Pro · 75 level-locked · 75 buy with coins. Tap one to equip or unlock.</div>';
-  h+='<div style="margin-top:14px;text-align:center"><button id="ppProfSettings" style="background:var(--panel2);border:1px solid var(--border);color:var(--text);padding:9px 20px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;transition:.15s">⚙️ Account Settings</button></div>';
   b.innerHTML=h;
   Array.prototype.forEach.call(b.querySelectorAll('[data-av]'),function(c){
     c.addEventListener('click',function(){ tapAvatar(parseInt(c.getAttribute('data-av'))); });
   });
-  var settingsBtn=elById('ppProfSettings');
-  if(settingsBtn) settingsBtn.addEventListener('click',function(){ profPanel.classList.remove('show'); if(typeof window.openAccountSettings==='function') window.openAccountSettings(); });
 }
 
 function arcadeBoot(){ buildArcadeBtn(); buildProfileBtn(); startTimer(); }

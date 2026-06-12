@@ -15,7 +15,6 @@ var ES = {
   'header.getpro': 'Obtener Pro',
   'header.community': 'Comunidad',
   'header.friends': 'Amigos',
-  'header.optimizer': 'Optimizador',
 
   /* ---- Hero ---- */
   'hero.h1.prefix': 'PromptRunic',
@@ -397,7 +396,6 @@ var ES = {
   'community.tab.badges': '🏅 Insignias',
   'community.tab.avatars': '🎭 Avatares',
   'community.tab.games': '🎮 Juegos',
-  'community.tab.moods': 'Muro de ánimos',
   'community.tab.speed': '⏱️ Velocidad',
   'community.tab.mood': '😊 Muro de ánimos',
   'community.loading': 'Cargando tabla de clasificación…',
@@ -573,16 +571,7 @@ var ES = {
   'friends.reverse.request': 'Este usuario ya te envió una solicitud',
   'friends.accept.error': 'Error al aceptar la solicitud',
   'friends.now.friend': '¡ahora es tu amigo!',
-  'friends.withdrawn': 'Solicitud de amistad retirada',
-  'friends.messages': 'Mensajes',
-  'friends.find': '🔍 Buscar amigos',
-  'friends.search.placeholder': 'Buscar por nombre de usuario o correo...',
-  'friends.search': 'Buscar',
-  'friends.suggested': '✨ Sugerencias para ti',
-  'friends.send': 'Enviar',
-  'friends.searching': 'Buscando...',
-  'friends.no.results': 'No se encontraron usuarios para',
-  'friends.search.error': 'Error al buscar. Inténtalo de nuevo.'
+  'friends.withdrawn': 'Solicitud de amistad retirada'
 };
 
 if(typeof window.PPI18n!=='undefined') window.PPI18n.registerDict('es', ES);
