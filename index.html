@@ -2706,17 +2706,21 @@ function syncPublicProfile(){
   if(!fbReady||!currentUser) return;
   var name=currentUser.displayName||currentUser.email.split('@')[0]||'';
   var email=currentUser.email||'';
-  var avatar=0, lvl=1;
+  var avatar=0, lvl=1, bio='';
   if(window.PPGame&&PPGame.exportState){
     var gs=PPGame.exportState();
     avatar=gs.avatar||0;
     lvl=gs.lvl||1;
   }
+  /* Get bio from settings if available */
+  var bioEl=document.getElementById('setBio');
+  if(bioEl) bio=bioEl.value.trim();
   db.collection('pp_public').doc(currentUser.uid).set({
     name:name,
     email:email,
     avatar:avatar,
     lvl:lvl,
+    bio:bio,
     updatedAt:firebase.firestore.FieldValue.serverTimestamp()
   },{merge:true}).catch(function(e){ console.warn('syncPublicProfile',e); });
 }
@@ -3698,12 +3702,12 @@ async function redeemCode(){
   const m=document.getElementById('actMsg');
   if(!key){ m.className='msg err'; m.textContent=PPI18n.t('activate.entercode'); return; }
 
-  /* Require login for Pro activation */
-  if(!currentUser){
-    m.className='msg err';
-    m.textContent=PPI18n.t('activate.login.required');
-    return;
-  }
+  /* Soft login check: Pro codes require login for cloud sync.
+   * Coins & credits can work offline (local storage).
+   * We no longer hard-block — instead we warn and let the user proceed.
+   * If the code turns out to be Pro and the user isn't logged in,
+   * we'll prompt them to log in before granting Pro. */
+  var needLogin = !currentUser;
 
   m.className='msg'; m.textContent=PPI18n.t('activate.checking'); m.style.display='block';
 
@@ -3748,56 +3752,183 @@ async function redeemCode(){
   }
   /* verify the license key with Lemon Squeezy */
   try{
-    console.log('[Pro Activation] Validating key with Lemon Squeezy...');
+    console.log('[Activation] Validating key with Lemon Squeezy...');
     const res=await PPLemon.validateLicense(key);
-    console.log('[Pro Activation] Validation result:', JSON.stringify(res));
+    console.log('[Activation] Validation result:', JSON.stringify(res));
+
+    /* ========== COINS ========== */
+    if(res.ok && res.kind==='coins'){
+      /* Check if already used on this account */
+      if(isLicenseUsed(key)){
+        m.className='msg err';
+        m.textContent='This coin code has already been used on your account. Each code can only be activated once.';
+        return;
+      }
+      markLicenseUsed(key);
+      var coinAmount = res.coins || 1200;
+      if(window.PPGame && PPGame.addCoins){
+        PPGame.addCoins(coinAmount);
+      }else{
+        /* Fallback: save directly to localStorage */
+        var cur = parseInt(lsGet('pp_coins')||'0',10);
+        lsSet('pp_coins', String(cur + coinAmount));
+      }
+      m.className='msg ok';
+      m.textContent='Successfully added ' + coinAmount + ' coins!';
+      toast('+' + coinAmount + ' coins!', 'info');
+      setTimeout(()=>document.getElementById('actOverlay').classList.remove('show'), 2000);
+      return;
+    }
+
+    /* ========== PRO ========== */
     if(res.ok && res.kind==='pro'){
-      /* Lifetime (days===0) → permanent; subscription (days>0) → set expiry */
+      /* Pro requires login for cloud sync — if not logged in, prompt */
+      if(needLogin){
+        m.className='msg err';
+        m.textContent='Pro activation requires a signed-in account. Please sign in first, then re-enter your code.';
+        /* Auto-open login dialog */
+        setTimeout(function(){
+          var authBtn = document.getElementById('authBtn');
+          if(authBtn) authBtn.click();
+        }, 800);
+        return;
+      }
+      markLicenseUsed(key);
       if(res.days && res.days > 0){
         return unlockTimed(key,m,res.days,PPI18n.t('activate.unlocked.sub').replace('{d}',res.days));
       }
       return unlock(key,m,PPI18n.t('activate.unlocked'));
     }
-    if(res.ok && res.kind==='coins'){
-      /* Coin codes should be redeemed in the 🪙 Coins panel (Arcade), not here.
-       * This Pro activation panel is only for Pro codes. */
-      m.className='msg err';
-      m.textContent='That is a coin code — it cannot be used for Pro. Please redeem it in the 🪙 Coins panel instead.';
-      return;
-    }
+
+    /* ========== CREDITS ========== */
     if(res.ok && res.kind==='credits'){
-      m.className='msg err';
-      m.textContent='That is a game credit code — it cannot be used for Pro. Please redeem it in the game credits section.';
+      if(isLicenseUsed(key)){
+        m.className='msg err';
+        m.textContent='This credit code has already been used on your account.';
+        return;
+      }
+      markLicenseUsed(key);
+      var creditAmount = res.credits || 1200;
+      /* Try to add via game iframe if available */
+      try{
+        var gameFrame = document.querySelector('iframe[src*="game-pm"]');
+        if(gameFrame && gameFrame.contentWindow){
+          if(gameFrame.contentWindow.setUnlockCredits && gameFrame.contentWindow.getUnlockCredits){
+            gameFrame.contentWindow.setUnlockCredits(gameFrame.contentWindow.getUnlockCredits() + creditAmount);
+          }
+        }
+      }catch(e){}
+      /* Also store locally as fallback (game-pm.html reads this) */
+      var curCreds = parseInt(lsGet('pm_unlock_credits')||'0',10);
+      lsSet('pm_unlock_credits', String(curCreds + creditAmount));
+      m.className='msg ok';
+      m.textContent='Successfully added ' + creditAmount + ' game credits!';
+      toast('+' + creditAmount + ' credits!', 'info');
+      setTimeout(()=>document.getElementById('actOverlay').classList.remove('show'), 2000);
       return;
     }
+
+    /* ========== UNKNOWN KIND ========== */
+    if(res.ok && res.kind==='unknown'){
+      /* Valid key but can't determine type — try Pro first, then coins */
+      if(isLicenseUsed(key)){
+        m.className='msg err';
+        m.textContent='This code has already been used on your account.';
+        return;
+      }
+      /* If not logged in, can't grant Pro safely — give coins instead */
+      if(needLogin){
+        markLicenseUsed(key);
+        if(window.PPGame && PPGame.addCoins) PPGame.addCoins(1200);
+        m.className='msg ok';
+        m.textContent='Code activated! +1200 coins added (could not determine code type).';
+        setTimeout(()=>document.getElementById('actOverlay').classList.remove('show'), 2000);
+        return;
+      }
+      /* Logged in — treat as Pro (30-day fallback) */
+      markLicenseUsed(key);
+      return unlockTimed(key,m,30,'Pro activated! (30 days) — code type could not be determined, granted Pro as fallback.');
+    }
+
+    /* ========== OK but unrecognized ========== */
     if(res.ok){
       m.className='msg err'; m.textContent=PPI18n.t('activate.notpro');
       return;
     }
+
+    /* ========== ERROR: network ========== */
     if(res.error==='network'){
       m.className='msg err'; m.textContent=PPI18n.t('activate.network');
       return;
     }
+
+    /* ========== ERROR: activation_limit_reached ========== */
     if(res.error==='activation_limit_reached'){
-      /* The key IS valid (the user purchased it), but it has reached its
-       * activation limit on Lemon Squeezy's side. This happens when the user
-       * already activated it before (possibly from another browser/device).
-       * We should still honor the purchase — the key is valid.
-       * For Pro codes, we need to determine the duration.
-       * Try to get product info from the error response to classify correctly.
-       * Since we can't get the product_id from the error, we'll treat it as
-       * a 30-day Pro subscription (most common paid plan). */
+      /* The key IS valid but maxed out on activations.
+       * Determine the kind from the response (res may have kind/days/coins
+       * already set by classifyProduct in tryActivate). */
+      if(res.kind==='coins'){
+        if(isLicenseUsed(key)){
+          m.className='msg err';
+          m.textContent='This coin code has already been used on your account. Check your coin balance.';
+        }else{
+          markLicenseUsed(key);
+          var limitCoins = res.coins || 1200;
+          if(window.PPGame && PPGame.addCoins) PPGame.addCoins(limitCoins);
+          m.className='msg ok';
+          m.textContent='+' + limitCoins + ' coins added! (code was previously activated on another device)';
+          setTimeout(()=>document.getElementById('actOverlay').classList.remove('show'), 2000);
+        }
+        return;
+      }
+      if(res.kind==='credits'){
+        if(isLicenseUsed(key)){
+          m.className='msg err';
+          m.textContent='This credit code has already been used on your account.';
+        }else{
+          markLicenseUsed(key);
+          var limitCredits = res.credits || 1200;
+          var curLC = parseInt(lsGet('pm_unlock_credits')||'0',10);
+          lsSet('pm_unlock_credits', String(curLC + limitCredits));
+          m.className='msg ok';
+          m.textContent='+' + limitCredits + ' credits added! (code was previously activated on another device)';
+          setTimeout(()=>document.getElementById('actOverlay').classList.remove('show'), 2000);
+        }
+        return;
+      }
+      /* Pro or unknown kind — treat as Pro */
       if(!isPro){
-        /* Grant 30 days Pro as fallback for valid but limit-reached Pro codes */
         return unlockTimed(key,m,30,'Pro activated! (30 days) — your license key is valid but has reached its device activation limit.');
       }else{
         m.className='msg ok'; m.textContent='Your Pro access is already active. This code has reached its device activation limit but your Pro status is unaffected.';
         return;
       }
     }
+
+    /* ========== Generic invalid ========== */
     m.className='msg err'; m.textContent='Invalid activation code. Please check the code in your Lemon Squeezy receipt email and try again.';
   }catch(e){
+    console.error('[Activation] Error:', e);
     m.className='msg err'; m.textContent=PPI18n.t('activate.network');
+  }
+}
+
+/* ---- License key usage tracking (per account / per browser) ---- */
+function isLicenseUsed(code){
+  var usedList=[];
+  try{ usedList=JSON.parse(lsGet('pp_license_used')||'[]'); }catch(e){ usedList=[]; }
+  return usedList.indexOf(code)>=0;
+}
+function markLicenseUsed(code){
+  var usedList=[];
+  try{ usedList=JSON.parse(lsGet('pp_license_used')||'[]'); }catch(e){ usedList=[]; }
+  if(usedList.indexOf(code)<0) usedList.push(code);
+  lsSet('pp_license_used',JSON.stringify(usedList));
+  /* Also sync to cloud if logged in */
+  if(currentUser){
+    try{
+      userDocRef().set({licenseUsed:firebase.firestore.FieldValue.arrayUnion(code),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+    }catch(e){}
   }
 }
 

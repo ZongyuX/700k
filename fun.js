@@ -1967,4 +1967,7 @@ else arcadeBoot();
 if(D.readyState==='loading') D.addEventListener('DOMContentLoaded', boot);
 else boot();
 
+/* ---- Expose functions needed by onclick handlers in generated HTML ---- */
+window.applyCoinPack = applyCoinPack;
+
 })();
