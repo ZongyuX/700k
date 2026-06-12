@@ -571,7 +571,16 @@ var ES = {
   'friends.reverse.request': 'Este usuario ya te envió una solicitud',
   'friends.accept.error': 'Error al aceptar la solicitud',
   'friends.now.friend': '¡ahora es tu amigo!',
-  'friends.withdrawn': 'Solicitud de amistad retirada'
+  'friends.withdrawn': 'Solicitud de amistad retirada',
+  'friends.messages': 'Mensajes',
+  'friends.find': '🔍 Buscar amigos',
+  'friends.search.placeholder': 'Buscar por nombre de usuario o correo...',
+  'friends.search': 'Buscar',
+  'friends.suggested': '✨ Sugerencias para ti',
+  'friends.send': 'Enviar',
+  'friends.searching': 'Buscando...',
+  'friends.no.results': 'No se encontraron usuarios para',
+  'friends.search.error': 'Error al buscar. Inténtalo de nuevo.'
 };
 
 if(typeof window.PPI18n!=='undefined') window.PPI18n.registerDict('es', ES);

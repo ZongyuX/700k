@@ -571,7 +571,16 @@ var EN = {
   'friends.reverse.request': 'This user already sent you a request',
   'friends.accept.error': 'Error accepting request',
   'friends.now.friend': 'is now your friend!',
-  'friends.withdrawn': 'Friend request withdrawn'
+  'friends.withdrawn': 'Friend request withdrawn',
+  'friends.messages': 'Messages',
+  'friends.find': '🔍 Find Friends',
+  'friends.search.placeholder': 'Search by username or email...',
+  'friends.search': 'Search',
+  'friends.suggested': '✨ Suggested for You',
+  'friends.send': 'Send',
+  'friends.searching': 'Searching...',
+  'friends.no.results': 'No users found for',
+  'friends.search.error': 'Error searching. Try again.'
 };
 
 if(typeof window.PPI18n!=='undefined') window.PPI18n.registerDict('en', EN);

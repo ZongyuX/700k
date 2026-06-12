@@ -2054,6 +2054,23 @@
   </div>
 </div>
 
+<!-- Community Panel -->
+<div class="overlay" id="communityOverlay">
+  <div class="modal" style="max-width:640px;max-height:90vh;overflow-y:auto">
+    <button class="x" data-close>&times;</button>
+    <h2 data-i18n="community.title">Community</h2>
+    <div class="desc" data-i18n="community.desc">See the top players and the moods members leave on prompts. Tap any player to view their profile.</div>
+    <!-- Tab Bar -->
+    <div style="display:flex;gap:4px;flex-wrap:wrap;margin:12px 0 8px;border-bottom:1px solid var(--border);padding-bottom:8px">
+      <button class="com-tab active" data-com-tab="level" style="padding:6px 12px;font-size:12px;font-weight:600;background:none;border:none;color:var(--accent2);cursor:pointer;border-radius:6px;transition:.15s">🏆 <span data-i18n="community.tab.level">Level</span></button>
+      <button class="com-tab" data-com-tab="badges" style="padding:6px 12px;font-size:12px;font-weight:600;background:none;border:none;color:var(--muted);cursor:pointer;border-radius:6px;transition:.15s">🏅 <span data-i18n="community.tab.badges">Badges</span></button>
+      <button class="com-tab" data-com-tab="coins" style="padding:6px 12px;font-size:12px;font-weight:600;background:none;border:none;color:var(--muted);cursor:pointer;border-radius:6px;transition:.15s">🪙 <span data-i18n="community.tab.coins">Coins</span></button>
+      <button class="com-tab" data-com-tab="mybadges" style="padding:6px 12px;font-size:12px;font-weight:600;background:none;border:none;color:var(--muted);cursor:pointer;border-radius:6px;transition:.15s">🎖️ <span>My Badges</span></button>
+    </div>
+    <div id="communityContent" style="min-height:200px"></div>
+  </div>
+</div>
+
 <!-- AI Selector Popup (for Send to AI button) -->
 <div class="ai-sel-overlay" id="aiSelOverlay">
   <div class="ai-sel-card">
@@ -2126,7 +2143,7 @@
   <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px 10px;background:linear-gradient(135deg,rgba(124,92,255,.15),rgba(34,211,238,.08));border-bottom:1px solid var(--border)">
     <div style="display:flex;align-items:center;gap:8px">
       <div style="width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:16px">💬</div>
-      <h4 style="margin:0;font-size:15px;font-weight:700;letter-spacing:.3px">Messages</h4>
+      <h4 style="margin:0;font-size:15px;font-weight:700;letter-spacing:.3px" data-i18n="friends.messages">Messages</h4>
     </div>
     <button id="friendsPanelClose" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:8px;transition:.15s" onmouseenter="this.style.background='rgba(255,255,255,.08)'" onmouseleave="this.style.background='none'">&times;</button>
   </div>
@@ -2162,16 +2179,16 @@
   <!-- Tab Content: Discover -->
   <div id="tabDiscover" style="flex:1;overflow-y:auto;display:none;padding:0">
     <div style="padding:14px 14px 8px">
-      <div style="font-size:12px;font-weight:700;color:var(--accent2);margin-bottom:10px">🔍 Find Friends</div>
+      <div style="font-size:12px;font-weight:700;color:var(--accent2);margin-bottom:10px" data-i18n="friends.find">🔍 Find Friends</div>
       <div style="display:flex;gap:6px">
-        <input type="text" id="friendSearchInput" placeholder="Search by username or email..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:10px;font-size:13px;outline:none;transition:border .2s" onfocus="this.style.borderColor='var(--accent2)'" onblur="this.style.borderColor='var(--border)'" />
-        <button id="friendSearchBtn" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:9px 16px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;transition:.15s;white-space:nowrap" onmouseenter="this.style.transform='scale(1.04)'" onmouseleave="this.style.transform='scale(1)'">Search</button>
+        <input type="text" id="friendSearchInput" data-i18n="friends.search.placeholder" data-i18n-attr="placeholder" placeholder="Search by username or email..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:10px;font-size:13px;outline:none;transition:border .2s" onfocus="this.style.borderColor='var(--accent2)'" onblur="this.style.borderColor='var(--border)'" />
+        <button id="friendSearchBtn" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:9px 16px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;transition:.15s;white-space:nowrap" onmouseenter="this.style.transform='scale(1.04)'" onmouseleave="this.style.transform='scale(1)'" data-i18n="friends.search">Search</button>
       </div>
     </div>
     <div id="friendSearchResults" style="padding:0 14px 14px"></div>
     <!-- Suggested Users -->
     <div style="padding:0 14px 14px">
-      <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px">✨ Suggested for You</div>
+      <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px" data-i18n="friends.suggested">✨ Suggested for You</div>
       <div id="suggestedUsers"></div>
     </div>
   </div>
@@ -2197,8 +2214,8 @@
   </div>
   <div id="chatMessages" style="height:300px;overflow-y:auto;padding:12px 16px;font-size:13px;display:flex;flex-direction:column;gap:8px"></div>
   <div id="chatInputRow" style="display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--border);background:var(--panel2)">
-    <input type="text" id="chatInput" placeholder="Type a message..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:10px;font-size:13px;outline:none;transition:border .2s" onfocus="this.style.borderColor='var(--accent2)'" onblur="this.style.borderColor='var(--border)'" />
-    <button onclick="sendChatMessage()" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:9px 18px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;transition:.15s" onmouseenter="this.style.transform='scale(1.04)'" onmouseleave="this.style.transform='scale(1)'">Send</button>
+    <input type="text" id="chatInput" data-i18n="friends.chat.placeholder" data-i18n-attr="placeholder" placeholder="Type a message..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:10px;font-size:13px;outline:none;transition:border .2s" onfocus="this.style.borderColor='var(--accent2)'" onblur="this.style.borderColor='var(--border)'" />
+    <button onclick="sendChatMessage()" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:9px 18px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;transition:.15s" onmouseenter="this.style.transform='scale(1.04)'" onmouseleave="this.style.transform='scale(1)'" data-i18n="friends.send">Send</button>
   </div>
 </div>
 
@@ -2636,6 +2653,12 @@ function initFirebase(){
     db=firebase.firestore();
     rtdb=firebase.database();
     fbReady=true;
+    /* Expose Firebase objects to window so the game iframe (game-pm.html)
+     * can access them via window.parent.rtdb / window.parent.db / etc. */
+    window.rtdb=rtdb;
+    window.db=db;
+    window.firebase=firebase;
+    window.currentUser=currentUser;
     auth.onAuthStateChanged(handleAuthChange);
   }catch(e){
     console.warn('Firebase init failed:',e);
@@ -2645,6 +2668,8 @@ function initFirebase(){
 
 async function handleAuthChange(user){
   currentUser=user||null;
+  /* Keep window.currentUser in sync for game iframe access */
+  window.currentUser=currentUser;
 
   /* Helper: clear all account-specific localStorage keys */
   function clearAccountKeys(){
@@ -2856,6 +2881,15 @@ async function loadUserDoc(user){
     userBio = d.bio || '';
     if(window.PPGame && d.game) PPGame.importState(d.game);
     else if(window.PPGame && PPGame.resetToDefaults) PPGame.resetToDefaults();
+    /* Force immediate coin/level display refresh after loading cloud game data */
+    try{
+      if(window.PPGame && PPGame.refresh) PPGame.refresh();
+      var arcBtn=document.getElementById('ppArcBtn');
+      if(arcBtn && window.PPGame){
+        var gRef=PPGame.exportState ? PPGame.exportState() : {};
+        arcBtn.innerHTML='<span class="lv">🪙 '+(gRef.coins||0)+'</span>';
+      }
+    }catch(e){}
     /* Merge promo usage from cloud */
     if(Array.isArray(d.promoUsed)){
       var localPromoList=[];
@@ -3135,7 +3169,8 @@ function planLabel(){
   return PPI18n.t('plan.free');
 }
 function openAccount(){
-  if(!currentUser) return;
+  if(!currentUser){ if(typeof openAuth==='function') openAuth(); return; }
+  hideOverlays();
   const methodNames={'password':PPI18n.t('method.password'),'google.com':PPI18n.t('method.google.com'),'facebook.com':'Facebook','github.com':PPI18n.t('method.github.com')};
   const pm=(currentUser.providerData&&currentUser.providerData[0]&&currentUser.providerData[0].providerId)||'password';
   document.getElementById('accEmail').textContent=currentUser.email||'(no email)';
@@ -4244,6 +4279,9 @@ function wireEvents(){
 
   /* game button */
   document.getElementById('gameBtn').addEventListener('click',()=>{ window.openGameOverlay(); });
+
+  /* community button */
+  document.getElementById('communityBtn').addEventListener('click',()=>{ openCommunityPanel(); });
 
   /* search dropdown clicks */
   document.getElementById('searchDropdown').addEventListener('mousedown',(e)=>{
@@ -5368,6 +5406,143 @@ runQuickOptimizer = function(){
 </script>
 
 <!-- ============================================================
+  COMMUNITY PANEL — Leaderboards + My Badges
+  ============================================================ -->
+<script>
+function openCommunityPanel(){
+  var overlay=document.getElementById('communityOverlay');
+  if(!overlay) return;
+  overlay.classList.add('show');
+  loadCommunityTab('level');
+}
+function loadCommunityTab(tab){
+  /* Highlight active tab */
+  document.querySelectorAll('#communityOverlay .com-tab').forEach(function(t){
+    if(t.getAttribute('data-com-tab')===tab){
+      t.style.color='var(--accent2)';
+      t.style.background='rgba(124,92,255,.12)';
+    }else{
+      t.style.color='var(--muted)';
+      t.style.background='none';
+    }
+  });
+  var content=document.getElementById('communityContent');
+  if(!content) return;
+
+  if(tab==='mybadges'){
+    loadMyBadges(content);
+    return;
+  }
+
+  if(!fbReady||!db){
+    content.innerHTML='<div style="color:var(--muted);text-align:center;padding:30px">'+PPI18n.t('community.offline','{what}: Community')+'</div>';
+    return;
+  }
+
+  content.innerHTML='<div style="color:var(--muted);text-align:center;padding:30px">'+PPI18n.t('community.loading','Loading leaderboard…')+'</div>';
+
+  /* Query pp_public collection for leaderboard data */
+  var sortField = tab==='level'?'lvl':tab==='badges'?'achCount':tab==='coins'?'coins':'lvl';
+  db.collection('pp_public').orderBy(sortField,'desc').limit(50).get().then(function(snap){
+    if(snap.empty){
+      content.innerHTML='<div style="color:var(--muted);text-align:center;padding:30px">'+PPI18n.t('community.empty')+'</div>';
+      return;
+    }
+    var html='<div style="font-size:12px;font-weight:700;color:var(--accent2);margin-bottom:10px">';
+    if(tab==='level') html+=PPI18n.t('community.top50.level');
+    else if(tab==='badges') html+=PPI18n.t('community.top50.badges');
+    else if(tab==='coins') html+=PPI18n.t('community.top50.coins');
+    html+='</div>';
+
+    var rank=0;
+    snap.forEach(function(doc){
+      rank++;
+      var d=doc.data();
+      var name=d.name||'User';
+      var isMe=currentUser&&doc.id===currentUser.uid;
+      var avatarSVG=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(d.avatar||0):'';
+      var val='';
+      if(tab==='level') val='Lv.'+(d.lvl||1)+' · '+(d.xp||0)+' XP';
+      else if(tab==='badges') val=(d.achCount||0)+' '+PPI18n.t('community.achievements');
+      else if(tab==='coins') val='🪙 '+(d.coins||0);
+
+      html+='<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;transition:background .15s;'+(isMe?'background:rgba(124,92,255,.1);':'')+'" onmouseenter="this.style.background=\'rgba(255,255,255,.05)\'" onmouseleave="this.style.background=\''+(isMe?'rgba(124,92,255,.1)':'')+'\'">';
+      html+='<div style="width:28px;text-align:center;font-weight:700;font-size:13px;color:'+(rank<=3?'var(--gold)':'var(--muted)')+'">'+rank+'</div>';
+      html+='<div style="width:32px;height:32px;border-radius:8px;overflow:hidden;flex-shrink:0">'+avatarSVG+'</div>';
+      html+='<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(name)+(isMe?' <span style="font-size:10px;color:var(--accent2)">'+PPI18n.t('community.you')+'</span>':'')+'</div></div>';
+      html+='<div style="font-size:12px;color:var(--muted);white-space:nowrap">'+val+'</div>';
+      html+='</div>';
+    });
+    content.innerHTML=html;
+  }).catch(function(e){
+    console.warn('community load',e);
+    content.innerHTML='<div style="color:var(--muted);text-align:center;padding:30px">Error loading leaderboard. Try again.</div>';
+  });
+}
+
+function loadMyBadges(content){
+  if(!window.PPGame||!PPGame.exportState){
+    content.innerHTML='<div style="color:var(--muted);text-align:center;padding:30px">Game system not loaded yet.</div>';
+    return;
+  }
+  var game=PPGame.exportState();
+  var achList=game.ach||[];
+  var ACH=window._ACH||window.ACH||[];
+
+  var html='<div style="font-size:13px;color:var(--accent2);margin-bottom:10px;font-weight:700">🎖️ '+achList.length+'/'+ACH.length+' Badges Unlocked</div>';
+
+  if(ACH.length>0){
+    html+='<div style="display:flex;flex-wrap:wrap;gap:6px">';
+    ACH.forEach(function(a){
+      var unlocked=achList.indexOf(a.id)>=0;
+      var nm=getCommunityAchName(a);
+      var ds=getCommunityAchDesc(a);
+      if(unlocked){
+        html+='<div style="display:flex;align-items:center;gap:6px;background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.25);padding:6px 10px;border-radius:8px;font-size:12px">';
+        html+='<span style="font-size:16px">'+a.ic+'</span>';
+        html+='<div><div style="font-weight:700">'+esc(nm)+'</div><div style="font-size:10px;color:var(--muted)">'+esc(ds)+'</div></div>';
+        html+='</div>';
+      }else{
+        html+='<div style="display:flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid var(--border);padding:6px 10px;border-radius:8px;font-size:12px;opacity:.5">';
+        html+='<span style="font-size:16px;filter:grayscale(1)">'+a.ic+'</span>';
+        html+='<div><div style="font-weight:700">'+esc(nm)+'</div><div style="font-size:10px;color:var(--muted)">'+esc(ds)+'</div></div>';
+        html+='</div>';
+      }
+    });
+    html+='</div>';
+  }else{
+    html+='<div style="color:var(--muted);text-align:center;padding:20px">No badges available yet.</div>';
+  }
+
+  content.innerHTML=html;
+}
+
+function getCommunityAchName(a){
+  var lang=(window.PPI18n&&PPI18n.lang)||'en';
+  if(lang==='zh'&&a.nmZh) return a.nmZh;
+  return a.nm||'Badge';
+}
+function getCommunityAchDesc(a){
+  var lang=(window.PPI18n&&PPI18n.lang)||'en';
+  if(lang==='zh'&&a.dsZh) return a.dsZh;
+  return a.ds||'';
+}
+
+/* Wire community tab clicks */
+document.querySelectorAll('#communityOverlay .com-tab').forEach(function(t){
+  t.addEventListener('click',function(){
+    loadCommunityTab(this.getAttribute('data-com-tab'));
+  });
+});
+document.querySelector('#communityOverlay [data-close]').addEventListener('click',function(){
+  document.getElementById('communityOverlay').classList.remove('show');
+});
+document.getElementById('communityOverlay').addEventListener('click',function(e){
+  if(e.target===this) this.classList.remove('show');
+});
+</script>
+
+<!-- ============================================================
   NEW FEATURES: Friends, Avatar Picker, Bio Sync, Deep Link,
   Achievements in Community, Enhanced Firebase Sync
   ============================================================ -->
@@ -5540,6 +5715,11 @@ function toggleContactReqSection(){
 
 /* ---- Toggle friends panel ---- */
 function toggleFriendsPanel(){
+  if(!fbReady||!currentUser){
+    if(typeof openAuth==='function') openAuth();
+    else toast(PPI18n.t('friends.signin'),'info');
+    return;
+  }
   var p=document.getElementById('friendsPanel');
   if(p.style.display==='none'||!p.style.display){
     p.style.display='flex';
@@ -5578,11 +5758,11 @@ function closeChatWindow(){
 
 /* ---- Search users by username or email ---- */
 async function searchUsers(){
-  if(!fbReady||!currentUser){toast('Please sign in first','info');return;}
+  if(!fbReady||!currentUser){toast(PPI18n.t('friends.signin'),'info');return;}
   var query=document.getElementById('friendSearchInput').value.trim();
   if(!query){document.getElementById('friendSearchResults').innerHTML='';return;}
   var results=document.getElementById('friendSearchResults');
-  results.innerHTML='<div style="color:var(--muted);font-size:12px;padding:12px;text-align:center">Searching...</div>';
+  results.innerHTML='<div style="color:var(--muted);font-size:12px;padding:12px;text-align:center">'+PPI18n.t('friends.searching')+'</div>';
   try{
     var html='';
     var seen={};
@@ -5691,7 +5871,7 @@ async function searchUsers(){
         }
       });
     }
-    if(!users.length){results.innerHTML='<div style="color:var(--muted);font-size:12px;padding:12px;text-align:center">No users found for "'+esc(query)+'"</div>';return;}
+    if(!users.length){results.innerHTML='<div style="color:var(--muted);font-size:12px;padding:12px;text-align:center">'+PPI18n.t('friends.no.results')+' "'+esc(query)+'"</div>';return;}
     users.forEach(function(u){
       var d=u.data||{};
       var name=d.displayName||d.email||'User';
@@ -5717,7 +5897,7 @@ async function searchUsers(){
       '</div>';
     });
     results.innerHTML=html;
-  }catch(e){console.warn('search users',e);results.innerHTML='<div style="color:var(--muted);font-size:12px;padding:12px;text-align:center">Error searching. Try again.</div>';}
+  }catch(e){console.warn('search users',e);results.innerHTML='<div style="color:var(--muted);font-size:12px;padding:12px;text-align:center">'+PPI18n.t('friends.search.error')+'</div>';}
 }
 
 /* ---- Load suggested users for Discover tab ---- */
@@ -5828,6 +6008,12 @@ function viewSearchUser(uid,name){
     return;
   }
   /* --- Async profile loader: try pp_public first (most reliable), then users doc --- */
+  /* Show overlay immediately with loading state so the user sees the popup */
+  content.innerHTML='<div style="text-align:center">'+
+    '<div style="font-size:16px;font-weight:800">'+esc(name)+'</div>'+
+    '<div style="font-size:12px;color:var(--muted);margin-top:8px">Loading profile...</div>'+
+  '</div>';
+  overlay.classList.add('show');
   (async function(){
     /* Check friend status for the current user vs this uid */
     var friendStatus='none';
@@ -6154,6 +6340,22 @@ async function loadFriendRequests(){
       });
     }catch(notifErr){
       console.warn('notifications query failed',notifErr);
+      /* Fallback: try reading all notifications without where clauses */
+      try{
+        var notifAllSnap=await db.collection('notifications').doc(currentUser.uid).collection('items').limit(100).get();
+        notifAllSnap.forEach(function(doc){
+          var d=doc.data();
+          if(d.type==='friend_request'&&d.status==='pending'){
+            var notifUid=d.from||'';
+            var alreadyExists=items.some(function(it){return it.uid===notifUid;});
+            if(!alreadyExists&&notifUid){
+              items.push({uid:notifUid,name:d.fromName||'User',addedAt:d.createdAt||null,requestDocId:null,notifDocId:doc.id});
+            }
+          }
+        });
+      }catch(notifAllErr){
+        console.warn('notifications all-items fallback failed',notifAllErr);
+      }
     }
 
     /* Method 4: Broader friend_requests fallback — if Method 1 failed due to
@@ -6435,6 +6637,42 @@ async function loadFriendsList(){
       var tb=b.addedAt?((b.addedAt.toDate?b.addedAt.toDate():b.addedAt).getTime()):0;
       return tb-ta;
     });
+    /* Fallback: if pending array is empty, try querying the global
+     * friend_requests collection for requests WE sent. This covers the
+     * case where our own friends list write failed due to Firestore rules. */
+    if(!pending.length&&fbReady&&currentUser){
+      try{
+        var sentSnap=await db.collection('friend_requests')
+          .where('from','==',currentUser.uid)
+          .where('status','==','pending')
+          .get();
+        sentSnap.forEach(function(doc){
+          var d=doc.data();
+          var toUid=d.to||'';
+          var toName=d.toName||'User';
+          if(!toUid) return;
+          var alreadyInPending=pending.some(function(p){return p.uid===toUid;});
+          if(!alreadyInPending){
+            pending.push({uid:toUid,name:toName,avatar:0,addedAt:d.createdAt||null});
+          }
+        });
+      }catch(sentErr){
+        console.warn('friend_requests sent query failed',sentErr);
+        /* Last resort: scan all friend_requests client-side */
+        try{
+          var allSentSnap=await db.collection('friend_requests').limit(500).get();
+          allSentSnap.forEach(function(doc){
+            var d=doc.data();
+            if(d.from===currentUser.uid&&d.status==='pending'&&d.to){
+              var alreadyInPending=pending.some(function(p){return p.uid===d.to;});
+              if(!alreadyInPending){
+                pending.push({uid:d.to,name:d.toName||'User',avatar:0,addedAt:d.createdAt||null});
+              }
+            }
+          });
+        }catch(allSentErr){console.warn('all friend_requests sent scan failed',allSentErr);}
+      }
+    }
     /* Also include demo user pending requests from localStorage */
     var demoMap=_demoSentMap();
     var demoUids=Object.keys(demoMap);
@@ -6519,9 +6757,21 @@ async function loadFriendsList(){
 async function loadConversations(){
   var list=document.getElementById('conversationsList');
   if(!list) return;
-  if(!fbReady||!currentUser||!rtdb){
+  if(!fbReady||!currentUser){
     list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:30px">'+PPI18n.t('friends.signin.chats')+'</div>';
     return;
+  }
+  if(!rtdb){
+    /* RTDB may not be initialized yet — try to get it from firebase */
+    try{
+      if(typeof firebase!=='undefined'&&firebase.database){
+        rtdb=firebase.database();
+      }
+    }catch(e){}
+    if(!rtdb){
+      list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:30px">'+PPI18n.t('friends.no.conversations')+'<br>'+PPI18n.t('friends.no.conversations.hint')+'</div>';
+      return;
+    }
   }
   list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">Loading...</div>';
   try{
@@ -6779,7 +7029,7 @@ document.getElementById('chatWindowClose').addEventListener('click',function(){
 function updateFriendsBtn(){
   var btn=document.getElementById('friendsBtn');
   if(btn){
-    btn.style.display=fbReady&&currentUser?'inline-flex':'none';
+    btn.style.display='inline-flex';
   }
 }
 
@@ -6957,11 +7207,17 @@ function syncPublicProfile(){
   var avatar = gameData.avatar || 0;
   var lvl = gameData.lvl || 1;
   var bio = document.getElementById('setBio') ? document.getElementById('setBio').value.trim() : userBio;
+  var achCount = (gameData.ach || []).length;
+  var coins = gameData.coins || 0;
+  var xp = gameData.xp || 0;
   db.collection('pp_public').doc(currentUser.uid).set({
     name: displayName,
     email: email,
     avatar: avatar,
     lvl: lvl,
+    xp: xp,
+    achCount: achCount,
+    coins: coins,
     bio: bio || '',
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   },{merge:true}).catch(function(e){
@@ -6987,6 +7243,8 @@ window.loadFriendsList = loadFriendsList;
 window.loadFriendRequests = loadFriendRequests;
 window.loadConversations = loadConversations;
 window.syncPublicProfile = syncPublicProfile;
+window.openAccount = openAccount;
+window.openAuth = openAuth;
 
 })();
 </script>

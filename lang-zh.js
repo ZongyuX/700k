@@ -575,7 +575,16 @@ var ZH = {
   'friends.reverse.request': '对方已向你发送请求',
   'friends.accept.error': '接受请求出错',
   'friends.now.friend': '已成为了你的好友！',
-  'friends.withdrawn': '好友请求已撤回'
+  'friends.withdrawn': '好友请求已撤回',
+  'friends.messages': '消息',
+  'friends.find': '🔍 查找好友',
+  'friends.search.placeholder': '按用户名或邮箱搜索...',
+  'friends.search': '搜索',
+  'friends.suggested': '✨ 为你推荐',
+  'friends.send': '发送',
+  'friends.searching': '搜索中...',
+  'friends.no.results': '未找到用户',
+  'friends.search.error': '搜索出错，请重试。'
 };
 
 if(typeof window.PPI18n!=='undefined') window.PPI18n.registerDict('zh', ZH);

@@ -260,6 +260,7 @@ var ACH = [];
   ];
   sp.forEach(function(a){ ACH.push({id:a[0],ic:a[1],nm:a[2],ds:a[3],nmZh:a[4],dsZh:a[5],t:a[6]}); });
 })();
+window._ACH = ACH;
 function getAchNm(a){ return isZh()?(a.nmZh||a.nm):a.nm; }
 function getAchDs(a){ return isZh()?(a.dsZh||a.ds):a.ds; }
 
@@ -1826,7 +1827,14 @@ function buildProfileBtn(){
   profBtn.className='pp-chip';
   profBtn.title='Account settings & your profile';
   profBtn.innerHTML='<span class="lv">👤 Account</span>';
-  profBtn.addEventListener('click', openProfile);
+  profBtn.addEventListener('click', function(){
+    /* If user is logged in and parent has openAccount, use that instead */
+    if(window.currentUser && typeof window.openAccount==='function'){
+      window.openAccount();
+    } else {
+      openProfile();
+    }
+  });
   bar.insertBefore(profBtn, bar.firstChild);
 }
 function openProfile(){
