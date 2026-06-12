@@ -3706,7 +3706,6 @@ async function redeemCode(){
     return;
   }
 
-  /* Require user to be logged in */
   if(!currentUser){
     m.className = 'msg err';
     m.textContent = 'Please sign in first to activate Pro.';
@@ -3717,82 +3716,75 @@ async function redeemCode(){
   m.textContent = 'Checking activation code...';
   m.style.display = 'block';
 
-  /* ---- Promo codes (advertising / marketing) ---- */
   var promoKey = key.toUpperCase();
 
-  /* ZXTEST- : test mode — permanent Pro unlock */
+  /* 促销码 */
   if(promoKey.indexOf('ZXTEST-')===0){
     if(isPromoUsed('ZXTEST')) return promoAlreadyUsed(m,'ZXTEST');
     markPromoUsed('ZXTEST');
-    return unlock(key,m,PPI18n.t('activate.testmode'));
+    return unlock(key, m, 'Pro activated (test mode)');
   }
 
-  /* ZX14D- : free 14-day Pro trial */
   if(promoKey.indexOf('ZX14D-')===0){
     if(isPromoUsed('ZX14D')) return promoAlreadyUsed(m,'ZX14D');
     markPromoUsed('ZX14D');
-    return unlockTimed(key,m,14,PPI18n.t('activate.promo.14d'));
+    return unlockTimed(key, m, 14, '14-day Pro trial activated');
   }
 
-  /* ZX1M- : free 1-month (30-day) Pro */
   if(promoKey.indexOf('ZX1M-')===0){
     if(isPromoUsed('ZX1M')) return promoAlreadyUsed(m,'ZX1M');
     markPromoUsed('ZX1M');
-    return unlockTimed(key,m,30,PPI18n.t('activate.promo.1m'));
+    return unlockTimed(key, m, 30, '1-month Pro activated');
   }
 
-  /* ZX5000C- : add 5000 coins */
   if(promoKey.indexOf('ZX5000C-')===0){
     if(isPromoUsed('ZX5000C')) return promoAlreadyUsed(m,'ZX5000C');
     markPromoUsed('ZX5000C');
     if(window.PPGame && PPGame.addCoins) PPGame.addCoins(5000);
     m.className='msg ok';
-    m.textContent=PPI18n.t('activate.promo.5000c');
+    m.textContent='5,000 coins added!';
     return;
   }
 
   if(!window.PPLemon || !PPLemon.validateLicense){
     m.className = 'msg err';
-    m.textContent = PPI18n.t('activate.notready');
+    m.textContent = 'Payment system not ready';
     return;
   }
 
-  /* ===== Key: Check if activation code has already been used ===== */
   var alreadyUsed = await isLicenseUsed(key);
   if(alreadyUsed){
     m.className = 'msg err';
-    m.textContent = 'This activation code has already been used. Each code can only be used once.';
+    m.textContent = 'This activation code has already been used.';
     return;
   }
 
-  /* Verify the license key with Lemon Squeezy */
   try{
     console.log('[Activation] Validating key with Lemon Squeezy...');
     var res = await PPLemon.validateLicense(key);
     console.log('[Activation] Validation result:', JSON.stringify(res));
 
-    /* ========== COINS ========== */
-    if(res.ok && res.kind==='coins'){
-      /* Mark as used — ensure only one activation */
+    /* 金币类激活码 */
+    if(res.ok && res.kind === 'coins'){
       await markLicenseUsed(key);
-      var coinAmount = res.coins || 1200;
+      var coinAmount = res.amount || 1200;
+      
       if(window.PPGame && PPGame.addCoins){
         PPGame.addCoins(coinAmount);
       }else{
-        /* Fallback: save directly to localStorage */
         var cur = parseInt(lsGet('pp_coins')||'0',10);
         lsSet('pp_coins', String(cur + coinAmount));
       }
+      
       m.className = 'msg ok';
-      m.textContent = 'Successfully added ' + coinAmount + ' coins!';
-      if(typeof toast === 'function') toast('+' + coinAmount + ' coins!', 'info');
+      m.textContent = 'Successfully added ' + coinAmount.toLocaleString() + ' coins!';
+      if(typeof toast === 'function') toast('+' + coinAmount.toLocaleString() + ' coins!', 'info');
       setTimeout(function(){ document.getElementById('actOverlay').classList.remove('show'); }, 2000);
       return;
     }
 
-    /* ========== PRO ========== */
-    if(res.ok && res.kind==='pro'){
-      /* Mark as used — ensure only one activation */
+    /* Pro 类激活码 */
+    if(res.ok && res.kind === 'pro'){
       await markLicenseUsed(key);
       if(res.days && res.days > 0){
         return unlockTimed(key, m, res.days, 'Pro activated! ' + res.days + ' days access.');
@@ -3800,22 +3792,18 @@ async function redeemCode(){
       return unlock(key, m, 'Pro activated! Lifetime access unlocked.');
     }
 
-    /* ========== CREDITS ========== */
-    if(res.ok && res.kind==='credits'){
+    /* 积分类激活码 */
+    if(res.ok && res.kind === 'credits'){
       await markLicenseUsed(key);
       var creditAmount = res.credits || 1200;
-      /* Try to add via game iframe if available */
-      try{
-        var gameFrame = document.querySelector('iframe[src*="game-pm"]');
-        if(gameFrame && gameFrame.contentWindow){
-          if(gameFrame.contentWindow.setUnlockCredits && gameFrame.contentWindow.getUnlockCredits){
-            gameFrame.contentWindow.setUnlockCredits(gameFrame.contentWindow.getUnlockCredits() + creditAmount);
-          }
-        }
-      }catch(e){}
-      /* Also store locally as fallback */
       var curCreds = parseInt(lsGet('pm_unlock_credits')||'0',10);
       lsSet('pm_unlock_credits', String(curCreds + creditAmount));
+      try{
+        var gameFrame = document.querySelector('iframe[src*="game-pm"]');
+        if(gameFrame && gameFrame.contentWindow && gameFrame.contentWindow.setUnlockCredits){
+          gameFrame.contentWindow.setUnlockCredits((gameFrame.contentWindow.getUnlockCredits ? gameFrame.contentWindow.getUnlockCredits() : 0) + creditAmount);
+        }
+      }catch(e){}
       m.className = 'msg ok';
       m.textContent = 'Successfully added ' + creditAmount + ' game credits!';
       if(typeof toast === 'function') toast('+' + creditAmount + ' credits!', 'info');
@@ -3823,38 +3811,26 @@ async function redeemCode(){
       return;
     }
 
-    /* ========== UNKNOWN KIND ========== */
-    if(res.ok && res.kind==='unknown'){
-      await markLicenseUsed(key);
-      if(!isPro){
-        return unlockTimed(key,m,30,'Pro activated! (30 days) — code type could not be determined, granted Pro as fallback.');
-      }
-      if(window.PPGame && PPGame.addCoins) PPGame.addCoins(1200);
-      m.className='msg ok';
-      m.textContent='Code activated! +1200 coins added (could not determine code type, Pro already active).';
-      setTimeout(()=>document.getElementById('actOverlay').classList.remove('show'), 2000);
-      return;
-    }
-
-    /* ========== OK but unrecognized ========== */
+    /* 未知类型 — 默认给 Pro 30天（重要修复！）*/
     if(res.ok){
-      m.className='msg err'; m.textContent=PPI18n.t('activate.notpro');
+      console.warn('[Activation] Unknown kind, defaulting to 30-day Pro');
+      await markLicenseUsed(key);
+      return unlockTimed(key, m, 30, 'Pro activated (30 days) — code recognized.');
+    }
+
+    if(res.error === 'network'){
+      m.className = 'msg err';
+      m.textContent = 'Network error. Please try again.';
       return;
     }
 
-    /* ========== ERROR: network ========== */
-    if(res.error==='network'){
-      m.className='msg err'; m.textContent=PPI18n.t('activate.network');
-      return;
-    }
-
-    /* ========== Generic invalid ========== */
     m.className = 'msg err';
-    m.textContent = 'Invalid activation code. Please check the code in your Lemon Squeezy receipt email and try again.';
+    m.textContent = 'Invalid activation code. Please check your code and try again.';
+    
   }catch(e){
     console.error('[Activation] Error:', e);
     m.className = 'msg err';
-    m.textContent = PPI18n.t('activate.network');
+    m.textContent = 'Activation failed: ' + (e.message || 'Unknown error');
   }
 }
 

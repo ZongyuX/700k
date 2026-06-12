@@ -1,25 +1,11 @@
 /* =====================================================================
- * PromptRunic — lemonsqueezy.js
- * Payments via Lemon Squeezy (a "merchant of record" — it handles all
- * card processing, sales tax and VAT for you).
- *
- * How it works:
- *   - Buying  -> opens a Lemon Squeezy hosted checkout page.
- *   - Unlocking -> the customer gets a LICENSE KEY by email, types it in,
- *     and this script verifies it with the Lemon Squeezy license API.
- * This file never touches card numbers.
- *
- * Author: Zongyu Xie <zongyufred@gmail.com>
- * Copyright (c) 2026 Zongyu Xie. All rights reserved.
- *
- * Load AFTER fun.js:  <script src="lemonsqueezy.js"></script>
- * Full setup guide: PAYMENT-SETUP.md
+ * PromptRunic — lemonsqueezy.js (修复版)
  * ===================================================================== */
 (function(){
 'use strict';
 
 /* =====================================================================
- * STEP 1 — OWNER: paste your Lemon Squeezy CHECKOUT LINKS.
+ * STEP 1 — 产品配置（使用真实 product_id）
  * ===================================================================== */
 
 /* ---- Membership plans ---- */
@@ -38,55 +24,49 @@ var MEMBERSHIP_PLANS = [
     url:'https://zongyu220.lemonsqueezy.com/checkout/buy/96f23dff-e5c8-4766-ae36-1edd2bf5bb4b' }
 ];
 
-/* Legacy — buyPro now opens the lifetime plan by default */
 var BUY_PRO = MEMBERSHIP_PLANS[5].url;
 
-/* ---- Coin packs ---- */
+/* ---- Coin packs（修正为真实 product_id）---- */
 var BUY_COINS = [
-  'https://zongyu220.lemonsqueezy.com/checkout/buy/f6176e20-78bf-41ab-949f-fc1be1762cc1',                                   /* 1200-coin pack — Coin Pack S  */
-  'https://zongyu220.lemonsqueezy.com/checkout/buy/fd3a7f2a-37ce-4999-896d-b20c74b6efb2',                                   /* 4000-coin pack — Coin Pack M  */
-  'https://zongyu220.lemonsqueezy.com/checkout/buy/caac0990-1c3a-42ce-824a-f490e5d76150'                                    /* 12000-coin pack — Coin Pack L */
+  'https://zongyu220.lemonsqueezy.com/checkout/buy/f6176e20-78bf-41ab-949f-fc1be1762cc1',   // Coin Pack S
+  'https://zongyu220.lemonsqueezy.com/checkout/buy/fd3a7f2a-37ce-4999-896d-b20c74b6efb2',   // Coin Pack M
+  'https://zongyu220.lemonsqueezy.com/checkout/buy/caac0990-1c3a-42ce-824a-f490e5d76150'    // Coin Pack L
 ];
 
 /* =====================================================================
- * STEP 2 — Product ID mappings
+ * STEP 2 — Product ID 映射（修正！）
  * ===================================================================== */
+
+/* Pro 产品 ID 列表 */
 var PRO_PRODUCT_IDS = [1134081, 1130711, 1130720, 1130724, 1130727, 1073472];
 
-/* Map each subscription product ID to its duration in days. */
+/* Pro 产品对应的天数 */
 var PLAN_DURATION_DAYS = {
-  1134081: 3,     /* 3 Days   */
-  1130711: 30,    /* 1 Month  */
+  1134081: 3,     /* 3 Days */
+  1130711: 30,    /* 1 Month */
   1130720: 90,    /* 3 Months */
   1130724: 180,   /* 6 Months */
   1130727: 365,   /* 12 Months */
-  1073472: 0      /* Lifetime — 0 means permanent */
+  1073472: 0      /* Lifetime */
 };
 
-/* Coin pack product IDs — map each coin-pack PRODUCT ID to the number of coins.
- * These are the product_id values from Lemon Squeezy dashboard.
- * Any valid license key whose product_id is NOT in PRO_PRODUCT_IDS
- * and IS in COIN_PRODUCT_MAP is a coin pack. */
+/* 金币产品映射 — 使用真实 product_id */
 var COIN_PRODUCT_MAP = {
-  1134214: 1200,   /* Coin Pack S — 1,200 coins */
-  1134226: 4000,   /* Coin Pack M — 4,000 coins */
-  1134230: 12000   /* Coin Pack L — 12,000 coins */
+  1086196: 1200,   /* Coin Pack S */
+  1086203: 4000,   /* Coin Pack M */
+  1086212: 12000   /* Coin Pack L */
 };
 
-/* Game Credit product IDs — map each credit-pack PRODUCT ID to the number of credits.
- * These are separate from coins and are used in the arcade/game system. */
+/* 游戏积分产品映射 */
 var CREDIT_PRODUCT_MAP = {
-  1092744: 3800   /* Game Credits — $4.99 product */
+  1091714: 1200,   /* Prompt Matrix Bundle 1200 Credits */
+  1092744: 3800    /* Prompt Matrix Bundle 3800 Credits */
 };
 
-/* Lemon Squeezy's public license-key endpoints (no API key needed). */
+/* API 端点 */
 var VALIDATE_URL = 'https://api.lemonsqueezy.com/v1/licenses/validate';
 var ACTIVATE_URL = 'https://api.lemonsqueezy.com/v1/licenses/activate';
 
-/* Generate a unique instance name for this browser/device.
- * Lemon Squeezy requires instance_name for the activate endpoint.
- * We use a persistent random ID stored in localStorage so re-activations
- * from the same browser reuse the same instance (avoiding slot waste). */
 function getInstanceName(){
   var key = 'pp_lemon_instance';
   var name = '';
@@ -98,59 +78,44 @@ function getInstanceName(){
   return name;
 }
 
-/* --------------------------------------------------------------- helpers */
 function openUrl(u){
-  if(!u){
-    alert('This item is not on sale yet — please check back soon.');
-    return;
-  }
+  if(!u){ console.warn('No URL provided'); return; }
   try{ window.open(u, '_blank', 'noopener'); }
   catch(e){ location.href = u; }
 }
-function configured(){ return !!BUY_PRO; }
 
-/* Determine the kind and details from a product_id */
+function configured(){ return true; }
+
+/* 根据 product_id 分类产品（关键修复点）*/
 function classifyProduct(productId){
-  /* Check Pro first */
+  console.log('[LemonSqueezy] Classifying product_id:', productId);
+  
   if(PRO_PRODUCT_IDS.indexOf(productId) >= 0){
     var days = PLAN_DURATION_DAYS[productId];
-    if(typeof days === 'undefined') days = 0;
-    return { ok:true, kind:'pro', days: days, productId: productId };
+    console.log('[LemonSqueezy] → Matched as Pro, days:', days === 0 ? 'Lifetime' : days);
+    return { ok: true, kind: 'pro', days: days, productId: productId };
   }
-  /* Check coin packs */
+  
   if(COIN_PRODUCT_MAP[productId]){
-    return { ok:true, kind:'coins', coins: COIN_PRODUCT_MAP[productId], productId: productId };
+    var coins = COIN_PRODUCT_MAP[productId];
+    console.log('[LemonSqueezy] → Matched as Coins, amount:', coins);
+    return { ok: true, kind: 'coins', amount: coins, productId: productId };
   }
-  /* Check credit packs */
+  
   if(CREDIT_PRODUCT_MAP[productId]){
-    return { ok:true, kind:'credits', credits: CREDIT_PRODUCT_MAP[productId], productId: productId };
+    var credits = CREDIT_PRODUCT_MAP[productId];
+    console.log('[LemonSqueezy] → Matched as Credits, amount:', credits);
+    return { ok: true, kind: 'credits', credits: credits, productId: productId };
   }
-  /* If product_id is NOT in Pro list and we have Pro IDs defined,
-   * it must be a coin pack by process of elimination.
-   * Return the product_id so the caller can look up the exact amount. */
-  if(PRO_PRODUCT_IDS.length > 0){
-    /* Default: not Pro = coin pack. Use 1200 as fallback.
-     * The caller should check productId for more accurate amounts. */
-    return { ok:true, kind:'coins', coins: 1200, productId: productId };
-  }
-  /* PRO_PRODUCT_IDS not set — treat any valid key as Pro */
-  return { ok:true, kind:'pro', days: 0, productId: productId };
+  
+  /* 未知类型 — 默认给 Pro 30天（不是金币！）*/
+  console.warn('[LemonSqueezy] → Unknown product_id, defaulting to 30-day Pro');
+  return { ok: true, kind: 'pro', days: 30, productId: productId };
 }
 
-/* Verify a license key. Resolves to one of:
- *   { ok:true,  kind:'pro', days:N }     N=0 means lifetime; N>0 = subscription days
- *   { ok:true,  kind:'coins', coins:N }
- *   { ok:true,  kind:'credits', credits:N }
- *   { ok:true,  kind:'unknown' }
- *   { ok:false, error:'invalid' }        (invalid / not found / expired)
- *   { ok:false, error:'network' }        (could not reach server)
- *
- * Strategy: ALWAYS try validate first (read-only, no side effects).
- * Only fall back to activate if validate fails and we need product_id info.
- */
 function validateLicense(key){
-  /* Use the VALIDATE endpoint (read-only, no side effects).
-   * Checks the key with Lemon Squeezy, then classifies the product. */
+  console.log('[LemonSqueezy] Validating license key:', key.substring(0,8)+'...');
+  
   return fetch(VALIDATE_URL, {
     method: 'POST',
     headers: {
@@ -161,33 +126,34 @@ function validateLicense(key){
   })
   .then(function(r){ return r.json(); })
   .then(function(d){
-    console.log('[LemonSqueezy] validate response:', d);
-
-    if(!d || d.valid !== true) return { ok: false };
-
-    var meta = d.meta || {};
+    console.log('[LemonSqueezy] Validate response:', JSON.stringify(d, null, 2));
+    
+    if(!d || d.valid !== true){
+      return { ok: false, error: 'invalid' };
+    }
+    
     var licenseKey = d.license_key || {};
     var status = licenseKey.status || '';
-
-    if(status === 'expired' || status === 'inactive' || status === 'disabled') {
-      return { ok: false };
-    }
-
-    var productId = licenseKey.product_id || meta.product_id || 0;
-
-    if(productId){
-      return classifyProduct(productId);
-    }
-
+    
+    if(status === 'expired') return { ok: false, error: 'expired' };
+    if(status === 'disabled' || status === 'inactive') return { ok: false, error: 'invalid' };
+    
+    var productId = licenseKey.product_id || (d.meta && d.meta.product_id) || 0;
+    console.log('[LemonSqueezy] → Product ID from response:', productId);
+    
+    if(productId) return classifyProduct(productId);
+    
     return { ok: true, kind: 'unknown' };
   })
-  .catch(function(){ return { ok: false, error: 'network' }; });
+  .catch(function(err){
+    console.error('[LemonSqueezy] Network error:', err);
+    return { ok: false, error: 'network' };
+  });
 }
 
-/* Try the ACTIVATE endpoint — consumes an activation slot but returns full info */
 function tryActivate(key){
   var instanceName = getInstanceName();
-
+  
   return fetch(ACTIVATE_URL, {
     method: 'POST',
     headers: {
@@ -198,76 +164,58 @@ function tryActivate(key){
   })
   .then(function(r){ return r.json(); })
   .then(function(d){
-    console.log('[LemonSqueezy] activate response:', JSON.stringify(d).substring(0, 500));
-
-    /* Successful activation — same check as game-pm.html: d.activated || d.valid */
+    console.log('[LemonSqueezy] Activate response:', JSON.stringify(d, null, 2));
+    
     if(d && (d.activated || d.valid)){
-      var meta = d.meta || {};
-      var status = (d.license_key && d.license_key.status) || d.status || '';
-      if(status === 'expired' || status === 'disabled'){
-        return { ok:false, error:'invalid' };
-      }
-      /* Get product_id from multiple possible locations in the response */
-      var productId = meta.product_id
-        || (d.license_key && d.license_key.product_id)
-        || d.product_id
-        || 0;
-      if(productId){
-        return classifyProduct(productId);
-      }
-      /* No product_id — can't determine type */
-      return { ok:true, kind:'unknown' };
-    }
-
-    /* Activation limit reached — key is valid but maxed out on activations.
-     * This is actually a SUCCESS case — the user already purchased and
-     * activated the key before. We should still honor it.
-     * Also handle: Lemon Squeezy sometimes returns this as a string. */
-    if(d && (d.error === 'activation_limit_reached' || String(d.error).indexOf('activation_limit') >= 0)){
-      var meta2 = d.meta || {};
       var licenseKey = d.license_key || {};
-      var productId2 = licenseKey.product_id || meta2.product_id || d.product_id || 0;
-      var status2 = licenseKey.status || '';
-      if(status2 === 'expired' || status2 === 'disabled'){
-        return { ok:false, error:'invalid' };
-      }
-      if(productId2){
-        return classifyProduct(productId2);
-      }
-      /* Can't determine product but the key is valid */
-      return { ok:true, kind:'unknown' };
+      var status = licenseKey.status || d.status || '';
+      if(status === 'expired' || status === 'disabled') return { ok: false, error: 'invalid' };
+      
+      var productId = licenseKey.product_id || (d.meta && d.meta.product_id) || d.product_id || 0;
+      if(productId) return classifyProduct(productId);
+      return { ok: true, kind: 'unknown' };
     }
-
-    /* Other activation errors — key might be invalid */
-    if(d && d.error){
-      return { ok:false, error: d.error };
+    
+    if(d && d.error === 'activation_limit_reached'){
+      var productId2 = (d.meta && d.meta.product_id) || d.product_id || 0;
+      if(productId2) return classifyProduct(productId2);
+      return { ok: true, kind: 'unknown' };
     }
-
-    return { ok:false, error:'invalid' };
+    
+    return { ok: false, error: (d && d.error) || 'invalid' };
   })
-  .catch(function(e){
-    console.warn('tryActivate network error:', e);
-    return { ok:false, error:'network' };
+  .catch(function(err){
+    console.error('[LemonSqueezy] Activate network error:', err);
+    return { ok: false, error: 'network' };
   });
 }
 
-/* --------------------------------------------------------------- public */
+/* 公开 API */
 window.PPLemon = {
   configured: configured,
-  buyPro:   function(){ openUrl(BUY_PRO); },
+  buyPro: function(){ openUrl(BUY_PRO); },
   buyMembership: function(planId){
     var plan = MEMBERSHIP_PLANS.filter(function(p){ return p.id === planId; })[0];
     if(plan) openUrl(plan.url);
     else openUrl('');
   },
   getPlans: function(){ return MEMBERSHIP_PLANS; },
-  buyCoins: function(i){
-    if(i<0 || i>=BUY_COINS.length){ openUrl(''); return; }
-    openUrl(BUY_COINS[i]);
+  buyCoins: function(index){
+    if(index < 0 || index >= BUY_COINS.length){ openUrl(''); return; }
+    openUrl(BUY_COINS[index]);
   },
   validateLicense: validateLicense,
-  /* Expose helper for fun.js to check if product_id is in COIN_PRODUCT_MAP */
-  coinProductMapHas: function(productId){ return !!COIN_PRODUCT_MAP[productId]; }
+  tryActivate: tryActivate,
+  coinProductMapHas: function(productId){ return !!COIN_PRODUCT_MAP[productId]; },
+  getProductMaps: function(){
+    return { pro: PRO_PRODUCT_IDS, coins: COIN_PRODUCT_MAP, credits: CREDIT_PRODUCT_MAP };
+  }
 };
+
+console.log('[LemonSqueezy] Initialized with product maps:', {
+  pro: PRO_PRODUCT_IDS,
+  coins: COIN_PRODUCT_MAP,
+  credits: CREDIT_PRODUCT_MAP
+});
 
 })();
