@@ -1560,7 +1560,7 @@
     <button class="pp-chip" id="optimizerBtn" title="Prompt Optimizer" onclick="document.getElementById('optimizer').scrollIntoView({behavior:'smooth',block:'center'})">⚡<span class="btn-hide-sm"> Optimizer</span></button>
     <button class="pp-chip" id="communityBtn" data-i18n="header.community" title="Leaderboards & Mood Wall">🏆<span class="btn-hide-sm"> Community</span></button>
     <button class="hbtn-game" id="gameBtn" data-i18n="header.game">🎮<span class="btn-hide-sm"> Game</span></button>
-    <button class="pp-chip" id="friendsBtn" title="Friends & Chat" onclick="if(typeof toggleFriendsPanel==='function')toggleFriendsPanel()">👥<span class="btn-hide-sm"> Friends</span></button>
+    <button class="pp-chip" id="friendsBtn" title="Friends & Chat">👥<span class="btn-hide-sm"> Friends</span></button>
     <span class="badge" id="planBadge">FREE</span>
     <button class="hbtn-user" id="authBtn" data-i18n="header.signin">👤<span class="btn-hide-sm"> Sign in</span></button>
     <a href="#pro" class="hbtn-gold" data-i18n="header.getpro">Get Pro</a>
@@ -1571,27 +1571,13 @@
 (function(){
   var hbtns=document.querySelector('.hbtns');
   if(!hbtns)return;
-  /* Mouse wheel → horizontal scroll + header auto-hide */
+  /* Mouse wheel → horizontal scroll only (no header auto-hide) */
   hbtns.addEventListener('wheel',function(e){
-    var deltaY=e.deltaY||0;
-    var deltaX=e.deltaX||0;
-    /* Horizontal scroll for button bar */
-    var hDelta=deltaX||(Math.abs(deltaY)>0?deltaY*0.6:0);
-    if(Math.abs(hDelta)>0){
-      this.scrollLeft+=hDelta*1.5;
+    var delta=e.deltaY||e.deltaX;
+    if(Math.abs(delta)>0){
+      e.preventDefault();
+      this.scrollLeft+=delta*1.5;
     }
-    /* If scrolling down (deltaY > 0), also collapse the header */
-    if(deltaY>1){
-      var hdr=document.querySelector('header');
-      if(hdr) hdr.classList.add('pp-hide');
-    }
-    /* If scrolling up (deltaY < 0), show the header */
-    if(deltaY<-1){
-      var hdr2=document.querySelector('header');
-      if(hdr2) hdr2.classList.remove('pp-hide');
-    }
-    /* Prevent page scroll while over the toolbar */
-    e.preventDefault();
   },{passive:false});
   /* Drag-to-scroll (mouse) */
   var isDrag=false,sx=0,sl=0,dm=false;
@@ -1629,9 +1615,16 @@
   /* Prevent click after drag — only for non-button elements */
   hbtns.addEventListener('click',function(e){
     if(dm){
-      /* Don't block clicks on actual buttons/links — only block drag-to-scroll artifacts */
-      var tag=e.target.tagName;
-      if(tag!=='BUTTON'&&tag!=='A'&&tag!=='INPUT'){
+      /* Walk up DOM to check if click target is inside a button/link/input */
+      var el=e.target;
+      var isInteractive=false;
+      while(el&&el!==hbtns){
+        if(el.tagName==='BUTTON'||el.tagName==='A'||el.tagName==='INPUT'){
+          isInteractive=true;break;
+        }
+        el=el.parentElement;
+      }
+      if(!isInteractive){
         e.stopPropagation();e.preventDefault();
       }
       dm=false;
@@ -2220,8 +2213,8 @@
 </div>
 
 <!-- ===== Chat Window (per friend) — QQ-style floating ===== -->
-<div class="chat-window" id="chatWindow" style="display:none!important;position:fixed;bottom:20px;right:380px;width:360px;max-width:90vw;background:var(--panel);border:1px solid var(--border);border-radius:16px;z-index:10001;box-shadow:0 8px 32px rgba(0,0,0,.5);overflow:hidden;resize:both;min-width:280px;min-height:340px">
-  <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,rgba(124,92,255,.1),rgba(34,211,238,.05));cursor:move" id="chatWindowHeader">
+<div class="chat-window" id="chatWindow" style="display:none!important;position:fixed;bottom:20px;right:380px;width:360px;max-width:90vw;background:var(--panel);border:1px solid var(--border);border-radius:12px;z-index:10001;box-shadow:0 8px 32px rgba(0,0,0,.5);overflow:auto;resize:both;min-width:280px;min-height:340px">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,rgba(124,92,255,.1),rgba(34,211,238,.05));cursor:move;overflow:hidden;flex-shrink:0" id="chatWindowHeader">
     <div style="display:flex;align-items:center;gap:10px;cursor:pointer" id="chatFriendInfo">
       <div id="chatFriendAvatar" style="width:34px;height:34px;border-radius:10px;overflow:hidden;border:1px solid var(--border)"></div>
       <div>
@@ -2236,7 +2229,7 @@
     </div>
   </div>
   <div id="chatMessages" style="height:300px;overflow-y:auto;padding:12px 16px;font-size:13px;display:flex;flex-direction:column;gap:8px"></div>
-  <div id="chatInputRow" style="display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--border);background:var(--panel2)">
+  <div id="chatInputRow" style="display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--border);background:var(--panel2);overflow:hidden;flex-shrink:0">
     <input type="text" id="chatInput" data-i18n="friends.chat.placeholder" data-i18n-attr="placeholder" placeholder="Type a message..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:10px;font-size:13px;outline:none;transition:border .2s" onfocus="this.style.borderColor='var(--accent2)'" onblur="this.style.borderColor='var(--border)'" />
     <button onclick="sendChatMessage()" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:9px 18px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;transition:.15s" onmouseenter="this.style.transform='scale(1.04)'" onmouseleave="this.style.transform='scale(1)'" data-i18n="friends.send">Send</button>
   </div>
@@ -2683,6 +2676,33 @@ function initFirebase(){
     window.firebase=firebase;
     window.currentUser=currentUser;
     auth.onAuthStateChanged(handleAuthChange);
+    /* Minimal PPSocial implementation (social.js is not loaded) */
+    window.PPSocial={
+      onMood:function(promptId,emoji){
+        if(!fbReady||!currentUser||!db)return;
+        var moodUpdate={};
+        moodUpdate['moods.'+promptId]=emoji||firebase.firestore.FieldValue.delete();
+        moodUpdate['updatedAt']=firebase.firestore.FieldValue.serverTimestamp();
+        moodUpdate['name']=currentUser.displayName||(currentUser.email?currentUser.email.split('@')[0]:'User');
+        if(window.PPGame&&PPGame.exportState){
+          moodUpdate['avatar']=PPGame.exportState().avatar||0;
+        }
+        db.collection('pp_public').doc(currentUser.uid).update(moodUpdate).catch(function(e){
+          /* Doc might not exist yet, create it */
+          db.collection('pp_public').doc(currentUser.uid).set({
+            moods:{},
+            name:currentUser.displayName||(currentUser.email?currentUser.email.split('@')[0]:'User'),
+            avatar:(window.PPGame&&PPGame.exportState)?(PPGame.exportState().avatar||0):0,
+            lvl:1,xp:0,achCount:0,coins:0,
+            updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+          }).then(function(){
+            var retryUpdate={};
+            retryUpdate['moods.'+promptId]=emoji||firebase.firestore.FieldValue.delete();
+            db.collection('pp_public').doc(currentUser.uid).update(retryUpdate);
+          }).catch(function(e2){console.warn('PPSocial.onMood create error',e2);});
+        });
+      }
+    };
   }catch(e){
     console.warn('Firebase init failed:',e);
     fbReady=false;
@@ -5839,7 +5859,7 @@ function toggleChatMinimize(){
 }
 function closeChatWindow(){
   var cw=document.getElementById('chatWindow');
-  if(cw) cw.style.cssText='display:none!important;position:fixed;bottom:20px;right:380px;width:360px;max-width:90vw;background:var(--panel);border:1px solid var(--border);border-radius:16px;z-index:10001;box-shadow:0 8px 32px rgba(0,0,0,.5);overflow:hidden;resize:both;min-width:280px;min-height:340px';
+  if(cw) cw.style.cssText='display:none!important;position:fixed;bottom:20px;right:380px;width:360px;max-width:90vw;background:var(--panel);border:1px solid var(--border);border-radius:12px;z-index:10001;box-shadow:0 8px 32px rgba(0,0,0,.5);overflow:auto;resize:both;min-width:280px;min-height:340px';
   if(_chatUnsubscribe){
     try{_chatUnsubscribe();}catch(e){}
     _chatUnsubscribe=null;
@@ -6978,7 +6998,7 @@ window.openChatWith=function(fUid,fName,fAvatar){
   var avEl=document.getElementById('chatFriendAvatar');
   var svg=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(fAvatar||0):'';
   avEl.innerHTML=svg;
-  document.getElementById('chatWindow').style.cssText='display:block!important;position:fixed;bottom:20px;right:380px;width:360px;max-width:90vw;background:var(--panel);border:1px solid var(--border);border-radius:16px;z-index:10001;box-shadow:0 8px 32px rgba(0,0,0,.5);overflow:hidden;resize:both;min-width:280px;min-height:340px';
+  document.getElementById('chatWindow').style.cssText='display:block!important;position:fixed;bottom:20px;right:380px;width:360px;max-width:90vw;background:var(--panel);border:1px solid var(--border);border-radius:12px;z-index:10001;box-shadow:0 8px 32px rgba(0,0,0,.5);overflow:auto;resize:both;min-width:280px;min-height:340px';
   document.getElementById('chatMessages').style.display='flex';
   document.getElementById('chatInputRow').style.display='flex';
   document.getElementById('chatMessages').innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">'+PPI18n.t('friends.loading.messages')+'</div>';
@@ -7200,6 +7220,32 @@ document.getElementById('friendsPanelClose').addEventListener('click',function()
 document.getElementById('chatWindowClose').addEventListener('click',function(){
   closeChatWindow();
 });
+
+/* Make chat window draggable by header */
+(function(){
+  var cw=document.getElementById('chatWindow');
+  var hdr=document.getElementById('chatWindowHeader');
+  if(!cw||!hdr)return;
+  var dragging=false,ox=0,oy=0;
+  hdr.addEventListener('mousedown',function(e){
+    if(e.target.tagName==='BUTTON')return;
+    dragging=true;
+    var rect=cw.getBoundingClientRect();
+    ox=e.clientX-rect.left;
+    oy=e.clientY-rect.top;
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove',function(e){
+    if(!dragging)return;
+    var x=e.clientX-ox;
+    var y=e.clientY-oy;
+    cw.style.left=x+'px';
+    cw.style.top=y+'px';
+    cw.style.right='auto';
+    cw.style.bottom='auto';
+  });
+  document.addEventListener('mouseup',function(){dragging=false;});
+})();
 
 /* Update friends button visibility */
 function updateFriendsBtn(){
