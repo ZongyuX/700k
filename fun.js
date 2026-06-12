@@ -1426,7 +1426,7 @@ function thankYou(){
 }
 function fbMailto(txt,email){
   try{
-    location.href='mailto:zongxie22@gmail.com?subject='+encodeURIComponent('PromptRunic feedback')
+    location.href='mailto:zongyufred@gmail.com?subject='+encodeURIComponent('PromptRunic feedback')
       +'&body='+encodeURIComponent(txt+(email?('\n\nFrom: '+email):''));
   }catch(e){}
 }
@@ -1576,23 +1576,35 @@ function startTimer(){
 /* ---- header coin button ---- */
 var arcBtn, arcPanel;
 function buildArcadeBtn(){
-  /* Reuse the existing #coinBtn in the header instead of creating a duplicate.
-   * The #coinBtn already shows 🪙 + coin count and has its own click handler. */
-  arcBtn = elById('coinBtn');
-  if(!arcBtn) return;
-  /* Ensure clicking the existing coinBtn opens the arcade panel */
-  arcBtn.removeEventListener('click', arcBtn._prevArcadeClick);
-  arcBtn._prevArcadeClick = function(e){
+  var bar=D.querySelector('.hbtns'); if(!bar) return;
+  /* Remove any existing arcade button first */
+  var existing=bar.querySelector('.arcade-btn');
+  if(existing) existing.remove();
+  arcBtn=D.createElement('button');
+  arcBtn.className='pp-chip arcade-btn';
+  arcBtn.title='Arcade — coins, avatars & battles';
+  arcBtn.style.cursor='pointer';
+  arcBtn.addEventListener('click',function(e){
     e.stopPropagation();
     openArcade();
-  };
-  arcBtn.addEventListener('click', arcBtn._prevArcadeClick);
+  });
+  /* Insert after the game button for better visibility, or before authBtn */
+  var gameBtn=bar.querySelector('#gameBtn');
+  var authBtn=bar.querySelector('#authBtn');
+  if(gameBtn && gameBtn.nextSibling){
+    bar.insertBefore(arcBtn, gameBtn.nextSibling);
+  }else if(authBtn){
+    bar.insertBefore(arcBtn, authBtn);
+  }else{
+    bar.appendChild(arcBtn);
+  }
   paintArcadeBtn();
 }
-function paintArcadeBtn(){
-  /* Update the existing coinBtn's count display */
-  var countEl = elById('coinBtnCount');
-  if(countEl) countEl.textContent = ' '+(game.coins||0);
+function paintArcadeBtn(){ 
+  if(arcBtn) arcBtn.innerHTML='<span class="lv">🪙 '+(game.coins||0)+'</span>'; 
+  /* Also update the header coin button if it exists */
+  var coinBtnCount=D.getElementById('coinBtnCount');
+  if(coinBtnCount) coinBtnCount.textContent=game.coins||0;
 }
 
 /* ---- arcade panel ---- */
@@ -1765,28 +1777,32 @@ async function redeemCoinCode(){
   var m=elById('ppCoinMsg'); m.style.display='block';
   if(!code){ m.className='msg err'; m.textContent='Paste a coin code first.'; return; }
 
-  /* ---- Check if this code has already been used on THIS account ---- */
-  var usedCodes=[];
-  try{ usedCodes=JSON.parse(localStorage.getItem('pp_used_codes')||'[]'); }catch(e){ usedCodes=[]; }
-  if(usedCodes.indexOf(code)>=0){
-    m.className='msg err';
-    m.textContent='This activation code has already been used on your account. Each code can only be activated once.';
-    return;
+  /* ---- Check if this code has already been used (one-time-use enforcement) ---- */
+  if(window.isLicenseUsedAsync){
+    try{
+      var usedResult = await isLicenseUsedAsync(code);
+      if(usedResult.used){
+        m.className='msg err';
+        if(usedResult.byOtherAccount){
+          m.textContent='This activation code has already been activated by another account.';
+        }else{
+          m.textContent='This activation code has already been used on your account. Each code can only be activated once.';
+        }
+        return;
+      }
+    }catch(e){}
   }
 
   /* TEST mode: codes starting with ZXTEST- grant 1000 coins (owner testing). */
   if(code.toUpperCase().indexOf('ZXTEST-')===0){
     /* Also check one-time-use for test codes */
-    var usedCodes2=[];
-    try{ usedCodes2=JSON.parse(localStorage.getItem('pp_used_codes')||'[]'); }catch(e){ usedCodes2=[]; }
-    if(usedCodes2.indexOf(code)>=0){
+    if(window.isLicenseUsed && isLicenseUsed(code)){
       m.className='msg err'; m.textContent='This activation code has already been used. Each code can only be activated once.';
       return;
     }
     game.coins=(game.coins||0)+1000; save(); refresh(); paintArcadeBtn();
-    /* Mark code as used locally */
-    var uc=[];try{uc=JSON.parse(localStorage.getItem('pp_used_codes')||'[]');}catch(e){uc=[];}
-    if(uc.indexOf(code)<0){uc.push(code);localStorage.setItem('pp_used_codes',JSON.stringify(uc));}
+    if(window.markLicenseUsedAsync) await markLicenseUsedAsync(code);
+    else if(window.markLicenseUsed) markLicenseUsed(code);
     m.className='msg ok'; m.textContent='+1000 coins added! (TEST code)';
     setTimeout(paintArcade, 900); return;
   }
@@ -1798,18 +1814,23 @@ async function redeemCoinCode(){
     var res = await PPLemon.validateLicense(code);
 
     /* Double-check: after Lemon Squeezy validation, verify key wasn't used while validating */
-    var usedCodes3=[];
-    try{ usedCodes3=JSON.parse(localStorage.getItem('pp_used_codes')||'[]'); }catch(e){ usedCodes3=[]; }
-    if(usedCodes3.indexOf(code)>=0){
-      m.className='msg err';
-      m.textContent='This activation code has already been used on your account. Each code can only be activated once.';
-      return;
+    if(window.isLicenseUsedAsync){
+      var secondCheck = await isLicenseUsedAsync(code);
+      if(secondCheck.used){
+        m.className='msg err';
+        if(secondCheck.byOtherAccount){
+          m.textContent='This activation code has already been activated by another account.';
+        }else{
+          m.textContent='This activation code has already been used on your account. Each code can only be activated once.';
+        }
+        return;
+      }
     }
 
     if(res.ok && res.kind==='coins'){
-      /* Mark code as used locally */
-      var uc=[];try{uc=JSON.parse(localStorage.getItem('pp_used_codes')||'[]');}catch(e){uc=[];}
-      if(uc.indexOf(code)<0){uc.push(code);localStorage.setItem('pp_used_codes',JSON.stringify(uc));}
+      /* Mark the key as used BEFORE adding coins to prevent reuse */
+      if(window.markLicenseUsedAsync) await markLicenseUsedAsync(code);
+      else if(window.markLicenseUsed) markLicenseUsed(code);
       game.coins=(game.coins||0)+res.coins; save(); refresh(); paintArcadeBtn();
       m.className='msg ok'; m.textContent='+'+res.coins+' coins added!';
       setTimeout(paintArcade, 900); return;
@@ -1825,8 +1846,8 @@ async function redeemCoinCode(){
     }
     if(res.error==='limit'){
       /* Activation limit reached — code already used on another device/account */
-      var uc4=[];try{uc4=JSON.parse(localStorage.getItem('pp_used_codes')||'[]');}catch(e){uc4=[];}
-      if(uc4.indexOf(code)<0){uc4.push(code);localStorage.setItem('pp_used_codes',JSON.stringify(uc4));}
+      if(window.markLicenseUsedAsync) await markLicenseUsedAsync(code);
+      else if(window.markLicenseUsed) markLicenseUsed(code);
       m.className='msg err';
       m.textContent='This activation code has already been activated. Each code can only be used once.';
       return;
@@ -1837,11 +1858,31 @@ async function redeemCoinCode(){
   }
 }
 
-/* ---- Account / Profile panel: removed — duplicate of header authBtn ---- */
+/* ---- Account / Profile panel: avatar + stats + avatar picker ---- */
 var profBtn, profPanel;
 function buildProfileBtn(){
-  /* Removed: the Account button is now handled by the header authBtn.
-   * openProfile() is kept for backward compatibility but no button is created. */
+  var bar=D.querySelector('.hbtns'); if(!bar) return;
+  /* Remove any existing profile button first */
+  var existing=bar.querySelector('.profile-btn');
+  if(existing) existing.remove();
+  profBtn=D.createElement('button');
+  profBtn.className='pp-chip profile-btn';
+  profBtn.title='Account settings & your profile';
+  profBtn.style.cursor='pointer';
+  profBtn.innerHTML='<span class="lv">👤 Account</span>';
+  profBtn.addEventListener('click',function(e){
+    e.stopPropagation();
+    openProfile();
+  });
+  /* Insert after arcade button if it exists, otherwise append */
+  var arcEl=bar.querySelector('.arcade-btn');
+  if(arcEl && arcEl.nextSibling){
+    bar.insertBefore(profBtn, arcEl.nextSibling);
+  }else if(arcEl){
+    bar.appendChild(profBtn);
+  }else{
+    bar.appendChild(profBtn);
+  }
 }
 function openProfile(){
   if(!profPanel){

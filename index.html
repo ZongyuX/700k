@@ -1557,14 +1557,14 @@
   <div class="hbtns">
     <a href="#templates" data-i18n="header.prompts">Prompts</a>
     <a href="#guide" data-i18n="header.guide">Beginner Guide</a>
-    <button class="pp-chip" id="optimizerBtn" title="Prompt Optimizer" onclick="document.getElementById('optimizer').scrollIntoView({behavior:'smooth',block:'center'})">⚡<span class="btn-hide-sm"> Optimizer</span></button>
     <button class="pp-chip" id="communityBtn" data-i18n="header.community" title="Leaderboards & Mood Wall">🏆<span class="btn-hide-sm"> Community</span></button>
     <button class="hbtn-game" id="gameBtn" data-i18n="header.game">🎮<span class="btn-hide-sm"> Game</span></button>
     <button class="pp-chip" id="friendsBtn" title="Friends & Chat">👥<span class="btn-hide-sm"> Friends</span></button>
+    <button class="pp-chip" id="coinBtn" title="Coins & Arcade" onclick="if(window.PPGame&&PPGame.openPanel)PPGame.openPanel();">🪙<span class="btn-hide-sm"> <span id="coinBtnCount">0</span></span></button>
     <button class="pp-chip" id="accountBtn" title="Account & Profile" style="background:linear-gradient(135deg,rgba(124,92,255,.15),rgba(34,211,238,.08));border:1px solid rgba(124,92,255,.3)">👤<span class="btn-hide-sm"> Account</span></button>
-    <button class="pp-chip" id="coinBtn" title="Coins &amp; Arcade" style="cursor:pointer">🪙<span class="btn-hide-sm" id="coinBtnCount"> 0</span></button>
     <span class="badge" id="planBadge">FREE</span>
     <button class="hbtn-user" id="authBtn" data-i18n="header.signin" style="display:none">👤<span class="btn-hide-sm"> Sign in</span></button>
+    <a href="#pro" class="hbtn-gold" data-i18n="header.getpro">Get Pro</a>
   </div>
 </header>
 <script>
@@ -1613,23 +1613,9 @@
     isTouch=false;
     this.classList.remove('dragging');
   },{passive:true});
-  /* Prevent click after drag — only for non-button elements */
+  /* Prevent click after drag */
   hbtns.addEventListener('click',function(e){
-    if(dm){
-      /* Walk up DOM to check if click target is inside a button/link/input */
-      var el=e.target;
-      var isInteractive=false;
-      while(el&&el!==hbtns){
-        if(el.tagName==='BUTTON'||el.tagName==='A'||el.tagName==='INPUT'){
-          isInteractive=true;break;
-        }
-        el=el.parentElement;
-      }
-      if(!isInteractive){
-        e.stopPropagation();e.preventDefault();
-      }
-      dm=false;
-    }
+    if(dm){e.stopPropagation();e.preventDefault();dm=false;}
   },true);
 })();
 </script>
@@ -2034,10 +2020,6 @@
       <button class="social-btn" data-social="github"><span class="sdot" style="background:#24292f;color:#fff">⌥</span> <span data-i18n="auth.github">Continue with GitHub</span></button>
     </div>
     <div class="msg" id="authMsg"></div>
-    <div class="note" id="resendVerifyWrap" style="display:none;background:rgba(124,92,255,.08);border:1px solid rgba(124,92,255,.2);border-radius:8px;padding:10px 14px;margin-top:8px">
-      <span style="font-size:12px;color:var(--text)">Didn't receive the verification email?</span>
-      <button class="linkbtn" id="resendVerifyBtn" style="font-size:12px;color:var(--accent2);font-weight:600">Resend verification email</button>
-    </div>
     <div class="note" id="authResetWrap"><span data-i18n="auth.forgot">Forgot your password?</span> <button class="linkbtn" id="authReset" data-i18n="auth.reset">Send a reset email</button></div>
   </div>
 </div>
@@ -2061,30 +2043,7 @@
       <button class="mbtn mbtn-ghost" id="signOutBtn" data-i18n="account.signout">Sign out</button>
       <button class="mbtn mbtn-gold" id="accGetPro" data-i18n="account.getpro">Get Pro</button>
     </div>
-    <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
-      <div style="font-size:12px;font-weight:700;color:#ef4444;margin-bottom:8px">DANGER ZONE</div>
-      <button class="mbtn" id="deleteAccountBtn" style="background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#ef4444;font-size:13px;padding:8px 16px;border-radius:10px;cursor:pointer;transition:.15s">Delete Account</button>
-      <p style="font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5">Permanently delete your account and all data. This action cannot be undone. A confirmation email will be sent.</p>
-    </div>
     <div class="msg" id="accMsg"></div>
-  </div>
-</div>
-
-<!-- Community Panel -->
-<div class="overlay" id="communityOverlay">
-  <div class="modal" style="max-width:640px;max-height:90vh;overflow-y:auto">
-    <button class="x" data-close>&times;</button>
-    <h2 data-i18n="community.title">Community</h2>
-    <div class="desc" data-i18n="community.desc">See the top players and the moods members leave on prompts. Tap any player to view their profile.</div>
-    <!-- Tab Bar -->
-    <div style="display:flex;gap:4px;flex-wrap:wrap;margin:12px 0 8px;border-bottom:1px solid var(--border);padding-bottom:8px">
-      <button class="com-tab active" data-com-tab="level" style="padding:6px 12px;font-size:12px;font-weight:600;background:none;border:none;color:var(--accent2);cursor:pointer;border-radius:6px;transition:.15s">🏆 <span data-i18n="community.tab.level">Level</span></button>
-      <button class="com-tab" data-com-tab="badges" style="padding:6px 12px;font-size:12px;font-weight:600;background:none;border:none;color:var(--muted);cursor:pointer;border-radius:6px;transition:.15s">🏅 <span data-i18n="community.tab.badges">Badges</span></button>
-      <button class="com-tab" data-com-tab="coins" style="padding:6px 12px;font-size:12px;font-weight:600;background:none;border:none;color:var(--muted);cursor:pointer;border-radius:6px;transition:.15s">🪙 <span data-i18n="community.tab.coins">Coins</span></button>
-      <button class="com-tab" data-com-tab="mybadges" style="padding:6px 12px;font-size:12px;font-weight:600;background:none;border:none;color:var(--muted);cursor:pointer;border-radius:6px;transition:.15s">🎖️ <span>My Badges</span></button>
-      <button class="com-tab" data-com-tab="moods" style="padding:6px 12px;font-size:12px;font-weight:600;background:none;border:none;color:var(--muted);cursor:pointer;border-radius:6px;transition:.15s">😊 <span data-i18n="community.tab.moods">Mood Wall</span></button>
-    </div>
-    <div id="communityContent" style="min-height:200px"></div>
   </div>
 </div>
 
@@ -2126,7 +2085,7 @@
 <!-- Game overlay (iframe — PROMPT MATRIX) -->
 <div id="game-overlay">
   <button class="game-close-btn" onclick="closeGameOverlay()" title="Close game">&times;</button>
-  <iframe id="gameFrame" title="PROMPT MATRIX" loading="eager" allow="fullscreen" style="border:0;width:100%;height:100%;flex:1;min-height:300px;background:#050508"></iframe>
+  <iframe id="gameFrame" title="PROMPT MATRIX" loading="lazy" allow="fullscreen" style="border:0;width:100%;height:100%;flex:1;min-height:0;background:#050508"></iframe>
   <!-- Orientation hint for portrait mode -->
   <div id="game-orientation-hint">
     <div class="rotate-icon">📱</div>
@@ -2145,6 +2104,23 @@
 </div>
 
 <!-- Avatar Picker Overlay -->
+<!-- Community Panel -->
+<div class="overlay" id="communityOverlay">
+  <div class="modal" style="max-width:640px;max-height:90vh;overflow-y:auto">
+    <button class="x" data-close>&times;</button>
+    <h2 data-i18n="community.title">Community</h2>
+    <div class="desc" data-i18n="community.desc">See the top players and the moods members leave on prompts. Tap any player to view their profile.</div>
+    <!-- Tab Bar -->
+    <div style="display:flex;gap:4px;flex-wrap:wrap;margin:12px 0 8px;border-bottom:1px solid var(--border);padding-bottom:8px">
+      <button class="com-tab active" data-com-tab="level" style="padding:6px 12px;font-size:12px;font-weight:600;background:none;border:none;color:var(--accent2);cursor:pointer;border-radius:6px;transition:.15s">🏆 <span data-i18n="community.tab.level">Level</span></button>
+      <button class="com-tab" data-com-tab="badges" style="padding:6px 12px;font-size:12px;font-weight:600;background:none;border:none;color:var(--muted);cursor:pointer;border-radius:6px;transition:.15s">🏅 <span data-i18n="community.tab.badges">Badges</span></button>
+      <button class="com-tab" data-com-tab="coins" style="padding:6px 12px;font-size:12px;font-weight:600;background:none;border:none;color:var(--muted);cursor:pointer;border-radius:6px;transition:.15s">🪙 <span data-i18n="community.tab.coins">Coins</span></button>
+      <button class="com-tab" data-com-tab="mybadges" style="padding:6px 12px;font-size:12px;font-weight:600;background:none;border:none;color:var(--muted);cursor:pointer;border-radius:6px;transition:.15s">🎖️ <span>My Badges</span></button>
+      <button class="com-tab" data-com-tab="moods" style="padding:6px 12px;font-size:12px;font-weight:600;background:none;border:none;color:var(--muted);cursor:pointer;border-radius:6px;transition:.15s">😊 <span data-i18n="community.tab.moods">Mood Wall</span></button>
+    </div>
+    <div id="communityContent" style="min-height:200px"></div>
+  </div>
+</div>
 <div class="overlay" id="avatarOverlay">
   <div class="modal" style="max-width:540px">
     <button class="x" data-close>&times;</button>
@@ -2154,6 +2130,7 @@
   </div>
 </div>
 
+<!-- Friends Panel (sidebar) -->
 <!-- ===== QQ-Style Friends Panel (sidebar) ===== -->
 <div class="friends-panel" id="friendsPanel" style="position:fixed;top:0;right:0;width:360px;max-width:100vw;height:100vh;background:var(--panel);border-left:1px solid var(--border);z-index:10000;box-shadow:-4px 0 24px rgba(0,0,0,.5);overflow:hidden;flex-direction:column;display:none">
   <!-- Header -->
@@ -2213,8 +2190,8 @@
   <div id="unreadIndicator" style="display:none;padding:8px 14px;border-top:1px solid var(--border);text-align:center;font-size:12px;color:var(--accent2);cursor:pointer;background:rgba(124,92,255,.06)"></div>
 </div>
 
-<!-- ===== Chat Window — WhatsApp style floating ===== -->
-<div class="chat-window" id="chatWindow" style="display:none!important;position:fixed;bottom:20px;right:380px;width:360px;max-width:90vw;background:var(--panel);border:1px solid var(--border);border-radius:12px;z-index:10001;box-shadow:0 8px 32px rgba(0,0,0,.5);overflow:hidden;resize:both;min-width:280px;min-height:340px">
+<!-- ===== Chat Window (per friend) — QQ-style floating ===== -->
+<div class="chat-window" id="chatWindow" style="display:none!important;position:fixed;bottom:20px;right:380px;width:360px;max-width:90vw;background:var(--panel);border:1px solid var(--border);border-radius:12px;z-index:10001;box-shadow:0 8px 32px rgba(0,0,0,.5);overflow:auto;resize:both;min-width:280px;min-height:340px">
   <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,rgba(124,92,255,.1),rgba(34,211,238,.05));cursor:move;overflow:hidden;flex-shrink:0" id="chatWindowHeader">
     <div style="display:flex;align-items:center;gap:10px;cursor:pointer" id="chatFriendInfo">
       <div id="chatFriendAvatar" style="width:34px;height:34px;border-radius:10px;overflow:hidden;border:1px solid var(--border)"></div>
@@ -2226,16 +2203,15 @@
     </div>
     <div style="display:flex;gap:4px">
       <button onclick="toggleChatMinimize()" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 6px;border-radius:6px;transition:.15s" onmouseenter="this.style.background='rgba(255,255,255,.08)'" onmouseleave="this.style.background='none'">─</button>
-      <button id="chatWindowClose" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:.15s" onmouseenter="this.style.background='rgba(255,255,255,.08)'" onmouseleave="this.style.background='none'">&times;</button>
+      <button id="chatWindowClose" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:.15s" onmouseenter="this.style.background='rgba(239,68,68,.15)';this.style.color='#ef4444'" onmouseleave="this.style.background='none';this.style.color='var(--muted)'">&times;</button>
     </div>
   </div>
-  <div id="chatMessages" style="height:280px;overflow-y:auto;padding:10px 14px;font-size:13px;display:flex;flex-direction:column;gap:4px;background:rgba(0,0,0,.15)"></div>
-  <div id="chatInputRow" style="display:flex;gap:6px;padding:8px 10px;border-top:1px solid var(--border)">
-    <input type="text" id="chatInput" placeholder="Type a message..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:8px;font-size:13px" />
-    <button onclick="sendChatMessage()" style="background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff;border:none;padding:7px 14px;border-radius:8px;font-size:13px;cursor:pointer">Send</button>
+  <div id="chatMessages" style="height:300px;overflow-y:auto;padding:12px 16px;font-size:13px;display:flex;flex-direction:column;gap:8px"></div>
+  <div id="chatInputRow" style="display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--border);background:var(--panel2);overflow:hidden;flex-shrink:0">
+    <input type="text" id="chatInput" data-i18n="friends.chat.placeholder" data-i18n-attr="placeholder" placeholder="Type a message..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:10px;font-size:13px;outline:none;transition:border .2s" onfocus="this.style.borderColor='var(--accent2)'" onblur="this.style.borderColor='var(--border)'" />
+    <button onclick="sendChatMessage()" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:9px 18px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;transition:.15s" onmouseenter="this.style.transform='scale(1.04)'" onmouseleave="this.style.transform='scale(1)'" data-i18n="friends.send">Send</button>
   </div>
 </div>
-
 <div class="toast" id="toast"></div>
 
 <!-- Firebase SDK — loaded async so they don't block rendering -->
@@ -2702,12 +2678,10 @@ async function loadUserDoc(user){
   const method=(user.providerData&&user.providerData[0]&&user.providerData[0].providerId)||'password';
 
   if(!snap.exists){
-    /* New user — always start as Free, regardless of local state.
-     * Pro must be purchased and activated with a valid code. */
     const doc={
       email:user.email||'', displayName:user.displayName||'', method:method,
-      favorites:localFavs, pro:false, proUntil:0,
-      trialUsed:false, proCode:'',
+      favorites:localFavs, pro:localPermanent, proUntil:localUntil,
+      trialUsed:localTrialUsed, proCode:lsGet('pp_pro_code')||'',
       marketingOptIn:(lsGet('pp_optin')!=='0'),
       bio:'',
       game:(window.PPGame?PPGame.exportState():null),
@@ -2721,7 +2695,7 @@ async function loadUserDoc(user){
     [].concat(Array.isArray(d.favorites)?d.favorites:[], localFavs).forEach(id=>{
       if(merged.indexOf(id)<0) merged.push(id);
     });
-    const permanent=(!!d.pro && !!d.proCode)||localPermanent;
+    const permanent=(!!d.pro)||localPermanent;
     const untilM=permanent?0:Math.max(d.proUntil||0, localUntil||0);
     const trialUsedM=(!!d.trialUsed)||localTrialUsed;
     const state={
@@ -2738,6 +2712,7 @@ async function loadUserDoc(user){
     }catch(e){ console.warn('user doc merge',e); }
     applyUserState(state);
     userBio = d.bio || '';
+    try{ if(window.PPGame && PPGame.setUserId) PPGame.setUserId(user.uid); }catch(e){}
     if(window.PPGame && d.game) PPGame.importState(d.game);
     /* Merge promo usage from cloud */
     if(Array.isArray(d.promoUsed)){
@@ -2754,10 +2729,8 @@ async function loadUserDoc(user){
 function applyUserState(s){
   favorites=Array.isArray(s.favorites)?s.favorites.slice():[];
   saveFavs();
-  if(s.pro && s.proCode){
-    /* Pro is only valid if there's a valid pro code (purchased Pro).
-     * A pro:true without proCode means stale data — treat as Free. */
-    lsSet('pp_pro_code', s.proCode||lsGet('pp_pro_code')||'ACCOUNT'); lsDel('pp_pro_until'); isPro=true; proExpired=false;
+  if(s.pro){
+    lsSet('pp_pro_code', lsGet('pp_pro_code')||'ACCOUNT'); lsDel('pp_pro_until'); isPro=true; proExpired=false;
   }else if(s.proUntil && Date.now()<s.proUntil){
     lsSet('pp_pro_code','TRIAL'); lsSet('pp_pro_until',String(s.proUntil)); isPro=true; proExpired=false;
   }else{
@@ -2830,73 +2803,15 @@ function doAuthSubmit(){
   const btn=document.getElementById('authSubmit'); btn.disabled=true;
   const done=()=>{ btn.disabled=false; };
   if(authMode==='register'){
-    /* Step 1: Create account, send verification email, then sign out */
     lsSet('pp_optin', document.getElementById('authOptIn').checked?'1':'0');
-    auth.createUserWithEmailAndPassword(email,pass).then(function(userCredential){
-      var user = userCredential.user;
-      /* Send email verification */
-      return user.sendEmailVerification().then(function(){
-        done();
-        /* Sign out the user — they must verify email first before logging in */
-        return auth.signOut();
-      }).then(function(){
-        m.className='msg ok';
-        m.textContent='Registration successful! A verification email has been sent to ' + email + '. Please check your inbox and click the verification link before signing in.';
-        /* Show resend button */
-        var resendWrap = document.getElementById('resendVerifyWrap');
-        if(resendWrap) resendWrap.style.display = 'block';
-        document.getElementById('authEmail').value = email;
-      });
-    }).catch(function(e){ done(); m.className='msg err'; m.textContent=authErrMsg(e); });
+    auth.createUserWithEmailAndPassword(email,pass).then(()=>{
+      done(); hideOverlays(); toast(PPI18n.t('auth.account.created'));
+    }).catch(e=>{ done(); m.className='msg err'; m.textContent=authErrMsg(e); });
   }else{
-    /* Step 2: On sign in, check if email is verified */
-    auth.signInWithEmailAndPassword(email,pass).then(function(userCredential){
-      var user = userCredential.user;
-      /* Reload to get latest emailVerified status */
-      return user.reload().then(function(){
-        var refreshedUser = auth.currentUser;
-        if(!refreshedUser.emailVerified){
-          /* Email not verified — sign out and show message */
-          return auth.signOut().then(function(){
-            done();
-            m.className='msg err';
-            m.textContent='Please verify your email first. A verification email was sent to ' + email + '. Check your inbox and click the verification link.';
-            /* Show resend button */
-            var resendWrap = document.getElementById('resendVerifyWrap');
-            if(resendWrap) resendWrap.style.display = 'block';
-          });
-        }
-        /* Email verified — allow login */
-        done(); hideOverlays(); toast(PPI18n.t('auth.signedin'));
-      });
-    }).catch(function(e){ done(); m.className='msg err'; m.textContent=authErrMsg(e); });
+    auth.signInWithEmailAndPassword(email,pass).then(()=>{
+      done(); hideOverlays(); toast(PPI18n.t('auth.signedin'));
+    }).catch(e=>{ done(); m.className='msg err'; m.textContent=authErrMsg(e); });
   }
-}
-
-/* Step 3: Resend verification email */
-function doResendVerification(){
-  if(!fbReady) return;
-  var email = document.getElementById('authEmail').value.trim();
-  if(!email){ toast('Please enter your email address first.','info'); return; }
-  var m=document.getElementById('authMsg'); m.style.display='block'; m.className='msg';
-  m.textContent='Sending verification email...';
-  /* Sign in temporarily to send verification, then sign back out */
-  var pass = document.getElementById('authPass').value;
-  if(!pass){ m.className='msg err'; m.textContent='Please enter your password to resend the verification email.'; return; }
-  auth.signInWithEmailAndPassword(email,pass).then(function(userCredential){
-    var user = userCredential.user;
-    if(user.emailVerified){
-      return auth.signOut().then(function(){
-        m.className='msg ok'; m.textContent='Your email is already verified. You can sign in now.';
-      });
-    }
-    return user.sendEmailVerification().then(function(){
-      return auth.signOut().then(function(){
-        m.className='msg ok';
-        m.textContent='Verification email has been resent to ' + email + '. Please check your inbox.';
-      });
-    });
-  }).catch(function(e){ m.className='msg err'; m.textContent=authErrMsg(e); });
 }
 
 function doSocial(which){
@@ -2922,2283 +2837,33 @@ function doPasswordReset(){
   }).catch(e=>{ m.className='msg err'; m.textContent=authErrMsg(e); });
 }
 
-async function doDeleteAccount(){
-  if(!fbReady || !currentUser) return;
-  var confirmed = confirm('Are you sure you want to delete your account? This action is permanent and cannot be undone. All your data, favorites, and Pro access will be lost.');
-  if(!confirmed) return;
-  var doubleConfirm = confirm('FINAL WARNING: Your account and all associated data will be permanently deleted. Type "DELETE" mentally and press OK to proceed.');
-  if(!doubleConfirm) return;
-  var m=document.getElementById('accMsg'); m.style.display='block'; m.className='msg';
-  m.textContent='Deleting your account...';
-  try{
-    /* Send deletion notification email via Firebase - store a deletion record
-     * that a Cloud Function can pick up to send email */
-    var userEmail = currentUser.email;
-    var userName = currentUser.displayName || userEmail;
-    /* Delete user's Firestore data first */
-    await userDocRef().delete();
-    /* Send deletion notification email via Firebase sendEmail method */
-    try{
-      await auth.sendPasswordResetEmail(userEmail);
-    }catch(e){
-      /* Fallback: just log */
-      console.log('Deletion email notification attempted for:', userEmail);
-    }
-    /* Store deletion log in Firestore for email dispatch */
-    try{
-      await db.collection('accountDeletions').add({
-        email: userEmail,
-        displayName: userName,
-        uid: currentUser.uid,
-        deletedAt: firebase.firestore.FieldValue.serverTimestamp(),
-        notified: false
-      });
-    }catch(e){
-      console.warn('Could not log deletion:', e);
-    }
-    /* Delete the Firebase Auth user */
-    await currentUser.delete();
-    /* Clear local state */
-    currentUser = null;
-    isPro = false;
-    lsDel('pp_pro_code');
-    lsDel('pp_pro_until');
-    favorites = [];
-    saveFavs();
-    hideOverlays();
-    refreshAuthUI();
-    refreshBadge();
-    renderGrid();
-    toast('Your account has been deleted. A confirmation email has been sent to ' + userEmail + '.');
-  }catch(e){
-    m.className='msg err';
-    if(e.code === 'auth/requires-recent-login'){
-      m.textContent='For security, please sign out and sign back in before deleting your account. This requires a recent authentication.';
-    }else{
-      m.textContent='Error deleting account: ' + (e.message || 'Unknown error');
-    }
-  }
-}
-
 function doSignOut(){
   if(!fbReady || !auth) return;
-  auth.signOut().then(()=>{ hideOverlays(); toast(PPI18n.t('auth.signedout')); });
-}
-
-function setAuthMode(mode){
-  authMode=mode;
-  const reg=(mode==='register');
-  document.getElementById('tabSignin').className='authtab'+(reg?'':' on');
-  document.getElementById('tabRegister').className='authtab'+(reg?' on':'');
-  document.getElementById('authTitle').textContent=reg?PPI18n.t('auth.register.title'):PPI18n.t('auth.signin.title');
-  document.getElementById('authSubmit').textContent=reg?PPI18n.t('auth.submit.register'):PPI18n.t('auth.submit.signin');
-  document.getElementById('authPass').setAttribute('autocomplete',reg?'new-password':'current-password');
-  document.getElementById('optInRow').style.display=reg?'flex':'none';
-  document.getElementById('authResetWrap').style.display=reg?'none':'block';
-  var resendWrap = document.getElementById('resendVerifyWrap');
-  if(resendWrap) resendWrap.style.display = 'none';
-  const m=document.getElementById('authMsg'); m.className='msg'; m.textContent='';
-}
-
-function openAuth(){
-  if(!fbReady){
-    toast(PPI18n.t('auth.notsetup'),'info');
-    return;
-  }
-  setAuthMode('signin');
-  document.getElementById('authEmail').value='';
-  document.getElementById('authPass').value='';
-  document.getElementById('authMsg').className='msg';
-  document.getElementById('authOverlay').classList.add('show');
-}
-
-function planLabel(){
-  if(isPro){
-    const u=proUntil();
-    if(u>0){
-      const days=Math.max(1,Math.ceil((u-Date.now())/86400000));
-      return PPI18n.t('plan.pro.trial.label').replace('{d}',days).replace('{s}',days!==1?'s':'');
-    }
-    return PPI18n.t('plan.pro.full');
-  }
-  return PPI18n.t('plan.free');
-}
-function openAccount(){
-  if(!currentUser){ if(typeof openAuth==='function') openAuth(); return; }
-  // Close all other overlays first (but NOT the profile panel we're about to open)
-  document.querySelectorAll('.overlay').forEach(function(o){
-    if(o.id!=='ppProfile') o.classList.remove('show');
-  });
-  // Open the profile panel from fun.js (avatar selection + stats)
+  /* Clear friends/chat state on sign out */
+  try{ localStorage.removeItem('pp_demo_sent'); }catch(e){}
+  if(typeof _chatFriendUid!=='undefined') _chatFriendUid=null;
   try{
-    if(window.PPGame && PPGame.openProfile){
-      PPGame.openProfile();
-    } else {
-      // Fallback to old account overlay if PPGame not loaded
-      openAccountSettings();
-    }
-  }catch(e){
-    console.warn('openAccount error',e);
-    // Last resort: show account settings
-    openAccountSettings();
-  }
-}
-function saveAccountSettings(){
-  if(!fbReady || !currentUser) return;
-  const m=document.getElementById('accMsg'); m.style.display='block'; m.className='msg';
-  const name=document.getElementById('setName').value.trim();
-  const bio=document.getElementById('setBio').value.trim();
-  const newPass=document.getElementById('setPass').value;
-  if(newPass && newPass.length<6){ m.className='msg err'; m.textContent=PPI18n.t('account.pw.tooshort'); return; }
-  m.textContent=PPI18n.t('account.saving');
-  const btn=document.getElementById('accSave'); btn.disabled=true;
-  const tasks=[
-    currentUser.updateProfile({displayName:name}),
-    userDocRef().set({displayName:name,bio:bio,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true})
-  ];
-  if(newPass) tasks.push(currentUser.updatePassword(newPass));
-  Promise.all(tasks).then(()=>{
-    btn.disabled=false; userBio=bio;
-    document.getElementById('setPass').value='';
-    refreshAuthUI();
-    m.className='msg ok'; m.textContent=newPass?PPI18n.t('account.saved.pw'):PPI18n.t('account.saved');
-  }).catch(e=>{
-    btn.disabled=false; m.className='msg err';
-    if(e && e.code==='auth/requires-recent-login')
-      m.textContent=PPI18n.t('account.recentlogin');
-    else m.textContent=authErrMsg(e);
-  });
-}
-
-function refreshAuthUI(){
-  var authBtn=document.getElementById('authBtn');
-  var accountBtn=document.getElementById('accountBtn');
-  if(!authBtn||!accountBtn) return;
-  if(!fbReady){
-    authBtn.style.display=''; 
-    accountBtn.style.display='none';
-    authBtn.innerHTML='👤<span class="btn-hide-sm"> '+PPI18n.t('header.signin')+'</span>';
-    return;
-  }
-  if(currentUser){
-    const nm=currentUser.displayName||((currentUser.email||'Account').split('@')[0]);
-    /* Show Account button with username, hide Sign in button */
-    accountBtn.style.display='';
-    accountBtn.innerHTML='👤<span class="btn-hide-sm"> '+nm+'</span>';
-    accountBtn.title='Account — '+nm;
-    authBtn.style.display='none';
-    /* Update arcade button coin count */
-    if(window.paintArcadeBtn) paintArcadeBtn();
-    var coinBtnCount=document.getElementById('coinBtnCount');
-    if(coinBtnCount&&window.PPGame&&PPGame.exportState){coinBtnCount.textContent=' '+(PPGame.exportState().coins||0);}
-  }else{
-    /* Show Sign in button, hide Account button */
-    accountBtn.style.display='none';
-    authBtn.style.display='';
-    authBtn.innerHTML='👤<span class="btn-hide-sm"> '+PPI18n.t('header.signin')+'</span>';
-    if(window.paintArcadeBtn) paintArcadeBtn();
-  }
-}
-
-/* ============================================================
- *  i18n-aware category display helper
- * ============================================================ */
-function tCat(cat){
-  if(typeof PPI18n!=='undefined' && PPI18n.isZh() && window.PROMPTS_CAT_ZH && PROMPTS_CAT_ZH[cat]) return PROMPTS_CAT_ZH[cat];
-  if(typeof PPI18n!=='undefined' && PPI18n.isEs() && window.PROMPTS_CAT_ES && PROMPTS_CAT_ES[cat]) return PROMPTS_CAT_ES[cat];
-  return cat;
-}
-
-/* ============================================================
- *  prompt library UI
- * ============================================================ */
-function refreshBadge(){
-  const b=document.getElementById('planBadge');
-  if(isPro){
-    const until=proUntil();
-    if(until>0){
-      const days=Math.max(1,Math.ceil((until-Date.now())/86400000));
-      b.textContent=PPI18n.t('plan.pro.days').replace('{d}',days);
-    }else{
-      b.textContent=PPI18n.t('plan.pro');
-    }
-    b.className='badge on';
-  }else{
-    b.textContent=PPI18n.t('plan.free'); b.className='badge';
-  }
-}
-/* Category cache — rebuilt only when data changes */
-var _catCache = null;
-var _catCountCache = null;
-var _catCacheLang = null;
-function _buildCatCache(){
-  var lang = typeof PPI18n !== 'undefined' ? PPI18n.getLang() : 'en';
-  var data = getCurrentPrompts();
-  if(_catCache && _catCacheLang === lang && _catCache.length) return;
-  var catSet = {};
-  for(var i = 0; i < data.length; i++){
-    var c = data[i].cat;
-    if(!catSet[c]) catSet[c] = 0;
-    catSet[c]++;
-  }
-  _catCache = Object.keys(catSet).sort();
-  _catCountCache = catSet;
-  _catCacheLang = lang;
-}
-function categories(){
-  _buildCatCache();
-  return _catCache;
-}
-function catCount(c){
-  _buildCatCache();
-  return _catCountCache[c] || 0;
-}
-function invalidateCatCache(){
-  _catCache = null;
-  _catCountCache = null;
-  _catCacheLang = null;
-}
-function renderSidebar(){
-  const el=document.getElementById('sidebar');
-  const prompts=getCurrentPrompts();
-  let html='<div class="side-h">'+PPI18n.t('sidebar.library')+'</div>';
-  html+='<div class="sidebar-search-wrap"><span class="sidebar-search-icon">&#128269;</span><input class="sidebar-search" id="sidebarSearch" placeholder="'+PPI18n.t('sidebar.search.placeholder','Filter categories...')+'" autocomplete="off" /></div>';
-  html+=`<div class="cat ${activeCat==='All'&&activeView==='all'?'active':''}" data-cat="All" tabindex="0" role="button">${PPI18n.t('sidebar.all')}<span class="count">${fmt(prompts.length)}</span></div>`;
-  html+='<div id="sidebarCats">';
-  categories().forEach(c=>{
-    const n=catCount(c);
-    html+=`<div class="cat ${activeCat===c&&activeView==='all'?'active':''}" data-cat="${esc(c)}" tabindex="0" role="button">${esc(tCat(c))}<span class="count">${fmt(n)}</span></div>`;
-  });
-  html+='</div>';
-  html+='<div class="side-h">'+PPI18n.t('sidebar.you')+'</div>';
-  html+=`<div class="cat ${activeView==='favorites'?'active':''}" data-view="favorites" tabindex="0" role="button">${PPI18n.t('sidebar.favorites')}<span class="count">${favorites.length}</span></div>`;
-  el.innerHTML=html;
-  /* Sidebar search/filter */
-  const sEl=document.getElementById('sidebarSearch');
-  if(sEl){
-    sEl.addEventListener('input',function(){
-      const q=this.value.toLowerCase().trim();
-      const cats=document.getElementById('sidebarCats');
-      if(!cats)return;
-      cats.querySelectorAll('.cat').forEach(c=>{
-        const txt=c.textContent.toLowerCase();
-        c.style.display=(!q||txt.includes(q))?'':'none';
-      });
-    });
-  }
-}
-function visiblePrompts(){
-  const q=document.getElementById('search').value.toLowerCase().trim();
-  var data=getCurrentPrompts();
-  var list;
-  if(activeView==='favorites'){
-    /* Optimized: use Set for O(1) lookup instead of Array.includes */
-    var favSet=new Set(favorites);
-    list=data.filter(p=>favSet.has(p.id));
-  } else if(activeCat!=='All'){
-    list=data.filter(p=>p.cat===activeCat);
-  } else {
-    /* Avoid .slice() copy when showing all — just use the data directly */
-    list=q?data:data;
-  }
-  if(q) list=(list===data?data:list).filter(p=>{
-    const catDisplay=tCat(p.cat);
-    return p.title.toLowerCase().includes(q)||p.desc.toLowerCase().includes(q)||p.cat.toLowerCase().includes(q)||catDisplay.toLowerCase().includes(q)||(p.template&&p.template.toLowerCase().includes(q));
-  });
-  return list;
-}
-function renderGrid(){
-  const list=visiblePrompts();
-  var gridEl=document.getElementById('grid');
-  if(gridEl){ gridEl.style.opacity='0'; gridEl.style.transition='opacity .15s ease'; }
-  document.getElementById('viewTitle').textContent=
-    activeView==='favorites'?PPI18n.t('sidebar.favorites'):(activeCat==='All'?PPI18n.t('sidebar.all'):tCat(activeCat));
-  /* Count locked in the visible subset only (not all 700K) */
-  var lockedN=0;
-  if(!isPro){
-    var checkList=list.length>shown?list.slice(0,shown):list;
-    for(var li=0;li<checkList.length;li++){ if(!checkList[li].free) lockedN++; }
-  }
-  document.getElementById('viewSub').textContent=
-    `${fmt(list.length)}${PPI18n.t(list.length!==1?'grid.prompt.s':'grid.prompt')}`+
-    (lockedN?` · ${fmt(lockedN)}${PPI18n.t('grid.locked.count')}`:'')+
-    (list.length>shown?`${PPI18n.t('grid.showing')}${fmt(shown)}`:'');
-  const grid=document.getElementById('grid');
-  if(!list.length){
-    grid.innerHTML=`<div class="empty">${PPI18n.t('grid.noprompts')}${activeView==='favorites'?PPI18n.t('grid.noprompts.fav'):''}</div>`;
-    document.getElementById('moreBtn').style.display='none'; return;
-  }
-  grid.innerHTML=list.slice(0,shown).map(p=>{
-    const locked=!isPro && !p.free;
-    const fav=favorites.includes(p.id);
-    return `<div class="card ${locked?'locked':''}" data-id="${p.id}">
-      <button class="star ${fav?'on':''}" data-star="${p.id}">${fav?'★':'☆'}</button>
-      <h4>${esc(p.title)}</h4>
-      <p>${esc(p.desc)}</p>
-      <div class="meta">
-        <span class="tag">${esc(tCat(p.cat))}</span>
-        ${locked?'<span class="tag locktag">'+PPI18n.t('grid.locked')+'</span>':(!isPro?'<span class="tag freetag">'+PPI18n.t('grid.free')+'</span>':'')}
-      </div>
-    </div>`;
-  }).join('');
-  document.getElementById('moreBtn').style.display=list.length>shown?'block':'none';
-  /* Fade grid back in after render */
-  if(gridEl){ requestAnimationFrame(function(){ requestAnimationFrame(function(){ gridEl.style.opacity='1'; }); }); }
-}
-function openPrompt(id){
-  const p=getCurrentPrompts().find(x=>x.id===id);
-  if(!p) return;
-  if(!isPro && !p.free){ openActivate(); return; }
-  currentPrompt=p;
-  /* Save to prompt history */
-  try{
-    var hist=JSON.parse(lsGet('pp_prompt_history')||'[]');
-    hist=hist.filter(h=>h!==id);
-    hist.unshift(id);
-    hist=hist.slice(0,50);
-    lsSet('pp_prompt_history',JSON.stringify(hist));
+    var reqList=document.getElementById('contactReqList'); if(reqList) reqList.innerHTML='';
+    var fl=document.getElementById('contactFriendsList'); if(fl) fl.innerHTML='';
+    var cl=document.getElementById('conversationsList'); if(cl) cl.innerHTML='';
+    var pl=document.getElementById('contactPendingList'); if(pl) pl.innerHTML='';
+    var ps=document.getElementById('contactPendingSection'); if(ps) ps.style.display='none';
+    var rc=document.getElementById('contactReqCount'); if(rc) rc.textContent='';
+    var su=document.getElementById('suggestedUsers'); if(su) su.innerHTML='';
+    if(typeof updateReqBadge==='function') updateReqBadge(0);
   }catch(e){}
-  if(window.PPGame) PPGame.award('open', p.id);
-  document.getElementById('pmTitle').textContent=p.title;
-  document.getElementById('pmDesc').textContent=p.desc;
-  const longKeys=['resume','jd','code','notes','text','content','background','messages','sample','expenses','sources','material','schema','contract','ingredients','answer','plot','idea','situation','tasks'];
-  const fields=(p.vars||[]).map(v=>{
-    const long=longKeys.some(k=>v.k.toLowerCase().includes(k));
-    return `<div class="field"><label>${esc(v.l)}</label>${
-      long?`<textarea data-k="${esc(v.k)}" placeholder="${esc(v.l)}..."></textarea>`
-          :`<input type="text" data-k="${esc(v.k)}" placeholder="${esc(v.l)}..." />`}</div>`;
-  }).join('');
-  document.getElementById('pmFields').innerHTML = fields || '<div class="note">'+PPI18n.t('pm.noblanks')+'</div>';
-  document.getElementById('pmTip').style.display = fields ? 'block' : 'none';
-  document.getElementById('pmFav').textContent=favorites.includes(p.id)?PPI18n.t('pm.fav.saved'):PPI18n.t('pm.fav.save');
-  document.getElementById('pmAiRow').innerHTML=AIS.map(a=>
-    `<button class="ai-btn ai-float" data-ai="${a.key}" style="--ai-color:${a.color}"><span class="ai-emblem" style="background:linear-gradient(135deg,${a.color},${a.color}cc)">${a.name.charAt(0)}</span>${a.name}</button>`).join('');
-  currentVariant=0;
-  renderVariants();
-  updateOutput();
-  document.querySelectorAll('#pmFields [data-k]').forEach(el=>el.addEventListener('input',updateOutput));
-  document.getElementById('promptOverlay').classList.add('show');
+  try{ var chatWin=document.getElementById('chatWindow'); if(chatWin) chatWin.style.display='none'; }catch(e){}
+  try{ if(window.PPGame && PPGame.resetToDefaults) PPGame.resetToDefaults(); if(window.PPGame && PPGame.setUserId) PPGame.setUserId(null); }catch(e){}
+  try{ var coinBtnCount=document.getElementById('coinBtnCount'); if(coinBtnCount) coinBtnCount.textContent='0'; }catch(e){}
+  auth.signOut().then(function(){ hideOverlays(); toast(PPI18n.t('auth.signedout')); });
 }
-function renderVariants(){
-  const groups=['Depth','Length','Format','Tone','Perspective'];
-  const groupIcons={Depth:'<span class="vt-icon-d">D</span>',Length:'<span class="vt-icon-l">L</span>',Format:'<span class="vt-icon-f">F</span>',Tone:'<span class="vt-icon-t">T</span>',Perspective:'<span class="vt-icon-p">P</span>'};
-  const groupDescs={
-    Depth:'Control how deep or brief the answer is',
-    Length:'Set the length of the response',
-    Format:'Choose how the answer is structured',
-    Tone:'Set the voice and mood',
-    Perspective:'Change the point of view'
-  };
-  /* Load recent & pinned from localStorage */
-  let recentVariants=[];
-  try{recentVariants=JSON.parse(lsGet('pp_recent_variants')||'[]');}catch(e){recentVariants=[];}
-  let pinnedVariants=[];
-  try{pinnedVariants=JSON.parse(lsGet('pp_pinned_variants')||'[]');}catch(e){pinnedVariants=[];}
-
-  let html='';
-
-  /* Recently used styles */
-  if(recentVariants.length>0){
-    html+='<div class="variant-recent"><span class="variant-recent-label">'+PPI18n.t('variant.recent','Recent')+'</span>';
-    recentVariants.slice(0,3).forEach(idx=>{
-      if(VARIANTS[idx]){
-        var dn=PPI18n.t('variant.v'+VARIANTS[idx].key,VARIANTS[idx].n);
-        html+='<span class="variant-recent-chip" data-variant="'+idx+'">'+esc(dn)+'</span>';
-      }
-    });
-    html+='</div>';
-  }
-
-  /* Category tabs */
-  html+='<div class="variant-tabs" id="variantTabs">';
-  groups.forEach((g,gi)=>{
-    var gName=PPI18n.t('variant.'+g.toLowerCase(),g);
-    html+='<button class="variant-tab'+(gi===0?' active':'')+'" data-group="'+g+'"><span class="variant-tab-icon">'+(groupIcons[g]||'')+'</span>'+esc(gName)+'</button>';
-  });
-  html+='</div>';
-
-  /* Carousel wrapper with fade indicators */
-  html+='<div class="variant-carousel-wrapper" id="variantCarouselWrapper">';
-  html+='<div class="variant-carousel-fade-l hidden" id="varFadeL"></div>';
-  html+='<div class="variant-carousel-fade-r" id="varFadeR"></div>';
-  html+='<div class="variant-carousel" id="variantCarousel">';
-
-  /* Render all variant chips, grouped */
-  groups.forEach(g=>{
-    VARIANTS.forEach((v,i)=>{
-      if(v.g===g){
-        var displayName=PPI18n.t('variant.v'+v.key,v.n);
-        var isPinned=pinnedVariants.includes(i);
-        html+='<div class="variant-chip'+(i===currentVariant?' active':'')+(isPinned?' pinned':'')+'" data-variant="'+i+'" data-group="'+v.g+'" title="" tabindex="0" role="button" aria-pressed="'+(i===currentVariant?'true':'false')+'">';
-        html+='<span class="variant-chip-icon">'+(groupIcons[v.g]||'')+'</span>';
-        html+=esc(displayName);
-        html+='<span class="variant-chip-pin">📌</span>';
-        html+='</div>';
-      }
-    });
-  });
-
-  html+='</div></div>';
-
-  document.getElementById('pmVariants').innerHTML=html;
-
-  /* Wire up chip clicks and keyboard */
-  document.querySelectorAll('#variantCarousel .variant-chip').forEach(chip=>{
-    chip.addEventListener('click',function(e){
-      /* Check if pin icon was clicked (right-click or ctrl-click) */
-      if(e.ctrlKey || e.metaKey){
-        e.preventDefault();
-        togglePinVariant(parseInt(this.dataset.variant));
-        return;
-      }
-      var idx=parseInt(this.dataset.variant);
-      selectVariant(idx);
-    });
-    chip.addEventListener('keydown',function(e){
-      if(e.key==='Enter'||e.key===' '){
-        e.preventDefault();
-        var idx=parseInt(this.dataset.variant);
-        if(e.ctrlKey||e.metaKey){togglePinVariant(idx);return;}
-        selectVariant(idx);
-      }else if(e.key==='ArrowRight'||e.key==='ArrowDown'){
-        e.preventDefault();
-        var next=this.nextElementSibling;
-        if(next&&next.classList.contains('variant-chip'))next.focus();
-      }else if(e.key==='ArrowLeft'||e.key==='ArrowUp'){
-        e.preventDefault();
-        var prev=this.previousElementSibling;
-        if(prev&&prev.classList.contains('variant-chip'))prev.focus();
-      }
-    });
-  });
-
-  /* Wire up tab clicks */
-  document.querySelectorAll('#variantTabs .variant-tab').forEach(tab=>{
-    tab.addEventListener('click',function(){
-      document.querySelectorAll('#variantTabs .variant-tab').forEach(t=>t.classList.remove('active'));
-      this.classList.add('active');
-      var group=this.dataset.group;
-      var firstChip=document.querySelector('#variantCarousel .variant-chip[data-group="'+group+'"]');
-      if(firstChip){
-        firstChip.scrollIntoView({behavior:'smooth',block:'nearest',inline:'start'});
-      }
-    });
-  });
-
-  /* Wire up recent chips */
-  document.querySelectorAll('.variant-recent-chip').forEach(chip=>{
-    chip.addEventListener('click',function(){
-      selectVariant(parseInt(this.dataset.variant));
-    });
-  });
-
-  /* Mouse wheel horizontal scrolling + drag-to-scroll */
-  var carousel=document.getElementById('variantCarousel');
-  if(carousel){
-    carousel.addEventListener('wheel',function(e){
-      e.preventDefault();
-      var delta=e.deltaY||e.deltaX;
-      this.scrollLeft+=delta*1.5;
-    },{passive:false});
-    /* Drag-to-scroll for smooth sliding feel */
-    var isDragging=false,startX=0,scrollStart=0,dragMoved=false;
-    carousel.addEventListener('mousedown',function(e){
-      if(e.target.closest('.variant-chip-pin'))return;
-      isDragging=true;dragMoved=false;
-      startX=e.pageX;scrollStart=this.scrollLeft;
-      this.classList.add('dragging');
-    });
-    document.addEventListener('mousemove',function(e){
-      if(!isDragging)return;
-      var dx=e.pageX-startX;
-      if(Math.abs(dx)>3)dragMoved=true;
-      carousel.scrollLeft=scrollStart-dx;
-    });
-    document.addEventListener('mouseup',function(){
-      if(isDragging){
-        isDragging=false;
-        carousel.classList.remove('dragging');
-      }
-    });
-    /* Prevent click on chips after drag */
-    carousel.addEventListener('click',function(e){
-      if(dragMoved){e.stopPropagation();e.preventDefault();dragMoved=false;}
-    },true);
-  }
-
-  /* Update fade indicators on scroll */
-  updateCarouselFades();
-
-  /* Auto-scroll to selected variant */
-  setTimeout(function(){
-    var activeChip=document.querySelector('#variantCarousel .variant-chip.active');
-    if(activeChip){
-      activeChip.scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
-    }
-    /* Set active tab based on current variant */
-    if(VARIANTS[currentVariant]){
-      var g=VARIANTS[currentVariant].g;
-      document.querySelectorAll('#variantTabs .variant-tab').forEach(t=>{
-        t.classList.toggle('active',t.dataset.group===g);
-      });
-    }
-  },100);
-
-  /* Tooltip on hover */
-  setupVariantTooltips(groupDescs);
-}
-
-function selectVariant(idx){
-  currentVariant=idx;
-  /* Update chip active states */
-  document.querySelectorAll('#variantCarousel .variant-chip').forEach(c=>{
-    c.classList.toggle('active',parseInt(c.dataset.variant)===idx);
-  });
-  /* Update tab active state */
-  if(VARIANTS[idx]){
-    var g=VARIANTS[idx].g;
-    document.querySelectorAll('#variantTabs .variant-tab').forEach(t=>{
-      t.classList.toggle('active',t.dataset.group===g);
-    });
-  }
-  /* Save to recent */
-  saveRecentVariant(idx);
-  updateOutput();
-}
-
-function saveRecentVariant(idx){
-  let recent=[];
-  try{recent=JSON.parse(lsGet('pp_recent_variants')||'[]');}catch(e){recent=[];}
-  recent=recent.filter(r=>r!==idx);
-  recent.unshift(idx);
-  recent=recent.slice(0,5);
-  lsSet('pp_recent_variants',JSON.stringify(recent));
-}
-
-function togglePinVariant(idx){
-  let pinned=[];
-  try{pinned=JSON.parse(lsGet('pp_pinned_variants')||'[]');}catch(e){pinned=[];}
-  if(pinned.includes(idx)){
-    pinned=pinned.filter(p=>p!==idx);
-  }else{
-    if(pinned.length>=5) pinned.shift();
-    pinned.push(idx);
-  }
-  lsSet('pp_pinned_variants',JSON.stringify(pinned));
-  /* Toggle pinned class */
-  document.querySelectorAll('#variantCarousel .variant-chip').forEach(c=>{
-    var ci=parseInt(c.dataset.variant);
-    c.classList.toggle('pinned',pinned.includes(ci));
-  });
-}
-
-function updateCarouselFades(){
-  var wrapper=document.getElementById('variantCarouselWrapper');
-  var carousel=document.getElementById('variantCarousel');
-  if(!wrapper||!carousel)return;
-  var fadeL=document.getElementById('varFadeL');
-  var fadeR=document.getElementById('varFadeR');
-  function check(){
-    if(!carousel||!fadeL||!fadeR)return;
-    fadeL.classList.toggle('hidden',carousel.scrollLeft<10);
-    fadeR.classList.toggle('hidden',carousel.scrollLeft+carousel.clientWidth>=carousel.scrollWidth-10);
-  }
-  carousel.addEventListener('scroll',check);
-  check();
-}
-
-function setupVariantTooltips(groupDescs){
-  /* Create tooltip element if not exists */
-  var tt=document.getElementById('variantTooltip');
-  if(!tt){
-    tt=document.createElement('div');
-    tt.id='variantTooltip';
-    tt.className='variant-tooltip';
-    document.body.appendChild(tt);
-  }
-  document.querySelectorAll('#variantCarousel .variant-chip').forEach(chip=>{
-    chip.addEventListener('mouseenter',function(e){
-      var idx=parseInt(this.dataset.variant);
-      var v=VARIANTS[idx];
-      if(!v)return;
-      var displayName=PPI18n.t('variant.v'+v.key,v.n);
-      var groupName=PPI18n.t('variant.'+v.g.toLowerCase(),v.g);
-      var desc=groupDescs[v.g]||'';
-      /* Build preview: show what this variant adds */
-      var preview='';
-      if(v.w){
-        try{
-          var testTpl=currentPrompt?currentPrompt.template:'Example prompt';
-          var testCat=currentPrompt?currentPrompt.cat:'';
-          var result=v.w(testTpl,testCat);
-          var diff=result.replace(testTpl,'').trim();
-          if(diff) preview=diff.substring(0,120)+(diff.length>120?'...':'');
-        }catch(er){}
-      }
-      tt.innerHTML='<div class="variant-tooltip-label">'+esc(groupName)+' · '+esc(displayName)+'</div>'+
-        (desc?'<div>'+esc(desc)+'</div>':'')+
-        (preview?'<div style="margin-top:4px;color:var(--muted);font-style:italic">+ '+esc(preview)+'</div>':'')+
-        '<div style="margin-top:4px;font-size:10px;color:rgba(154,164,178,.5)">Ctrl+click to pin</div>';
-      tt.classList.add('show');
-      positionTooltip(tt,e);
-    });
-    chip.addEventListener('mousemove',function(e){
-      positionTooltip(tt,e);
-    });
-    chip.addEventListener('mouseleave',function(){
-      tt.classList.remove('show');
-    });
-  });
-}
-
-function positionTooltip(tt,e){
-  var x=e.clientX+12;
-  var y=e.clientY+16;
-  if(x+260>window.innerWidth) x=e.clientX-270;
-  if(y+100>window.innerHeight) y=e.clientY-110;
-  tt.style.left=x+'px';
-  tt.style.top=y+'px';
-}
-function buildOutput(){
-  if(!currentPrompt) return '';
-  let txt=VARIANTS[currentVariant].w(currentPrompt.template, currentPrompt.cat);
-  (currentPrompt.vars||[]).forEach(v=>{
-    const el=document.querySelector(`#pmFields [data-k="${v.k}"]`);
-    const val=el&&el.value.trim();
-    txt=txt.split('{'+v.k+'}').join(val||'{'+v.k+'}');
-  });
-  return txt;
-}
-function updateOutput(){
-  const txt=buildOutput();
-  document.getElementById('pmOutput').textContent=txt;
-  document.getElementById('pmCharCount').textContent=fmt(txt.length)+' chars';
-}
-function sendToAI(key){
-  const prompt=buildOutput();
-  if(!prompt.trim()) return;
-  if(window.PPGame) PPGame.award('send');
-  copyText(prompt);
-  const ai=AIS.find(a=>a.key===key);
-  const url=ai.url.endsWith('=')?ai.url+encodeURIComponent(prompt):ai.url;
-  window.open(url,'_blank');
-  toast(ai.url.endsWith('=')?PPI18n.t('toast.opening').replace('{ai}',ai.name):PPI18n.t('toast.copypaste').replace('{ai}',ai.name),'info');
-}
-function copyText(t){
-  if(navigator.clipboard) navigator.clipboard.writeText(t).catch(()=>{});
-  else { const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove(); }
-}
-let toastTimer=null;
-function toast(text,kind){
-  const t=document.getElementById('toast');
-  t.textContent=text;t.className='toast show'+(kind==='info'?' info':'');
-  clearTimeout(toastTimer);
-  toastTimer=setTimeout(()=>t.className='toast'+(kind==='info'?' info':''),2400);
-}
-function toggleFav(id){
-  const i=favorites.indexOf(id);
-  if(i>=0) favorites.splice(i,1);
-  else { favorites.push(id); if(window.PPGame) PPGame.award('fav'); }
-  saveFavs(); cloudSaveFavorites(); renderSidebar(); renderGrid();
-  if(currentPrompt&&currentPrompt.id===id)
-    document.getElementById('pmFav').textContent=favorites.includes(id)?PPI18n.t('pm.fav.saved'):PPI18n.t('pm.fav.save');
-}
-
-/* ============================================================
- *  activation (Lemon Squeezy license codes — login required)
- * ============================================================ */
-function openActivate(){
-  const m=document.getElementById('actMsg'); m.className='msg'; m.textContent='';
-  /* Show/hide login reminder based on auth state */
-  var loginBox = document.getElementById('actLoginReminder');
-  if(loginBox){
-    loginBox.style.display = currentUser ? 'none' : 'block';
-  }
-  document.getElementById('actOverlay').classList.add('show');
-}
-async function redeemCode(){
-  const key=document.getElementById('codeInput').value.trim();
-  const m=document.getElementById('actMsg');
-  if(!key){ m.className='msg err'; m.textContent=PPI18n.t('activate.entercode'); return; }
-
-  /* Require login for Pro activation */
-  if(!currentUser){
-    m.className='msg err';
-    m.textContent=PPI18n.t('activate.login.required');
-    return;
-  }
-
-  m.className='msg'; m.textContent=PPI18n.t('activate.checking'); m.style.display='block';
-
-  /* ---- Promo codes (advertising / marketing) ---- */
-  const promoKey = key.toUpperCase();
-
-  /* ZXTEST- : test mode — permanent Pro unlock */
-  if(promoKey.indexOf('ZXTEST-')===0){
-    if(isPromoUsed('ZXTEST')) return promoAlreadyUsed(m,'ZXTEST');
-    markPromoUsed('ZXTEST');
-    return unlock(key,m,PPI18n.t('activate.testmode'));
-  }
-
-  /* ZX14D- : free 14-day Pro trial */
-  if(promoKey.indexOf('ZX14D-')===0){
-    if(isPromoUsed('ZX14D')) return promoAlreadyUsed(m,'ZX14D');
-    markPromoUsed('ZX14D');
-    return unlockTimed(key,m,14,PPI18n.t('activate.promo.14d'));
-  }
-
-  /* ZX1M- : free 1-month (30-day) Pro */
-  if(promoKey.indexOf('ZX1M-')===0){
-    if(isPromoUsed('ZX1M')) return promoAlreadyUsed(m,'ZX1M');
-    markPromoUsed('ZX1M');
-    return unlockTimed(key,m,30,PPI18n.t('activate.promo.1m'));
-  }
-
-  /* ZX5000C- : add 5000 coins */
-  if(promoKey.indexOf('ZX5000C-')===0){
-    if(isPromoUsed('ZX5000C')) return promoAlreadyUsed(m,'ZX5000C');
-    markPromoUsed('ZX5000C');
-    if(window.PPGame && PPGame.addCoins) PPGame.addCoins(5000);
-    m.className='msg ok';
-    m.textContent=PPI18n.t('activate.promo.5000c');
-    return;
-  }
-
-  if(!window.PPLemon || !PPLemon.validateLicense){
-    m.className='msg err';
-    m.textContent=PPI18n.t('activate.notready');
-    return;
-  }
-  /* verify the license key with Lemon Squeezy */
-  try{
-    const res=await PPLemon.validateLicense(key);
-    if(res.ok && res.kind==='pro'){
-      /* Lifetime (days===0) → permanent; subscription (days>0) → set expiry */
-      if(res.days && res.days > 0){
-        return unlockTimed(key,m,res.days,PPI18n.t('activate.unlocked.sub').replace('{d}',res.days));
-      }
-      return unlock(key,m,PPI18n.t('activate.unlocked'));
-    }
-    if(res.ok && res.kind==='coins'){
-      /* Coin codes should be redeemed in the 🪙 Coins panel (Arcade), not here.
-       * This Pro activation panel is only for Pro codes. */
-      m.className='msg err';
-      m.textContent='That is a coin code — please redeem it in the 🪙 Coins panel instead.';
-      return;
-    }
-    if(res.ok){
-      m.className='msg err'; m.textContent=PPI18n.t('activate.notpro');
-      return;
-    }
-    if(res.error==='network'){
-      m.className='msg err'; m.textContent=PPI18n.t('activate.network');
-      return;
-    }
-    m.className='msg err'; m.textContent=PPI18n.t('activate.invalid');
-  }catch(e){
-    m.className='msg err'; m.textContent=PPI18n.t('activate.network');
-  }
-}
-
-/* Check / mark promo code usage (per account or per browser) */
-function isPromoUsed(code){
-  var usedList=[];
-  try{ usedList=JSON.parse(lsGet('pp_promo_used')||'[]'); }catch(e){ usedList=[]; }
-  if(currentUser){
-    /* signed-in: also check cloud key */
-    var cloudKey='pp_promo_'+code;
-    if(lsGet(cloudKey)) return true;
-  }
-  return usedList.indexOf(code)>=0;
-}
-function markPromoUsed(code){
-  var usedList=[];
-  try{ usedList=JSON.parse(lsGet('pp_promo_used')||'[]'); }catch(e){ usedList=[]; }
-  if(usedList.indexOf(code)<0) usedList.push(code);
-  lsSet('pp_promo_used',JSON.stringify(usedList));
-  if(currentUser){
-    lsSet('pp_promo_'+code,'1');
-    /* sync to cloud */
-    try{
-      userDocRef().set({promoUsed:firebase.firestore.FieldValue.arrayUnion(code),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
-    }catch(e){}
-  }
-}
-function promoAlreadyUsed(m,code){
-  m.className='msg err';
-  m.textContent=PPI18n.t('activate.promo.used');
-}
-
-function unlock(key,m,text){
-  lsSet('pp_pro_code',key); lsDel('pp_pro_until');   /* permanent — no expiry */
-  isPro=true; proExpired=false;
-  cloudSavePro();
-  m.className='msg ok'; m.textContent=text;
-  refreshBadge(); renderGrid();
-  setTimeout(()=>document.getElementById('actOverlay').classList.remove('show'),1400);
-  toast(PPI18n.t('activate.pro.unlocked'));
-}
-/* Timed unlock: Pro for N days, then reverts to Free */
-function unlockTimed(key,m,days,text){
-  const until=Date.now()+days*86400000;
-  lsSet('pp_pro_code',key);
-  lsSet('pp_pro_until',String(until));
-  isPro=true; proExpired=false;
-  cloudSavePro();
-  m.className='msg ok'; m.textContent=text;
-  refreshBadge(); renderGrid();
-  setTimeout(()=>document.getElementById('actOverlay').classList.remove('show'),1400);
-  toast(PPI18n.t('activate.pro.unlocked'));
-}
-function startTrial(){
-  /* Free trial removed — redirect to Pro plans */
-  const m=document.getElementById('actMsg'); m.style.display='block';
-  m.className='msg err';
-  m.textContent=PPI18n.t('activate.trial.removed');
-}
-
-/* ============================================================
- *  events
- * ============================================================ */
-let _eventsWired=false;
-function hideOverlays(){ 
-  document.querySelectorAll('.overlay').forEach(o=>o.classList.remove('show'));
-  /* Also close the friends panel and chat window */
-  var fp=document.getElementById('friendsPanel'); if(fp) fp.style.display='none';
-}
-
-function wireEvents(){
-  if(_eventsWired) return;
-  _eventsWired=true;
-  try{
-  let searchAwardT=null;
-  let searchDropT=null;
-  document.getElementById('search').addEventListener('input',()=>{
-    shown=PAGE; renderGrid();
-    clearTimeout(searchAwardT);
-    searchAwardT=setTimeout(()=>{
-      if(window.PPGame && document.getElementById('search').value.trim().length>=2) PPGame.award('search');
-    },1100);
-    /* Live search dropdown */
-    updateSearchDropdown();
-  });
-  document.getElementById('search').addEventListener('focus',()=>{
-    if(document.getElementById('search').value.trim().length>=1) updateSearchDropdown();
-  });
-  document.getElementById('search').addEventListener('blur',()=>{
-    clearTimeout(searchDropT);
-    searchDropT=setTimeout(()=>{ document.getElementById('searchDropdown').classList.remove('show'); },200);
-  });
-  document.getElementById('search').addEventListener('keydown',(e)=>{
-    if(e.key==='Escape'){ document.getElementById('searchDropdown').classList.remove('show'); }
-  });
-  document.getElementById('moreBtn').addEventListener('click',()=>{ shown+=PAGE; renderGrid(); });
-  document.getElementById('sidebar').addEventListener('click',e=>{
-    const cat=e.target.closest('[data-cat]'), view=e.target.closest('[data-view]');
-    if(cat){ activeView='all'; activeCat=cat.dataset.cat; }
-    else if(view){ activeView='favorites'; }
-    else return;
-    shown=PAGE;
-    /* Fast sidebar update: toggle .active class instead of full rebuild */
-    var sb=document.getElementById('sidebar');
-    sb.querySelectorAll('.cat').forEach(function(c){
-      var isCat=c.dataset.cat && c.dataset.cat===activeCat && activeView==='all';
-      var isView=c.dataset.view && c.dataset.view===activeView;
-      c.classList.toggle('active', isCat||isView);
-    });
-    requestAnimationFrame(function(){ renderGrid(); });
-    document.getElementById('templates').scrollIntoView({behavior:'smooth'});
-  });
-  document.getElementById('grid').addEventListener('click',e=>{
-    const star=e.target.closest('[data-star]');
-    if(star){ e.stopPropagation(); toggleFav(parseInt(star.dataset.star)); return; }
-    const card=e.target.closest('[data-id]');
-    if(card) openPrompt(parseInt(card.dataset.id));
-  });
-  document.getElementById('pmCopy').addEventListener('click',()=>{ copyText(buildOutput()); if(window.PPGame) PPGame.award('copy'); toast(PPI18n.t('toast.copied')); });
-  document.getElementById('pmFav').addEventListener('click',()=>{ if(currentPrompt) toggleFav(currentPrompt.id); });
-  /* Share prompt button — generates shareable link */
-  document.getElementById('pmShare').addEventListener('click',()=>{
-    if(!currentPrompt) return;
-    var baseUrl=location.origin+location.pathname;
-    var shareUrl=baseUrl+'#prompt='+currentPrompt.id;
-    var isProPrompt=!currentPrompt.free;
-    var shareText=currentPrompt.t||currentPrompt.title||'';
-    if(isProPrompt){
-      shareText+=' (Pro)';
-    }
-    var fullShareText=shareText+'\n'+shareUrl;
-    if(navigator.share){
-      navigator.share({title:'PromptRunic Prompt',text:fullShareText,url:shareUrl}).catch(()=>{copyText(fullShareText);toast(PPI18n.t('toast.copied'));});
-    }else{
-      copyText(fullShareText);
-      toast(PPI18n.t('pm.share.copied','Share link copied! Pro prompts require login + Pro to view.'));
-    }
-  });
-  /* Random prompt button */
-  document.getElementById('pmRandom').addEventListener('click',()=>{
-    var prompts=getCurrentPrompts();
-    var freePrompts=prompts.filter(p=>p.free||isPro);
-    if(freePrompts.length){var rp=freePrompts[Math.floor(Math.random()*freePrompts.length)];openPrompt(rp.id);}
-  });
-  /* History button — shows history panel with all previously viewed prompts */
-  document.getElementById('pmHistory').addEventListener('click',()=>{
-    var hist=[];
-    try{hist=JSON.parse(lsGet('pp_prompt_history')||'[]');}catch(e){}
-    var panel=document.getElementById('historyPanel');
-    var list=document.getElementById('historyList');
-    if(panel.style.display==='block'){panel.style.display='none';return;}
-    if(!hist.length){
-      list.innerHTML='<div style="color:var(--muted);font-size:13px;text-align:center;padding:40px 0" data-i18n="pm.history.empty">No recently viewed prompts yet.</div>';
-      panel.style.display='block';
-      return;
-    }
-    var allPrompts=getCurrentPrompts();
-    var h='';
-    hist.forEach(function(id){
-      var p=allPrompts.find(function(x){return x.id===id;});
-      if(p){
-        var cat=p.cat||'';
-        var isProP=!p.free;
-        h+='<div style="padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="document.getElementById(\'historyPanel\').style.display=\'none\';openPrompt('+p.id+')">';
-        h+='<div style="font-size:13px;font-weight:600;color:var(--text)">'+esc(p.t||p.title||'Untitled')+'</div>';
-        h+='<div style="font-size:11px;color:var(--muted);margin-top:2px">'+esc(cat)+(isProP?' · <span style="color:var(--accent2)">Pro</span>':'')+'</div>';
-        h+='</div>';
-      }
-    });
-    list.innerHTML=h;
-    panel.style.display='block';
-  });
-  /* TTS — Read prompt aloud */
-  document.getElementById('pmTTS').addEventListener('click',()=>{
-    var text=buildOutput();
-    if(!text||!window.speechSynthesis) return;
-    window.speechSynthesis.cancel();
-    var utterance=new SpeechSynthesisUtterance(text);
-    var lang=(typeof PPI18n!=='undefined')?PPI18n.getLang():'en';
-    if(lang==='zh') utterance.lang='zh-CN';
-    else if(lang==='es') utterance.lang='es-ES';
-    else utterance.lang='en-US';
-    utterance.rate=0.9;
-    window.speechSynthesis.speak(utterance);
-  });
-  document.getElementById('pmAiRow').addEventListener('click',e=>{
-    const b=e.target.closest('[data-ai]'); if(b) sendToAI(b.dataset.ai);
-  });
-  /* the answer-style carousel wires its own click handler in renderVariants() */
-  var actBtn=document.getElementById('activateBtn'); if(actBtn) actBtn.addEventListener('click',openActivate);
-  document.getElementById('activateBtn2').addEventListener('click',openActivate);
-  document.getElementById('redeemBtn').addEventListener('click',redeemCode);
-  document.getElementById('actLoginBtn').addEventListener('click',function(){ hideOverlays(); setTimeout(function(){ openAuth(); },200); });
-  document.getElementById('buyBtn').addEventListener('click',()=>{ hideOverlays(); setTimeout(function(){ document.getElementById('pro').scrollIntoView({behavior:'smooth'}); },200); });
-  /* Wire up pricing card buttons */
-  document.querySelectorAll('.p-card-btn').forEach(function(btn){
-    btn.addEventListener('click', function(){
-      /* Require login before purchasing Pro */
-      if(!currentUser){
-        toast(PPI18n.t('activate.login.required'),'info');
-        openAuth();
-        return;
-      }
-      var planId = this.getAttribute('data-plan-id');
-      if(window.PPLemon && PPLemon.buyMembership) PPLemon.buyMembership(planId);
-      else if(window.PPLemon) PPLemon.buyPro();
-    });
-  });
-
-  /* auth */
-  document.getElementById('authBtn').addEventListener('click',()=>{ if(currentUser) openAccount(); else openAuth(); });
-  /* Account button: opens profile panel when logged in */
-  document.getElementById('accountBtn').addEventListener('click',function(e){
-    e.stopPropagation();
-    if(currentUser) openAccount();
-    else openAuth();
-  });
-  /* community button */
-  document.getElementById('communityBtn').addEventListener('click',()=>{ openCommunityPanel(); });
-  document.getElementById('tabSignin').addEventListener('click',()=>setAuthMode('signin'));
-  document.getElementById('tabRegister').addEventListener('click',()=>setAuthMode('register'));
-  document.getElementById('authSubmit').addEventListener('click',doAuthSubmit);
-  document.getElementById('authPass').addEventListener('keydown',e=>{ if(e.key==='Enter') doAuthSubmit(); });
-  document.getElementById('authReset').addEventListener('click',doPasswordReset);
-  document.getElementById('resendVerifyBtn').addEventListener('click',doResendVerification);
-  document.querySelectorAll('[data-social]').forEach(b=>
-    b.addEventListener('click',()=>doSocial(b.dataset.social)));
-  document.getElementById('signOutBtn').addEventListener('click',doSignOut);
-  document.getElementById('accSave').addEventListener('click',saveAccountSettings);
-  document.getElementById('accGetPro').addEventListener('click',()=>{ hideOverlays(); openActivate(); });
-  document.getElementById('deleteAccountBtn').addEventListener('click',doDeleteAccount);
-
-  /* game button */
-  document.getElementById('gameBtn').addEventListener('click',()=>{ window.openGameOverlay(); });
-
-  /* coin button — click handler is set by fun.js buildArcadeBtn() which opens the arcade panel */
-
-  /* search dropdown clicks */
-  document.getElementById('searchDropdown').addEventListener('mousedown',(e)=>{
-    const catItem=e.target.closest('[data-sd-cat]');
-    const promptItem=e.target.closest('[data-sd-id]');
-    if(catItem){
-      activeView='all'; activeCat=catItem.dataset.sdCat;
-      shown=PAGE; renderSidebar(); renderGrid();
-      document.getElementById('searchDropdown').classList.remove('show');
-      document.getElementById('templates').scrollIntoView({behavior:'smooth'});
-    } else if(promptItem){
-      openPrompt(parseInt(promptItem.dataset.sdId));
-      document.getElementById('searchDropdown').classList.remove('show');
-    }
-  });
-
-  /* optimizer buttons */
-  document.getElementById('optQuickBtn').addEventListener('click',runQuickOptimizer);
-  document.getElementById('optAiBtn').addEventListener('click',runAIOptimizer);
-  document.getElementById('optInput').addEventListener('keydown',(e)=>{
-    if(e.key==='Enter' && (e.ctrlKey || e.metaKey)){ e.preventDefault(); runQuickOptimizer(); }
-  });
-  document.getElementById('optGrid').addEventListener('click',(e)=>{
-    const card=e.target.closest('[data-id]');
-    if(card) openPrompt(parseInt(card.dataset.id));
-  });
-  document.getElementById('optCopyBtn').addEventListener('click',function(){
-    var t=document.getElementById('optOutputText').textContent;
-    if(t){ copyText(t); toast(PPI18n.t('toast.copied')); }
-  });
-  document.getElementById('optSendBtn').addEventListener('click',function(){
-    var t=document.getElementById('optOutputText').textContent;
-    if(!t) return;
-    /* Show the AI selector popup instead of going directly to ChatGPT */
-    var grid=document.getElementById('aiSelGrid');
-    grid.innerHTML=AIS.map(function(a){
-      return '<div class="ai-sel-item" data-ai-key="'+a.key+'"><span class="ai-sel-dot" style="background:'+a.color+'"></span>'+esc(a.name)+'</div>';
-    }).join('');
-    document.getElementById('aiSelOverlay').classList.add('show');
-  });
-  /* AI selector popup: clicking an AI service */
-  document.getElementById('aiSelGrid').addEventListener('click',function(e){
-    var item=e.target.closest('[data-ai-key]');
-    if(!item) return;
-    var key=item.dataset.aiKey;
-    var t=document.getElementById('optOutputText').textContent;
-    if(!t) return;
-    var ai=AIS.find(function(a){return a.key===key;});
-    if(!ai) return;
-    copyText(t);
-    var url=ai.url.endsWith('=')?ai.url+encodeURIComponent(t):ai.url;
-    window.open(url,'_blank');
-    document.getElementById('aiSelOverlay').classList.remove('show');
-    toast(ai.url.endsWith('=')?('Opening '+ai.name+' with your prompt...'):('Prompt copied — press Ctrl+V in '+ai.name),'info');
-  });
-
-  /* Liquid glass ripple effect on optimizer card */
-  var optCard=document.getElementById('optCard');
-  if(optCard){
-    optCard.addEventListener('mousemove',function(e){
-      var rect=optCard.getBoundingClientRect();
-      var x=e.clientX-rect.left;
-      var y=e.clientY-rect.top;
-      optCard.style.setProperty('--mx',x+'px');
-      optCard.style.setProperty('--my',y+'px');
-    });
-    optCard.addEventListener('click',function(e){
-      var rect=optCard.getBoundingClientRect();
-      var ripple=document.createElement('div');
-      ripple.className='opt-ripple';
-      var size=Math.max(rect.width,rect.height);
-      ripple.style.width=ripple.style.height=size+'px';
-      ripple.style.left=(e.clientX-rect.left-size/2)+'px';
-      ripple.style.top=(e.clientY-rect.top-size/2)+'px';
-      optCard.appendChild(ripple);
-      setTimeout(function(){ ripple.remove(); },900);
-    });
-  }
-
-  document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',hideOverlays));
-  document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{
-    if(e.target===o) o.classList.remove('show');
-  }));
-  document.addEventListener('keydown',e=>{ if(e.key==='Escape') hideOverlays(); });
-  }catch(e){ console.error('wireEvents error:',e); }
-}
-
-/* ============================================================
- *  Search Dropdown — live matching categories + prompts
- * ============================================================ */
-function highlightMatch(text, q){
-  if(!q) return esc(text);
-  const idx=text.toLowerCase().indexOf(q.toLowerCase());
-  if(idx<0) return esc(text);
-  return esc(text.substring(0,idx))+'<span class="sd-highlight">'+esc(text.substring(idx,idx+q.length))+'</span>'+esc(text.substring(idx+q.length));
-}
-function updateSearchDropdown(){
-  const dd=document.getElementById('searchDropdown');
-  const q=document.getElementById('search').value.trim();
-  if(q.length<1){ dd.classList.remove('show'); return; }
-  const ql=q.toLowerCase();
-  const prompts=getCurrentPrompts();
-  /* Match categories */
-  const catSet=new Set();
-  prompts.forEach(p=>catSet.add(p.cat));
-  const allCats=Array.from(catSet).sort();
-  const matchedCats=allCats.filter(c=>{
-    const display=tCat(c);
-    return c.toLowerCase().includes(ql) || display.toLowerCase().includes(ql);
-  }).slice(0,8);
-  /* Match prompts */
-  const matchedPrompts=prompts.filter(p=>{
-    return p.title.toLowerCase().includes(ql) || p.desc.toLowerCase().includes(ql) || p.cat.toLowerCase().includes(ql) || tCat(p.cat).toLowerCase().includes(ql) || (p.template && p.template.toLowerCase().includes(ql));
-  }).slice(0,10);
-  if(!matchedCats.length && !matchedPrompts.length){
-    dd.innerHTML='<div class="sd-empty">'+PPI18n.t('search.nomatch','No matching categories or prompts found.')+'</div>';
-    dd.classList.add('show');
-    return;
-  }
-  let html='';
-  if(matchedCats.length){
-    html+='<div class="sd-section"><div class="sd-label">'+PPI18n.t('search.categories','Categories')+'</div>';
-    matchedCats.forEach(c=>{
-      const n=prompts.filter(p=>p.cat===c).length;
-      const display=tCat(c);
-      html+='<div class="sd-cat" data-sd-cat="'+esc(c)+'">'+highlightMatch(display,q)+'<span class="sd-count">'+fmt(n)+'</span></div>';
-    });
-    html+='</div>';
-  }
-  if(matchedPrompts.length){
-    html+='<div class="sd-section"><div class="sd-label">'+PPI18n.t('search.prompts','Prompts')+'</div>';
-    matchedPrompts.forEach(p=>{
-      const catDisplay=tCat(p.cat);
-      html+='<div class="sd-prompt" data-sd-id="'+p.id+'"><h5>'+highlightMatch(p.title,q)+'</h5><p>'+esc(p.desc)+'</p><div class="sd-prompt-cat">'+esc(catDisplay)+'</div></div>';
-    });
-    html+='</div>';
-  }
-  dd.innerHTML=html;
-  dd.classList.add('show');
-}
-
-/* ============================================================
- *  Prompt Optimizer — Plan 3: Rule + Retrieval Hybrid Engine
- *  + Qwen2.5-1.5B WebLLM integration for local AI optimization
- * ============================================================ */
-/* Select up to maxCount prompts with maximum category diversity.
- * Pass 1: pick the best-scoring prompt from each unique category.
- * Pass 2: fill remaining slots with the next-best prompts regardless of category. */
-function selectDiverseResults(allScored, maxCount){
-  var scored=[];
-  var usedCats={};
-  /* Pass 1: take the best from each category */
-  for(var i=0;i<allScored.length&&scored.length<maxCount;i++){
-    var cat=allScored[i].p.cat||'uncategorized';
-    if(!usedCats[cat]){
-      usedCats[cat]=true;
-      scored.push(allScored[i]);
-    }
-  }
-  /* Pass 2: fill remaining slots with next-best regardless of category */
-  for(var j=0;j<allScored.length&&scored.length<maxCount;j++){
-    if(scored.indexOf(allScored[j])<0) scored.push(allScored[j]);
-  }
-  return scored;
-}
-
-/* Common stop words to filter out when extracting keywords */
-const STOP_WORDS=new Set(['a','an','the','and','or','but','in','on','at','to','for','of','with','by','from','is','it','as','be','was','are','been','have','has','had','do','does','did','will','would','could','should','may','might','shall','can','need','must','this','that','these','those','i','you','he','she','we','they','me','him','her','us','them','my','your','his','its','our','their','what','which','who','whom','how','when','where','why','all','each','every','both','few','more','most','other','some','such','no','not','only','same','so','than','too','very','just','about','also','then','there','here','if','up','out','into','over','after','before','between','under','again','further','once','during','am','being','because','until','while','through','any','many','much','own','make','like','just','get','got','want','use','using','used','help','try','give','take','come','go','look','see','know','think','good','new','way','well','back','even','still','really','thing','things','something','everything','anything','nothing','one','two','first','last','long','great','little','right','big','high','small','large','next','old','different','important','another','best','better','able','sure','lot','put','need','write','writing','written']);
-
-function extractKeywords(text){
-  const words=text.toLowerCase().replace(/[^\w\u4e00-\u9fff\u00C0-\u024F]/g,' ').split(/\s+/).filter(w=>w.length>1 && !STOP_WORDS.has(w));
-  const seen=new Set();
-  return words.filter(w=>{ if(seen.has(w)) return false; seen.add(w); return true; });
-}
-
-/* ---- Intent detection rules (Plan 3) ---- */
-var INTENT_RULES=[
-  {id:'summary',keywords:['总结','归纳','复盘','summary','summarize','概括','回顾','报告','report','wrap','digest'],roleEN:'Analysis & Reporting Expert',roleZH:'分析报告专家',methodEN:'Use the STAR method (Situation, Task, Action, Result)',methodZH:'请使用STAR法则（情境、任务、行动、结果）',formatEN:'Present as bullet points, each concise and clear',formatZH:'分点列出，每点简明扼要',constraintsEN:'Under 300 words, highlight key data and conclusions',constraintsZH:'字数300以内，突出关键数据和结论'},
-  {id:'writing',keywords:['写','文案','文章','write','essay','article','blog','copy','content','创作','故事','小说','draft','compose'],roleEN:'Professional Copywriter',roleZH:'专业文案策划师',methodEN:'First clarify target audience and core message',methodZH:'先明确目标受众和核心信息',formatEN:'Clear paragraphs, each focused on one key point',formatZH:'分段清晰，每段聚焦一个要点',constraintsEN:'Use vivid, engaging language. Include a clear Call to Action (CTA)',constraintsZH:'语言生动有感染力，包含明确的行动号召(CTA)'},
-  {id:'code',keywords:['代码','编程','函数','code','program','function','debug','python','javascript','java','算法','开发','api','脚本','script','sql','css','html','react'],roleEN:'Senior Software Engineer',roleZH:'资深软件工程师',methodEN:'Follow best practices and design patterns',methodZH:'遵循最佳实践和设计模式',formatEN:'Include comments, type annotations, and unit tests',formatZH:'代码需包含注释、类型标注和单元测试',constraintsEN:'Analyze time and space complexity. Ensure maintainability',constraintsZH:'分析时间复杂度和空间复杂度，确保代码可维护性'},
-  {id:'email',keywords:['邮件','email','信','通知','道歉','催办','letter','商务','邀请','reply','回复','follow-up','感谢'],roleEN:'Business Communication Expert',roleZH:'商务沟通专家',methodEN:'Follow AIDA model (Attention, Interest, Desire, Action)',methodZH:'遵循AIDA模型（注意、兴趣、欲望、行动）',formatEN:'Include greeting, body, and closing courtesy',formatZH:'包含称呼、正文、结尾礼貌用语',constraintsEN:'Professional yet friendly tone. Avoid blame. Specify next steps',constraintsZH:'语气正式但友好，避免推卸责任，明确下一步行动'},
-  {id:'marketing',keywords:['推广','营销','marketing','广告','种草','campaign','promote','宣传','转化','landing','seo','品牌','brand','slogan','标语'],roleEN:'Digital Marketing Strategist',roleZH:'数字营销专家',methodEN:'Tailor content strategy based on target audience persona',methodZH:'基于目标用户画像定制内容策略',formatEN:'Include attention-grabbing headline, key selling points, social proof, and CTA',formatZH:'包含吸引注意的标题、核心卖点、社会证明和行动号召',constraintsEN:'Highlight differentiation. Use specific data for persuasion',constraintsZH:'突出差异化优势，使用具体数据增强说服力'},
-  {id:'interview',keywords:['面试','简历','interview','resume','求职','招聘','cv','cover letter','求职信','自我介绍','portfolio'],roleEN:'Career Planning Consultant',roleZH:'职业规划顾问',methodEN:'Quantify achievements using the STAR method',methodZH:'使用STAR法则量化成就',formatEN:'Highlight key achievements with data',formatZH:'突出关键成就，用数据说话',constraintsEN:'Tailor to job requirements. Avoid vague descriptions',constraintsZH:'针对岗位要求定制，避免空泛描述，体现独特价值'},
-  {id:'translation',keywords:['翻译','translate','translation','本地化','localize','中英','英中','bilingual'],roleEN:'Professional Translation Consultant',roleZH:'专业翻译顾问',methodEN:'Preserve original meaning and tone accurately',methodZH:'保持原文语义和语气的准确传达',formatEN:'Provide translation with bilingual glossary for key terms',formatZH:'提供翻译并标注关键术语的双语对照',constraintsEN:'Note cultural differences and idiomatic expressions',constraintsZH:'注意文化差异和惯用表达，确保译文自然流畅'},
-  {id:'education',keywords:['学习','教程','teach','learn','tutorial','解释','explain','课程','教学','入门','beginner','guide','指南'],roleEN:'Instructional Design Expert',roleZH:'教育设计专家',methodEN:'Progress from simple to complex with real examples',methodZH:'从简到难逐步引导，配合实例说明',formatEN:'Step-by-step explanation, each with concept + example',formatZH:'分步骤讲解，每步包含概念解释和实际示例',constraintsEN:'Use plain language. Avoid jargon overload',constraintsZH:'使用通俗易懂的语言，避免专业术语堆砌'},
-  {id:'data',keywords:['数据','分析','data','analysis','统计','可视化','图表','dashboard','excel','报表','metrics','kpi'],roleEN:'Data Analysis Expert',roleZH:'数据分析专家',methodEN:'Extract insights and actionable recommendations from data',methodZH:'从数据中提炼洞察和建议',formatEN:'Key findings first, then detailed analysis with visualization suggestions',formatZH:'先展示关键发现，再提供详细分析和可视化建议',constraintsEN:'All conclusions must be data-supported. Note sources and limitations',constraintsZH:'所有结论需有数据支撑，标注数据来源和局限性'},
-  {id:'creative',keywords:['创意','设计','creative','brainstorm','头脑风暴','idea','灵感','创新','命名','naming','logo','方案'],roleEN:'Creative Director',roleZH:'创意总监',methodEN:'Diverge for multiple options, then converge to the best',methodZH:'发散思维提供多种方案，再收敛到最优解',formatEN:'Provide 3-5 creative directions, each with brief rationale',formatZH:'提供3-5个不同方向的创意方案，每个附带简要理由',constraintsEN:'Ideas must be both original and feasible. Avoid cliches',constraintsZH:'方案需兼具原创性和可行性，避免陈词滥调'}
-];
-
-function scorePrompt(prompt, keywords){
-  let score=0;
-  const title=prompt.title.toLowerCase();
-  const desc=prompt.desc.toLowerCase();
-  const cat=prompt.cat.toLowerCase();
-  const template=(prompt.template||'').toLowerCase();
-  const catDisplay=tCat(prompt.cat).toLowerCase();
-  keywords.forEach(kw=>{
-    if(title.includes(kw)) score+=10;
-    if(desc.includes(kw)) score+=5;
-    if(cat.includes(kw) || catDisplay.includes(kw)) score+=8;
-    if(template.includes(kw)) score+=3;
-    if(new RegExp('\\b'+kw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b').test(title)) score+=5;
-  });
-  const catWords=cat.split(/[\s&]+/).filter(w=>w.length>2);
-  catWords.forEach(cw=>{
-    if(keywords.some(kw=>kw.includes(cw)||cw.includes(kw))) score+=3;
-  });
-  return score;
-}
-
-function detectIntent(text){
-  var lower=text.toLowerCase();
-  var bestIntent=null, bestScore=0;
-  INTENT_RULES.forEach(function(rule){
-    var score=0;
-    rule.keywords.forEach(function(kw){ if(lower.includes(kw)) score++; });
-    if(score>bestScore){ bestScore=score; bestIntent=rule; }
-  });
-  return bestScore>0 ? bestIntent : null;
-}
-
-/* Store last optimization data for i18n refresh */
-var _lastOptData = null; // { input, intent, scored, type:'quick'|'ai', aiResult }
-
-function buildOptimizedPrompt(input, intent, topMatches){
-  var lang=(typeof PPI18n!=='undefined' && PPI18n.current) || 'en';
-  var isZh=lang==='zh';
-  var isEs=lang==='es';
-  var role=intent?(isZh?intent.roleZH:intent.roleEN):(isZh?'专业AI提示词工程师':isEs?'Ingeniero de Prompts AI Profesional':'Professional AI Prompt Engineer');
-  var parts=[];
-  parts.push(isZh?'请扮演一位'+role+'。':isEs?'Actua como un '+role+'.':'Act as a '+role+'.');
-  parts.push(isZh?'\n任务：'+input:isEs?'\nTarea: '+input:'\nTask: '+input);
-  if(topMatches && topMatches.length>0 && topMatches[0].p.template){
-    var tmpl=topMatches[0].p.template;
-    var enhanced=tmpl.replace(/\{([^}]+)\}/g,function(m,key){return '['+key+']';});
-    parts.push(isZh?'\n参考模板结构：\n'+enhanced:isEs?'\nEstructura de referencia:\n'+enhanced:'\nReference structure:\n'+enhanced);
-  }
-  if(intent){
-    parts.push(isZh?'\n方法：'+intent.methodZH:isEs?'\nMetodo: '+intent.methodEN:'\nMethod: '+intent.methodEN);
-    parts.push(isZh?'\n格式要求：'+intent.formatZH:isEs?'\nFormato: '+intent.formatEN:'\nFormat: '+intent.formatEN);
-    parts.push(isZh?'\n约束：'+intent.constraintsZH:isEs?'\nRestricciones: '+intent.constraintsEN:'\nConstraints: '+intent.constraintsEN);
-  }
-  var optimized = parts.join('');
-
-  /* Build explanation text */
-  var explainParts = [];
-  explainParts.push(isZh?'<strong>角色：</strong>'+role:isEs?'<strong>Rol:</strong> '+role:'<strong>Role:</strong> '+role);
-  explainParts.push(isZh?'<strong>任务：</strong>'+input:isEs?'<strong>Tarea:</strong> '+input:'<strong>Task:</strong> '+input);
-  if(intent){
-    explainParts.push(isZh?'<strong>方法：</strong>'+intent.methodZH:isEs?'<strong>Método:</strong> '+intent.methodEN:'<strong>Method:</strong> '+intent.methodEN);
-    explainParts.push(isZh?'<strong>格式：</strong>'+intent.formatZH:isEs?'<strong>Formato:</strong> '+intent.formatEN:'<strong>Format:</strong> '+intent.formatEN);
-  }
-  if(topMatches && topMatches.length>0 && topMatches[0].p.template){
-    var tmpl2=topMatches[0].p.template;
-    var enhanced2=tmpl2.replace(/\{([^}]+)\}/g,function(m,key){return '['+key+']';});
-    explainParts.push(isZh?'<strong>参考模板：</strong>'+enhanced2:isEs?'<strong>Plantilla de referencia:</strong> '+enhanced2:'<strong>Reference template:</strong> '+enhanced2);
-  }
-  var explain = explainParts.join('&nbsp;&nbsp;|&nbsp;&nbsp;');
-
-  return { optimized: optimized, explain: explain };
-}
-
-function _refreshOptimizerOutput(){
-  if(!_lastOptData) return;
-  var d = _lastOptData;
-  var outputEl = document.getElementById('optOutput');
-  var textEl = document.getElementById('optOutputText');
-  var metaEl = document.getElementById('optOutputMeta');
-  var explainEl = document.getElementById('optExplainBox');
-  if(!outputEl || !textEl || !metaEl || !explainEl) return;
-  if(d.type === 'quick'){
-    var result = buildOptimizedPrompt(d.input, d.intent, d.scored);
-    textEl.textContent = result.optimized;
-    explainEl.innerHTML = result.explain;
-    var keywords = extractKeywords(d.input);
-    var metaHtml = '';
-    if(d.intent) metaHtml += '<span>\uD83D\uDCCB '+PPI18n.t('optimizer.intent','Intent')+': '+(PPI18n.current==='zh'?d.intent.roleZH:d.intent.roleEN)+'</span>';
-    metaHtml += '<span>\uD83D\uDD0D '+PPI18n.t('optimizer.keywords','Keywords')+': '+keywords.slice(0,8).join(', ')+'</span>';
-    if(d.scored.length) metaHtml += '<span>\u2B50 '+PPI18n.t('optimizer.matched','Matched')+': '+d.scored.length+' '+PPI18n.t('optimizer.prompts','prompts')+'</span>';
-    metaEl.innerHTML = metaHtml;
-    _renderOptCards(d.scored, keywords);
-  }
-  if(d.type === 'ai'){
-    var result2 = buildOptimizedPrompt(d.input, d.intent, d.scored);
-    /* For AI optimize, use the quick-optimized version as base when language changes */
-    textEl.textContent = d.aiResult || result2.optimized;
-    explainEl.innerHTML = result2.explain;
-    var keywords2 = extractKeywords(d.input);
-    var metaHtml2 = '<span>\uD83E\uDDE0 Qwen2.5-1.5B (Local AI)</span><span>\uD83D\uDD0D '+PPI18n.t('optimizer.keywords','Keywords')+': '+keywords2.slice(0,8).join(', ')+'</span>';
-    metaEl.innerHTML = metaHtml2;
-    _renderOptCards(d.scored, keywords2);
-  }
-}
-
-function _optSpinner(){
-  if(!document.getElementById('optSpinnerStyle')){
-    var s=document.createElement('style');s.id='optSpinnerStyle';
-    s.textContent='@keyframes pp-spin{to{transform:rotate(360deg)}}';
-    document.head.appendChild(s);
-  }
-}
-
-function _renderOptCards(scored,keywords){
-  var grid=document.getElementById('optGrid');
-  var title=document.getElementById('optResultsTitle');
-  if(!scored.length){
-    grid.innerHTML='<div class="empty">'+PPI18n.t('optimizer.nomatch','No relevant prompts found.')+'</div>';
-    title.textContent=PPI18n.t('optimizer.results.none','No matches found');
-    title.classList.add('show');
-  }else{
-    title.textContent=PPI18n.t('optimizer.results','Related prompts:')+' ('+fmt(scored.length)+')';
-    title.classList.add('show');
-    grid.innerHTML=scored.map(function({p,score}){
-      var locked=!isPro && !p.free;
-      var fav=favorites.includes(p.id);
-      var catDisplay=tCat(p.cat);
-      var relevance=Math.min(100,Math.round(score/keywords.length*10));
-      return '<div class="card '+(locked?'locked':'')+'" data-id="'+p.id+'">'+
-        '<button class="star '+(fav?'on':'')+'" data-star="'+p.id+'">'+(fav?'\u2605':'\u2606')+'</button>'+
-        '<h4>'+esc(p.title)+'</h4><p>'+esc(p.desc)+'</p>'+
-        '<div class="meta"><span class="tag">'+esc(catDisplay)+'</span>'+
-        (locked?'<span class="tag locktag">'+PPI18n.t('grid.locked')+'</span>':(!isPro?'<span class="tag freetag">'+PPI18n.t('grid.free')+'</span>':''))+
-        '<span class="opt-relevance">'+PPI18n.t('optimizer.relevance','Relevance')+': '+relevance+'%</span></div></div>';
-    }).join('');
-  }
-}
-
-function runQuickOptimizer(){
-  var input=document.getElementById('optInput').value.trim();
-  if(!input){toast(PPI18n.t('optimizer.empty','Please enter a prompt or description.'),'info');return;}
-  var btn=document.getElementById('optQuickBtn');
-  btn.disabled=true;_optSpinner();
-  btn.innerHTML='<span style="display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:pp-spin .6s linear infinite"></span> '+PPI18n.t('optimizer.searching','Optimizing...');
-  setTimeout(function(){
-    var keywords=extractKeywords(input);
-    var prompts=getCurrentPrompts();
-    var intent=detectIntent(input);
-    var allScored=prompts.map(function(p){return{p:p,score:scorePrompt(p,keywords)};}).filter(function(x){return x.score>0;}).sort(function(a,b){return b.score-a.score;});
-    var scored=selectDiverseResults(allScored, 6);
-    var result=buildOptimizedPrompt(input,intent,scored);
-    var outputEl=document.getElementById('optOutput');
-    var textEl=document.getElementById('optOutputText');
-    var metaEl=document.getElementById('optOutputMeta');
-    var explainEl=document.getElementById('optExplainBox');
-    textEl.textContent=result.optimized;
-    explainEl.innerHTML=result.explain;
-    var metaHtml='';
-    if(intent)metaHtml+='<span>\uD83D\uDCCB '+PPI18n.t('optimizer.intent','Intent')+': '+(PPI18n.current==='zh'?intent.roleZH:intent.roleEN)+'</span>';
-    metaHtml+='<span>\uD83D\uDD0D '+PPI18n.t('optimizer.keywords','Keywords')+': '+keywords.slice(0,8).join(', ')+'</span>';
-    if(scored.length)metaHtml+='<span>\u2B50 '+PPI18n.t('optimizer.matched','Matched')+': '+scored.length+' '+PPI18n.t('optimizer.prompts','prompts')+'</span>';
-    metaEl.innerHTML=metaHtml;
-    outputEl.classList.add('show');
-    _renderOptCards(scored,keywords);
-    /* Store for i18n refresh */
-    _lastOptData = { input:input, intent:intent, scored:scored, type:'quick' };
-    document.getElementById('optOutput').scrollIntoView({behavior:'smooth',block:'nearest'});
-    btn.disabled=false;
-    btn.innerHTML=PPI18n.t('optimizer.quickbtn','\u26A1 Quick Optimize');
-  },80);
-}
-
-async function runAIOptimizer(){
-  var input=document.getElementById('optInput').value.trim();
-  if(!input){toast(PPI18n.t('optimizer.empty','Please enter a prompt or description.'),'info');return;}
-  var btn=document.getElementById('optAiBtn');
-  btn.disabled=true;
-  var progress=document.getElementById('optProgress');
-  var fill=document.getElementById('optProgressFill');
-  var status=document.getElementById('optAiStatus');
-  if(!navigator.gpu){
-    toast(PPI18n.t('optimizer.nogpu','Your browser does not support WebGPU. Try Chrome 113+.'),'info');
-    btn.disabled=false;return;
-  }
-  progress.classList.add('show');
-
-  /* ---- Reuse existing engine if available ---- */
-  var engine=window.PPLocalAI && window.PPLocalAI.engine ? window.PPLocalAI.engine : null;
-
-  if(!engine){
-    fill.style.width='5%';
-    status.textContent=PPI18n.t('optimizer.loadstart','Initializing AI engine...');
-    try{
-      var webllm=await import('https://esm.run/@mlc-ai/web-llm');
-      fill.style.width='15%';
-      status.textContent=PPI18n.t('optimizer.downloading','Downloading Qwen2.5-1.5B model...');
-      engine=await webllm.CreateMLCEngine('Qwen2.5-1.5B-Instruct-q4f16_1-MLC',{
-        initProgressCallback:function(report){
-          var pct=Math.round(report.progress*100);
-          fill.style.width=Math.max(15,pct)+'%';
-          status.textContent=report.text||(pct+'%');
-        }
-      });
-      /* Save engine globally for reuse across the entire website */
-      window.PPLocalAI={engine:engine,ready:true,modelName:'Qwen2.5-1.5B-Instruct'};
-      /* Show global AI badge */
-      document.getElementById('globalAiBadge').classList.add('show');
-      /* Show online consultation button */
-      document.getElementById('consultFab').classList.add('show');
-      toast(PPI18n.t('optimizer.ailoaded','AI model loaded! You can now use it across the site.'),'info');
-    }catch(e){
-      console.error('AI Optimize error:',e);
-      toast(PPI18n.t('optimizer.aierror','AI optimization failed. Falling back to quick optimize.'),'info');
-      runQuickOptimizer();
-      progress.classList.remove('show');
-      btn.disabled=false;
-      return;
-    }
-  }else{
-    fill.style.width='95%';
-    status.textContent=PPI18n.t('optimizer.running','AI optimizing...');
-  }
-
-  try{
-    fill.style.width='95%';
-    status.textContent=PPI18n.t('optimizer.running','AI optimizing...');
-
-    /* ---- Search website for best matching keywords ---- */
-    var keywords=extractKeywords(input);
-    var prompts=getCurrentPrompts();
-    var scored=prompts.map(function(p){return{p:p,score:scorePrompt(p,keywords)};}).filter(function(x){return x.score>0;}).sort(function(a,b){return b.score-a.score;}).slice(0,3);
-
-    /* ---- Build keyword suggestions ---- */
-    var siteKeywords=[];
-    scored.forEach(function(s){
-      var words=s.p.title.toLowerCase().split(/\s+/).filter(function(w){return w.length>2 && !STOP_WORDS.has(w);});
-      words.forEach(function(w){if(siteKeywords.indexOf(w)<0 && keywords.indexOf(w)<0) siteKeywords.push(w);});
-    });
-    var allCatWords=[];
-    prompts.forEach(function(p){
-      var catWords=p.cat.toLowerCase().split(/[\s&]+/).filter(function(w){return w.length>2;});
-      catWords.forEach(function(w){if(allCatWords.indexOf(w)<0 && keywords.indexOf(w)<0 && siteKeywords.indexOf(w)<0) allCatWords.push(w);});
-    });
-    /* Find matching category words from input */
-    var matchedCatWords=allCatWords.filter(function(cw){
-      return keywords.some(function(kw){return kw.includes(cw)||cw.includes(kw);});
-    }).slice(0,5);
-    siteKeywords=siteKeywords.concat(matchedCatWords).slice(0,12);
-
-    var context='';
-    if(scored.length){
-      context=scored.map(function(s){return '- '+s.p.title+': '+(s.p.template||s.p.desc).substring(0,200);}).join('\n');
-    }
-    var messages=[
-      {role:'system',content:'You are a prompt optimization assistant. Given a user rough prompt and optional reference prompts, optimize the user prompt to be more specific, structured and effective. Add role assignment, clear task, format requirements and constraints. Also suggest 3-5 additional keywords the user could try. Output the optimized prompt first, then a line with "---KEYWORDS---" followed by the suggested keywords separated by commas.'},
-      {role:'user',content:context?'Original prompt: '+input+'\n\nReference prompts for inspiration:\n'+context+'\n\nOptimize the original prompt:':'Optimize this prompt: '+input}
-    ];
-    var reply=await engine.chat.completions.create({messages:messages,max_tokens:512,temperature:0.7});
-    var result=reply.choices[0]?.message?.content||'';
-    fill.style.width='100%';
-
-    /* Parse AI-generated keywords from response */
-    var aiKeywords=[];
-    var mainResult=result;
-    if(result.includes('---KEYWORDS---')){
-      var parts=result.split('---KEYWORDS---');
-      mainResult=parts[0].trim();
-      aiKeywords=parts[1].split(',').map(function(k){return k.trim().toLowerCase();}).filter(function(k){return k.length>1 && keywords.indexOf(k)<0;}).slice(0,5);
-    }
-
-    if(mainResult){
-      var outputEl=document.getElementById('optOutput');
-      var textEl=document.getElementById('optOutputText');
-      var metaEl=document.getElementById('optOutputMeta');
-      var explainEl=document.getElementById('optExplainBox');
-      textEl.textContent=mainResult;
-      /* Build explanation for AI optimize */
-      var intent=detectIntent(input);
-      var explainResult=buildOptimizedPrompt(input,intent,scored);
-      explainEl.innerHTML=explainResult.explain;
-      metaEl.innerHTML='<span>&#129504; Qwen2.5-1.5B (Local AI)</span><span>&#128270; '+PPI18n.t('optimizer.keywords','Keywords')+': '+keywords.slice(0,8).join(', ')+'</span>';
-      outputEl.classList.add('show');
-      /* Store for i18n refresh */
-      _lastOptData = { input:input, intent:intent, scored:scored, type:'ai', aiResult:mainResult };
-    }
-
-    /* ---- Show keyword suggestions ---- */
-    var kwEl=document.getElementById('optKeywords');
-    var kwList=document.getElementById('optKeywordsList');
-    var kwHtml='';
-    keywords.slice(0,6).forEach(function(kw){
-      kwHtml+='<span class="opt-kw-tag" data-kw="'+esc(kw)+'">'+esc(kw)+'</span>';
-    });
-    siteKeywords.slice(0,6).forEach(function(kw){
-      kwHtml+='<span class="opt-kw-tag from-site" data-kw="'+esc(kw)+'" title="From website library">&#128218; '+esc(kw)+'</span>';
-    });
-    aiKeywords.forEach(function(kw){
-      kwHtml+='<span class="opt-kw-tag ai-gen" data-kw="'+esc(kw)+'" title="AI-generated keyword">&#10024; '+esc(kw)+'</span>';
-    });
-    if(kwHtml){
-      kwList.innerHTML=kwHtml;
-      kwEl.classList.add('show');
-    }
-
-    _renderOptCards(scored,keywords);
-    document.getElementById('optOutput').scrollIntoView({behavior:'smooth',block:'nearest'});
-
-    /* ---- Open the refine chat automatically ---- */
-    var refineEl=document.getElementById('optRefine');
-    var refineMsgs=document.getElementById('optRefineMessages');
-    refineMsgs.innerHTML='';
-    var lang=(typeof PPI18n!=='undefined')?PPI18n.getLang():'en';
-    var refineGreeting=lang==='zh'?'我已优化了您的提示词。您可以告诉我需要调整什么，例如"更简洁"、"更专业"、"增加示例"等。我会继续帮您改进。':lang==='es'?'He optimizado tu prompt. Dime qué ajustes necesitas, como "más conciso", "más profesional", "agregar ejemplos", etc. Seguiré ayudándote a mejorarlo.':'I\'ve optimized your prompt. Tell me what to adjust — e.g. "make it shorter", "more professional", "add examples", etc. I\'ll keep refining until it\'s right for you.';
-    refineMsgs.innerHTML='<div class="opt-refine-msg ai">'+esc(refineGreeting)+'</div>';
-    refineEl.classList.add('show');
-
-  }catch(e){
-    console.error('AI Optimize error:',e);
-    toast(PPI18n.t('optimizer.aierror','AI optimization failed. Falling back to quick optimize.'),'info');
-    runQuickOptimizer();
-  }
-  progress.classList.remove('show');
-  btn.disabled=false;
-  btn.innerHTML=PPI18n.t('optimizer.aibtn','&#129504; AI Optimize');
-}
-
-if(!PROMPTS.length){
-  /* Data file may not have loaded yet — FAST LOAD: only first chunk, then async rest */
-  var _retryCount = 0;
-  var _retryMax = 2;
-  function _tryLoadData(){
-    var lang = (typeof PPI18n!=='undefined') ? PPI18n.getLang() : (window._ppInitLang||'en');
-    var files = lang==='zh'?Array.from({length:25},function(_,i){return 'prompts-data-zh-'+(i+1)+'.js';})
-               :lang==='es'?Array.from({length:30},function(_,i){return 'prompts-data-es-'+(i+1)+'.js';})
-               :Array.from({length:27},function(_,i){return 'prompts-data-'+(i+1)+'.js';});
-    /* Load only the first chunk to init quickly */
-    var s=document.createElement('script');
-    s.src=files[0];
-    s.onload=function(){
-      var p=getCurrentPrompts();
-      if(p.length){
-        init();
-        /* Async-load remaining chunks */
-        var rest=files.slice(1), ri=0;
-        function loadRest(){
-          if(ri>=rest.length) return;
-          var s2=document.createElement('script');
-          s2.src=rest[ri]; s2.async=true;
-          s2.onload=function(){ ri++; if(typeof invalidateCatCache==='function')invalidateCatCache(); if(typeof renderSidebar==='function')renderSidebar(); if(typeof renderGrid==='function')renderGrid(); setTimeout(loadRest,50); };
-          s2.onerror=function(){ ri++; setTimeout(loadRest,50); };
-          document.body.appendChild(s2);
-        }
-        loadRest();
-      } else if(_retryCount<_retryMax){
-        _retryCount++; setTimeout(_tryLoadData,1000);
-      } else if(lang!=='en'){
-        var s3=document.createElement('script'); s3.src='prompts-data-1.js';
-        s3.onload=function(){ if(getCurrentPrompts().length) init(); else document.getElementById('grid').innerHTML='<div class="empty">'+PPI18n.t('data.loaderror')+'</div>'; };
-        s3.onerror=function(){ document.getElementById('grid').innerHTML='<div class="empty">'+PPI18n.t('data.loaderror')+'</div>'; };
-        document.body.appendChild(s3);
-      } else {
-        document.getElementById('grid').innerHTML='<div class="empty">'+PPI18n.t('data.loaderror')+'</div>';
-      }
-    };
-    s.onerror=function(){
-      if(_retryCount<_retryMax){ _retryCount++; setTimeout(_tryLoadData,1000); }
-      else document.getElementById('grid').innerHTML='<div class="empty">'+PPI18n.t('data.loaderror')+'</div>';
-    };
-    document.body.appendChild(s);
-  }
-  _tryLoadData();
-} else {
-  init();
-}
-
-/* ============================================================
- *  Keyword Suggestions — click to search
- * ============================================================ */
-document.getElementById('optKeywordsList').addEventListener('click',function(e){
-  var tag=e.target.closest('[data-kw]');
-  if(!tag) return;
-  var kw=tag.dataset.kw;
-  if(kw){
-    document.getElementById('search').value=kw;
-    shown=PAGE; renderGrid();
-    document.getElementById('templates').scrollIntoView({behavior:'smooth'});
-  }
-});
-
-/* ============================================================
- *  Optimizer Refine Chat — interactive prompt refinement
- * ============================================================ */
-var _refineHistory=[];
-document.getElementById('optRefineSendBtn').addEventListener('click',function(){sendRefineMessage();});
-document.getElementById('optRefineInput').addEventListener('keydown',function(e){
-  if(e.key==='Enter'){e.preventDefault();sendRefineMessage();}
-});
-
-async function sendRefineMessage(){
-  var input=document.getElementById('optRefineInput').value.trim();
-  if(!input) return;
-  var msgs=document.getElementById('optRefineMessages');
-  var btn=document.getElementById('optRefineSendBtn');
-
-  /* Add user message */
-  msgs.innerHTML+='<div class="opt-refine-msg user">'+esc(input)+'</div>';
-  document.getElementById('optRefineInput').value='';
-  msgs.scrollTop=msgs.scrollHeight;
-
-  /* Check if AI engine is available */
-  var engine=window.PPLocalAI && window.PPLocalAI.engine ? window.PPLocalAI.engine : null;
-  if(!engine){
-    var fallbackMsg='AI model not loaded yet. Click "AI Optimize" first to load the model, or use Quick Optimize for rule-based refinement.';
-    msgs.innerHTML+='<div class="opt-refine-msg ai">'+esc(fallbackMsg)+'</div>';
-    msgs.scrollTop=msgs.scrollHeight;
-    return;
-  }
-
-  btn.disabled=true;
-  /* Show typing indicator */
-  var typingId='refine-typing-'+Date.now();
-  msgs.innerHTML+='<div class="opt-refine-msg ai" id="'+typingId+'"><span class="consult-typing"></span> <span class="consult-typing"></span> <span class="consult-typing"></span></div>';
-  msgs.scrollTop=msgs.scrollHeight;
-
-  try{
-    var currentPrompt=document.getElementById('optOutputText').textContent||'';
-    _refineHistory.push({role:'user',content:input});
-    var messages=[
-      {role:'system',content:'You are a prompt refinement assistant. The user has an optimized prompt and wants to adjust it. Help them refine it based on their feedback. Output ONLY the refined prompt text. Be concise and direct.'},
-      {role:'assistant',content:'Current optimized prompt:\n'+currentPrompt},
-    ].concat(_refineHistory.slice(-6));
-
-    var reply=await engine.chat.completions.create({messages:messages,max_tokens:512,temperature:0.7});
-    var result=reply.choices[0]?.message?.content||'';
-
-    /* Remove typing indicator */
-    var typingEl=document.getElementById(typingId);
-    if(typingEl) typingEl.remove();
-
-    if(result){
-      /* Update the optimized prompt */
-      document.getElementById('optOutputText').textContent=result;
-      _refineHistory.push({role:'assistant',content:result});
-      msgs.innerHTML+='<div class="opt-refine-msg ai">'+esc(result.substring(0,300))+(result.length>300?'...':'')+'</div>';
-    }else{
-      msgs.innerHTML+='<div class="opt-refine-msg ai">I couldn\'t generate a refinement. Please try rephrasing your request.</div>';
-    }
-  }catch(e){
-    console.error('Refine error:',e);
-    var typingEl2=document.getElementById(typingId);
-    if(typingEl2) typingEl2.remove();
-    msgs.innerHTML+='<div class="opt-refine-msg ai">An error occurred during refinement. Please try again.</div>';
-  }
-  btn.disabled=false;
-  msgs.scrollTop=msgs.scrollHeight;
-}
-
-/* ============================================================
- *  Online Consultation Chat — answer questions about the website
- * ============================================================ */
-var _consultHistory=[];
-document.getElementById('consultFab').addEventListener('click',function(){
-  var chat=document.getElementById('consultChat');
-  chat.classList.toggle('show');
-});
-document.getElementById('consultSendBtn').addEventListener('click',function(){sendConsultMessage();});
-document.getElementById('consultInput').addEventListener('keydown',function(e){
-  if(e.key==='Enter'){e.preventDefault();sendConsultMessage();}
-});
-
-/* PromptRunic website knowledge base for consultation */
-var PP_KNOWLEDGE=[
-  'PromptRunic is an AI prompt launchpad with 700,000+ prompt templates across 1,600+ categories in English, Chinese, and Spanish.',
-  'The site supports 3 languages: English, Chinese (中文), and Spanish (Español). Switch languages using the button in the top-right header.',
-  'There are 11 AI services you can send prompts to: ChatGPT, Claude, Copilot, Gemini, DeepSeek, Kimi, Z.ai GLM, Grok, Perplexity, Mistral, and Qwen.',
-  'Quick Optimize uses rule-based optimization: it detects your intent, finds matching prompts from the library, and builds an optimized prompt with role, method, format, and constraints.',
-  'AI Optimize downloads a local AI model (Qwen2.5-1.5B, ~1GB) that runs entirely in your browser. No data leaves your device. The model is cached after first download.',
-  'The Prompt Optimizer supports interactive refinement: after AI Optimize, you can chat with the AI to keep refining your prompt until it\'s perfect.',
-  'Categories include: AI Basics, Writing, Marketing, Sales, Career, Coding, Startup, Business, E-commerce, Social, Learning, Personal, Productivity, Research, Image, Support, HR, Finance, Real Estate, Education, Health, Parenting, Travel, and Legal.',
-  'Free prompts are available without any code. Pro membership unlocks all 700,000+ prompts. Plans start at $0.99 for 3 days, $7.99/month or $69 lifetime. Account required for Pro.',
-  'You can save favorite prompts by clicking the star icon. Favorites are saved in your browser or synced to your account.',
-  'The search box supports searching by prompt title, description, category, and even template content.',
-  'Each prompt has fill-in-the-blank variables. Fill them in, choose an answer style (Standard, In-depth, Quick, etc.), then copy or send to an AI.',
-  'There are 24+ answer style variants across 5 groups: Depth, Length, Format, Tone, and Perspective.',
-  'The "Send to AI" button in the optimizer shows a popup where you can choose which of the 11 AI services to send your optimized prompt to.',
-  'After AI Optimize loads the model, you can use the consultation chat (bottom-right 💬 button) to ask questions about PromptRunic.',
-  'The keyword suggestions panel shows: your input keywords, matching keywords from the website library (blue), and AI-generated suggestions (gold). Click any keyword to search for related prompts.',
-  'The site has a Privacy Policy and Terms of Service accessible from the footer.',
-  'PromptRunic is built by Zongyu Xie and is not affiliated with OpenAI, Anthropic, Microsoft, Google, or DeepSeek.'
-];
-
-async function sendConsultMessage(){
-  var input=document.getElementById('consultInput').value.trim();
-  if(!input) return;
-  var body=document.getElementById('consultBody');
-  var btn=document.getElementById('consultSendBtn');
-
-  body.innerHTML+='<div class="consult-msg user">'+esc(input)+'</div>';
-  document.getElementById('consultInput').value='';
-  body.scrollTop=body.scrollHeight;
-
-  var engine=window.PPLocalAI && window.PPLocalAI.engine ? window.PPLocalAI.engine : null;
-  if(!engine){
-    /* Fallback: keyword-based answers without AI model */
-    var lower=input.toLowerCase();
-    var answered=false;
-    PP_KNOWLEDGE.forEach(function(k){
-      var words=k.toLowerCase().split(/\s+/).filter(function(w){return w.length>3;});
-      var matches=words.filter(function(w){return lower.includes(w);}).length;
-      if(matches>=2 && !answered){
-        body.innerHTML+='<div class="consult-msg ai">'+esc(k)+'</div>';
-        answered=true;
-      }
-    });
-    if(!answered){
-      body.innerHTML+='<div class="consult-msg ai">I can help with questions about PromptRunic. Try asking about prompts, categories, AI services, optimization, or how to use the site.</div>';
-    }
-    body.scrollTop=body.scrollHeight;
-    return;
-  }
-
-  btn.disabled=true;
-  var typingId='consult-typing-'+Date.now();
-  body.innerHTML+='<div class="consult-msg ai" id="'+typingId+'"><span class="consult-typing"></span> <span class="consult-typing"></span> <span class="consult-typing"></span></div>';
-  body.scrollTop=body.scrollHeight;
-
-  try{
-    _consultHistory.push({role:'user',content:input});
-    var knowledgeContext=PP_KNOWLEDGE.slice(0,8).join('\n');
-    var messages=[
-      {role:'system',content:'You are a helpful assistant for the PromptRunic website. Answer questions about how to use the site based on this knowledge:\n\n'+knowledgeContext+'\n\nBe concise, friendly, and helpful. If you don\'t know the answer, suggest the user explore the site or try the optimizer.'},
-    ].concat(_consultHistory.slice(-6));
-
-    var reply=await engine.chat.completions.create({messages:messages,max_tokens:256,temperature:0.7});
-    var result=reply.choices[0]?.message?.content||'';
-
-    var typingEl=document.getElementById(typingId);
-    if(typingEl) typingEl.remove();
-
-    if(result){
-      _consultHistory.push({role:'assistant',content:result});
-      body.innerHTML+='<div class="consult-msg ai">'+esc(result)+'</div>';
-    }else{
-      body.innerHTML+='<div class="consult-msg ai">I couldn\'t process that. Please try again.</div>';
-    }
-  }catch(e){
-    console.error('Consult error:',e);
-    var typingEl2=document.getElementById(typingId);
-    if(typingEl2) typingEl2.remove();
-    body.innerHTML+='<div class="consult-msg ai">An error occurred. Please try again.</div>';
-  }
-  btn.disabled=false;
-  body.scrollTop=body.scrollHeight;
-}
-
-/* ============================================================
- *  Quick Optimize — also show keyword suggestions
- * ============================================================ */
-var _origRunQuickOptimizer = runQuickOptimizer;
-runQuickOptimizer = function(){
-  var input=document.getElementById('optInput').value.trim();
-  if(!input){toast(PPI18n.t('optimizer.empty','Please enter a prompt or description.'),'info');return;}
-  var btn=document.getElementById('optQuickBtn');
-  btn.disabled=true;_optSpinner();
-  btn.innerHTML='<span style="display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:pp-spin .6s linear infinite"></span> '+PPI18n.t('optimizer.searching','Optimizing...');
-  setTimeout(function(){
-    var keywords=extractKeywords(input);
-    var prompts=getCurrentPrompts();
-    var intent=detectIntent(input);
-    var allScored=prompts.map(function(p){return{p:p,score:scorePrompt(p,keywords)};}).filter(function(x){return x.score>0;}).sort(function(a,b){return b.score-a.score;});
-    var scored=selectDiverseResults(allScored, 6);
-    var result=buildOptimizedPrompt(input,intent,scored);
-    var outputEl=document.getElementById('optOutput');
-    var textEl=document.getElementById('optOutputText');
-    var metaEl=document.getElementById('optOutputMeta');
-    var explainEl=document.getElementById('optExplainBox');
-    textEl.textContent=result.optimized;
-    explainEl.innerHTML=result.explain;
-    var metaHtml='';
-    if(intent)metaHtml+='<span>&#128203; '+PPI18n.t('optimizer.intent','Intent')+': '+(PPI18n.current==='zh'?intent.roleZH:intent.roleEN)+'</span>';
-    metaHtml+='<span>&#128270; '+PPI18n.t('optimizer.keywords','Keywords')+': '+keywords.slice(0,8).join(', ')+'</span>';
-    if(scored.length)metaHtml+='<span>&#11088; '+PPI18n.t('optimizer.matched','Matched')+': '+scored.length+' '+PPI18n.t('optimizer.prompts','prompts')+'</span>';
-    metaEl.innerHTML=metaHtml;
-    outputEl.classList.add('show');
-
-    /* ---- Show keyword suggestions for Quick Optimize too ---- */
-    var siteKeywords=[];
-    scored.forEach(function(s){
-      var words=s.p.title.toLowerCase().split(/\s+/).filter(function(w){return w.length>2 && !STOP_WORDS.has(w);});
-      words.forEach(function(w){if(siteKeywords.indexOf(w)<0 && keywords.indexOf(w)<0) siteKeywords.push(w);});
-    });
-    siteKeywords=siteKeywords.slice(0,8);
-    var kwEl=document.getElementById('optKeywords');
-    var kwList=document.getElementById('optKeywordsList');
-    var kwHtml='';
-    keywords.slice(0,6).forEach(function(kw){
-      kwHtml+='<span class="opt-kw-tag" data-kw="'+esc(kw)+'">'+esc(kw)+'</span>';
-    });
-    siteKeywords.forEach(function(kw){
-      kwHtml+='<span class="opt-kw-tag from-site" data-kw="'+esc(kw)+'" title="From website library">&#128218; '+esc(kw)+'</span>';
-    });
-    if(kwHtml){kwList.innerHTML=kwHtml;kwEl.classList.add('show');}
-
-    /* Also show the "Send to AI" popup link */
-    _renderOptCards(scored,keywords);
-    /* Store for i18n refresh */
-    _lastOptData = { input:input, intent:intent, scored:scored, type:'quick' };
-    document.getElementById('optOutput').scrollIntoView({behavior:'smooth',block:'nearest'});
-    btn.disabled=false;
-    btn.innerHTML=PPI18n.t('optimizer.quickbtn','&#9889; Quick Optimize');
-  },80);
-};
-</script>
-<script>
-/* ============================================================
- *  PROMPT MATRIX — iframe game wrapper + scroll-hide header
- * ============================================================ */
-(function(){
-  /* ---- game overlay (iframe-based) ---- */
-  var loaded=false;
-  function ensureLoaded(){
-    var f=document.getElementById('gameFrame');
-    if(f && !loaded){ f.src='game-pm.html'; loaded=true; }
-  }
-  var _ppGameStart=0;
-  window.openGameOverlay=function(){
-    document.getElementById('game-overlay').classList.add('show');
-    document.body.style.overflow='hidden';
-    _ppGameStart=Date.now();
-    ensureLoaded();
-    /* Auto-fullscreen on mobile */
-    requestAnimationFrame(function(){
-      try{
-        var el=document.documentElement;
-        if(el.requestFullscreen) el.requestFullscreen().catch(function(){});
-        else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-        else if(el.msRequestFullscreen) el.msRequestFullscreen();
-        document.getElementById('game-overlay').classList.add('fullscreen-active');
-        /* Lock to landscape on mobile if supported */
-        if(screen.orientation && screen.orientation.lock){
-          screen.orientation.lock('landscape').catch(function(){});
-        }
-      }catch(e){}
-    });
-  };
-  window.closeGameOverlay=function(){
-    document.getElementById('game-overlay').classList.remove('show');
-    document.getElementById('game-overlay').classList.remove('fullscreen-active');
-    document.body.style.overflow='';
-    /* Exit fullscreen */
-    try{
-      if(document.fullscreenElement || document.webkitFullscreenElement){
-        if(document.exitFullscreen) document.exitFullscreen().catch(function(){});
-        else if(document.webkitExitFullscreen) document.webkitExitFullscreen();
-      }
-      if(screen.orientation && screen.orientation.unlock) screen.orientation.unlock();
-    }catch(e){}
-  };
-  /* receive victory from game.html: +100 coins + save high score */
-  window.addEventListener('message',function(e){
-    var d=e&&e.data; if(!d||d.type!=='pp_game_win') return;
-    try{ if(window.PPGame && PPGame.addCoins) PPGame.addCoins(100); }catch(_){}
-    var score=parseInt(d.score||0,10)||0;
-    try{
-      var prev=parseInt(localStorage.getItem('pp_game_best')||'0',10)||0;
-      if(score>prev) localStorage.setItem('pp_game_best',String(score));
-    }catch(_){}
-    try{ if(window.PPGame && PPGame.setGameScore) PPGame.setGameScore(score); }catch(_){}
-    /* compute elapsed clear time in whole seconds */
-    try{
-      var elapsed=_ppGameStart? Math.max(1, Math.round((Date.now()-_ppGameStart)/1000)) : 0;
-      if(elapsed && window.PPGame && PPGame.setGameTime) PPGame.setGameTime(elapsed);
-    }catch(_){}
-    try{ if(window.PPGame && PPGame.refresh) PPGame.refresh(); }catch(_){}
-    try{ if(typeof toast==='function') toast('🏆 PROMPT MATRIX cleared — +100 🪙 awarded!'); }catch(_){}
-  });
-
-  /* ---- header auto-hide: scroll up/swipe up -> show, the other way -> hide ---- */
-  var lastY=0, hdr=null, ticking=false, ts=0;
-  function getHdr(){ if(!hdr) hdr=document.querySelector('header'); return hdr; }
-  function showHdr(){ var h=getHdr(); if(h) h.classList.remove('pp-hide'); }
-  function hideHdr(){ var h=getHdr(); if(h) h.classList.add('pp-hide'); }
-  function onScroll(){
-    var y=window.pageYOffset||document.documentElement.scrollTop||0;
-    if(y<=10){ showHdr(); lastY=y; return; }
-    if(y>lastY+2){ hideHdr(); }
-    else if(y<lastY-2){ showHdr(); }
-    lastY=y;
-  }
-  window.addEventListener('scroll',function(){
-    if(ticking) return;
-    ticking=true;
-    requestAnimationFrame(function(){ onScroll(); ticking=false; });
-  },{passive:true});
-  /* touch fallback — agrees with the scroll listener so toolbar comes back
-     whenever the user is going *up* the page (finger swipes DOWN), and hides
-     when going *down* the page (finger swipes UP). Skip if touch is inside
-     a scrollable container (sidebar, modal, etc.). */
-  window.addEventListener('touchstart',function(e){
-    if(e.touches && e.touches.length) ts=e.touches[0].clientY;
-  },{passive:true});
-  window.addEventListener('touchmove',function(e){
-    if(!e.touches || !e.touches.length) return;
-    /* Skip if touch target is inside an internal scrollable container */
-    var target=e.target;
-    while(target && target!==document.body){
-      var style=window.getComputedStyle(target);
-      if(style.overflowY==='auto' || style.overflowY==='scroll') return;
-      target=target.parentElement;
-    }
-    var dy=e.touches[0].clientY-ts;
-    if(dy>20) showHdr();         /* finger swipes DOWN -> page goes up -> SHOW */
-    else if(dy<-20) hideHdr();   /* finger swipes UP   -> page goes down -> hide */
-  },{passive:true});
-  /* wheel events trigger on the smallest mouse-wheel nudge too — but only for
-     the main page scroll, not inside the sidebar/grid/modal/overlay containers */
-  window.addEventListener('wheel',function(e){
-    /* If the wheel event originates from an internal scrollable container, skip */
-    var target=e.target;
-    while(target && target!==document.body){
-      var style=window.getComputedStyle(target);
-      if(style.overflowY==='auto' || style.overflowY==='scroll'){
-        /* This is a scrollable container — let it handle its own scroll, don't toggle header */
-        return;
-      }
-      target=target.parentElement;
-    }
-    if(e.deltaY<-1) showHdr();
-    else if(e.deltaY>1){
-      var y=window.pageYOffset||document.documentElement.scrollTop||0;
-      if(y>40) hideHdr();
-    }
-  },{passive:true});
-
-  /* ---- AI carousel: auto-scroll while the cursor hovers a horizontal edge ---- */
-  function wireAutoScroll(){
-    var car=document.getElementById('aiCarousel');
-    if(!car) return;
-    var rafId=0, dir=0, speed=0;
-    function step(){
-      if(dir===0){ rafId=0; return; }
-      car.scrollLeft += dir*speed;
-      rafId=requestAnimationFrame(step);
-    }
-    function start(){ if(!rafId) rafId=requestAnimationFrame(step); }
-    car.addEventListener('mousemove',function(e){
-      var r=car.getBoundingClientRect();
-      var x=e.clientX-r.left, edge=Math.min(140, r.width*0.18);
-      if(x<edge){ dir=-1; speed=Math.max(2,Math.round((edge-x)/edge*9)); start(); }
-      else if(x>r.width-edge){ dir=1; speed=Math.max(2,Math.round((x-(r.width-edge))/edge*9)); start(); }
-      else { dir=0; }
-    });
-    car.addEventListener('mouseleave',function(){ dir=0; });
-  }
-  if(document.readyState!=='loading') wireAutoScroll();
-  else document.addEventListener('DOMContentLoaded', wireAutoScroll);
-})();
-</script>
-<script>
-/* ====== Scroll-triggered animations for Universe, Upsell, Footer ====== */
-(function(){
-  function initScrollAnimations(){
-    /* Universe section */
-    var uvEls = document.querySelectorAll('.uv-eyebrow, .uv-title, .uv-sub, .uv-cta');
-    if(uvEls.length){
-      var uvObs = new IntersectionObserver(function(entries){
-        entries.forEach(function(entry){
-          if(entry.isIntersecting){
-            entry.target.classList.add('uv-visible');
-            uvObs.unobserve(entry.target);
-          }
-        });
-      }, { threshold: 0.18, rootMargin: '0px 0px -40px 0px' });
-      uvEls.forEach(function(el){ uvObs.observe(el); });
-    }
-    /* Optimizer section — scroll-triggered entrance */
-    var optCard = document.querySelector('.optimizer-card');
-    if(optCard){
-      /* Only add animation class if browser supports IntersectionObserver */
-      optCard.classList.add('opt-animate');
-      var optObs = new IntersectionObserver(function(entries){
-        entries.forEach(function(entry){
-          if(entry.isIntersecting){
-            entry.target.classList.add('opt-visible');
-            optObs.unobserve(entry.target);
-          }
-        });
-      }, { threshold: 0.05, rootMargin: '0px 0px 0px 0px' });
-      optObs.observe(optCard);
-    }
-    /* Upsell section */
-    var upsell = document.querySelector('.upsell');
-    if(upsell){
-      var upsellObs = new IntersectionObserver(function(entries){
-        entries.forEach(function(entry){
-          if(entry.isIntersecting){
-            entry.target.classList.add('revealed');
-            upsellObs.unobserve(entry.target);
-          }
-        });
-      }, { threshold: 0.15, rootMargin: '0px 0px -30px 0px' });
-      upsellObs.observe(upsell);
-    }
-    /* Footer */
-    var ft = document.querySelector('footer');
-    if(ft){
-      var ftObs = new IntersectionObserver(function(entries){
-        entries.forEach(function(entry){
-          if(entry.isIntersecting){
-            entry.target.classList.add('revealed');
-            ftObs.unobserve(entry.target);
-          }
-        });
-      }, { threshold: 0.1, rootMargin: '0px 0px -20px 0px' });
-      ftObs.observe(ft);
-    }
-  }
-  if(document.readyState !== 'loading') initScrollAnimations();
-  else document.addEventListener('DOMContentLoaded', initScrollAnimations);
-})();
-</script>
-<script src="fun.js" defer></script>
-<script src="demo-data.js" defer></script>
-<script src="social.js" defer></script>
-<script src="lemonsqueezy.js" defer></script>
-
-<!-- ============================================================
-  FAST LOAD v2: ENGLISH FIRST strategy
-  - Phase 1: Remaining EN chunks (async, with progress bar)
-  - Phase 2: User's saved language first chunk (if ZH/ES) for quick switch
-  - Phase 3: Remaining ZH + ES chunks (idle, low priority)
-  ============================================================ -->
-<script>
-(function(){
-  var initLang = window._ppInitLang || 'en';
-  var enRemaining = window._ppEnRemaining || [];
-  var zhFiles = window._ppZhFiles || [];
-  var esFiles = window._ppEsFiles || [];
-
-  /* ---- Progress bar ---- */
-  var progressBar = document.createElement('div');
-  progressBar.id = 'ppLoadBar';
-  progressBar.style.cssText = 'position:fixed;top:0;left:0;height:3px;z-index:99999;background:linear-gradient(90deg,#7c5cff,#22d3ee);transition:width .3s ease;width:0;box-shadow:0 0 10px rgba(124,92,255,.5)';
-  document.documentElement.appendChild(progressBar);
-
-  var progressLabel = document.createElement('div');
-  progressLabel.id = 'ppLoadLabel';
-  progressLabel.style.cssText = 'position:fixed;top:6px;left:50%;transform:translateX(-50%);z-index:99999;font-size:11px;color:#9aa4b2;background:rgba(11,15,26,.85);padding:3px 12px;border-radius:8px;backdrop-filter:blur(8px);border:1px solid rgba(124,92,255,.15);transition:opacity .3s;pointer-events:none';
-  progressLabel.textContent = 'Loading EN prompts...';
-  document.documentElement.appendChild(progressLabel);
-
-  var enLoaded = window._ppEnLoaded || 1;
-  var enTotal = window._ppEnTotal || enRemaining.length + 1;
-
-  function updateEnProgress(){
-    var pct = Math.round((enLoaded / enTotal) * 100);
-    progressBar.style.width = pct + '%';
-    progressLabel.textContent = 'Loading EN prompts ' + enLoaded + '/' + enTotal + ' (' + pct + '%)';
-    if(enLoaded >= enTotal){
-      setTimeout(function(){
-        progressBar.style.opacity = '0';
-        progressLabel.style.opacity = '0';
-        setTimeout(function(){ progressBar.remove(); progressLabel.remove(); }, 500);
-      }, 600);
-    }
-  }
-  updateEnProgress();
-
-  function loadFilesAsync(files, idx, onChunk, onDone){
-    if(idx >= files.length){ if(onDone) onDone(); return; }
-    var s = document.createElement('script');
-    s.src = files[idx];
-    s.async = true;
-    s.onload = function(){
-      if(onChunk) onChunk(idx);
-      setTimeout(function(){ loadFilesAsync(files, idx+1, onChunk, onDone); }, 30);
-    };
-    s.onerror = function(){
-      if(onChunk) onChunk(idx);
-      setTimeout(function(){ loadFilesAsync(files, idx+1, onChunk, onDone); }, 30);
-    };
-    document.body.appendChild(s);
-  }
-
-  /* ---- Phase 1: Load remaining EN chunks ---- */
-  if(enRemaining.length){
-    loadFilesAsync(enRemaining, 0, function(){
-      enLoaded++;
-      updateEnProgress();
-      if(typeof invalidateCatCache === 'function') invalidateCatCache();
-      if(typeof renderSidebar === 'function') renderSidebar();
-      if(typeof renderGrid === 'function') renderGrid();
-    }, function(){
-      /* ---- Phase 2: Load user's saved language first chunk (if ZH/ES) ---- */
-      var userLangFiles = [];
-      if(initLang === 'zh' && zhFiles.length) userLangFiles = [zhFiles[0]];
-      else if(initLang === 'es' && esFiles.length) userLangFiles = [esFiles[0]];
-
-      function loadOtherLangs(){
-        /* ---- Phase 3: Load all ZH and ES in idle time ---- */
-        var when = window.requestIdleCallback || function(cb){ setTimeout(cb, 1500); };
-        when(function(){
-          var otherFiles = zhFiles.concat(esFiles);
-          /* Skip files already loaded */
-          var alreadyLoaded = (window.PROMPTS_DATA_ZH && window.PROMPTS_DATA_ZH.length) ? 1 : 0;
-          if(initLang === 'zh') alreadyLoaded = Math.min(alreadyLoaded + 1, zhFiles.length);
-          var esLoaded = (window.PROMPTS_DATA_ES && window.PROMPTS_DATA_ES.length) ? 1 : 0;
-          if(initLang === 'es') esLoaded = Math.min(esLoaded + 1, esFiles.length);
-          var skipCount = alreadyLoaded + esLoaded;
-          var toLoad = otherFiles.slice(skipCount > 0 ? skipCount - 1 : 0);
-          var idx3 = 0;
-          function loadNext(){
-            if(idx3 >= toLoad.length) return;
-            var s = document.createElement('script');
-            s.src = toLoad[idx3];
-            s.async = true;
-            s.onload = function(){ idx3++; setTimeout(loadNext, 80); };
-            s.onerror = function(){ idx3++; setTimeout(loadNext, 80); };
-            document.body.appendChild(s);
-          }
-          loadNext();
-        });
-      }
-
-      if(userLangFiles.length){
-        loadFilesAsync(userLangFiles, 0, function(){
-          /* Re-init for user's preferred language */
-          if(typeof init === 'function') init();
-        }, loadOtherLangs);
-      } else {
-        loadOtherLangs();
-      }
-    });
-  } else {
-    /* Only 1 EN chunk — already loaded */
-    progressBar.style.width = '100%';
-    setTimeout(function(){
-      progressBar.style.opacity = '0';
-      progressLabel.style.opacity = '0';
-      setTimeout(function(){ progressBar.remove(); progressLabel.remove(); }, 500);
-    }, 400);
-    /* Load other languages in idle */
-    var when3 = window.requestIdleCallback || function(cb){ setTimeout(cb, 1500); };
-    when3(function(){
-      var allOther = zhFiles.concat(esFiles);
-      allOther.forEach(function(f){
-        var s = document.createElement('script');
-        s.src = f;
-        s.async = true;
-        document.body.appendChild(s);
-      });
-    });
-  }
-})();
 </script>
 
-<!-- ============================================================
-  NEW FEATURES: Friends, Avatar Picker, Bio Sync, Deep Link,
-  Achievements in Community, Enhanced Firebase Sync
-  ============================================================ -->
 <script>
-(function(){
-'use strict';
-
 /* ============================================================
- *  DEEP LINK: #prompt=ID — open a specific prompt from share link
- *  If Pro prompt and user not logged in / not Pro, show notice
- * ============================================================ */
-function handleDeepLink(){
-  var hash=location.hash||'';
-  var m=hash.match(/prompt=(\d+)/);
-  if(!m) return;
-  var pid=parseInt(m[1],10);
-  if(isNaN(pid)) return;
-  /* Wait for data to be available */
-  function tryOpen(){
-    var prompts=getCurrentPrompts();
-    if(!prompts.length){ setTimeout(tryOpen,500); return; }
-    var p=prompts.find(function(x){return x.id===pid;});
-    if(!p){
-      /* Prompt may be in a different language data set, try EN */
-      if(typeof PROMPTS_DATA!=='undefined'){
-        p=PROMPTS_DATA.find(function(x){return x.id===pid;});
-      }
-    }
-    if(!p){ toast('Prompt not found'); return; }
-    if(!p.free && !isPro){
-      if(!currentUser){
-        toast(PPI18n.t('share.login.required','This is a Pro prompt. Please sign in to view it.'),'info');
-        setTimeout(function(){ openAuth(); },800);
-      }else{
-        toast(PPI18n.t('share.pro.required','This is a Pro prompt. Activate Pro to view it.'),'info');
-        setTimeout(function(){ openActivate(); },800);
-      }
-      return;
-    }
-    openPrompt(pid);
-    history.replaceState(null,'',location.pathname+location.search);
-  }
-  setTimeout(tryOpen,1500);
-}
-if(document.readyState!=='loading') handleDeepLink();
-else document.addEventListener('DOMContentLoaded',handleDeepLink);
-
-/* ============================================================
- *  ENHANCED FIREBASE SYNC: ensure bio, coins, level, avatar,
- *  Pro days, game credits all persist to cloud
- * ============================================================ */
-var _origCloudSavePro = cloudSavePro;
-cloudSavePro = function(){
-  if(!(fbReady && currentUser)) return;
-  var gameData = (window.PPGame && PPGame.exportState) ? PPGame.exportState() : {};
-  userDocRef().set({
-    pro:(proUntil()===0 && isPro),
-    proUntil:proUntil(),
-    trialUsed:!!lsGet('pp_trial_used'),
-    proCode:lsGet('pp_pro_code')||'',
-    bio:document.getElementById('setBio')?document.getElementById('setBio').value.trim():userBio,
-    game:gameData,
-    updatedAt:firebase.firestore.FieldValue.serverTimestamp()
-  },{merge:true}).catch(function(e){console.warn('save pro+game',e);});
-};
-
-/* Save bio + game state together */
-function cloudSaveBio(){
-  if(!(fbReady && currentUser)) return;
-  var bio=document.getElementById('setBio')?document.getElementById('setBio').value.trim():'';
-  var gameData=(window.PPGame && PPGame.exportState)?PPGame.exportState():{};
-  userDocRef().set({
-    bio:bio,
-    game:gameData,
-    updatedAt:firebase.firestore.FieldValue.serverTimestamp()
-  },{merge:true}).catch(function(e){console.warn('save bio',e);});
-}
-
-/* ============================================================
- *  AVATAR PICKER — click avatar badge to open picker
- * ============================================================ */
-function openAvatarPicker(){
-  var grid=document.getElementById('avatarGrid');
-  if(!grid) return;
-  var html='';
-  for(var i=0;i<200;i++){
-    var st=(window.PPGame && PPGame.avatarStatus)?PPGame.avatarStatus(i):{locked:i>=15};
-    var svg=(window.PPGame && PPGame.avatarSVG)?PPGame.avatarSVG(i):'';
-    var lockTag=st.locked?'<div style="position:absolute;top:0;right:0;font-size:8px;background:rgba(0,0,0,.6);padding:1px 3px;border-radius:3px">🔒</div>':'';
-    var equipped=(window.PPGame && PPGame.exportState && PPGame.exportState().avatar===i);
-    var border=equipped?'2px solid var(--accent2)':'2px solid transparent';
-    html+='<div data-ava="'+i+'" style="position:relative;width:48px;height:48px;border-radius:10px;overflow:hidden;border:'+border+';cursor:pointer;opacity:'+(st.locked?'0.5':'1')+'">'+svg+lockTag+'</div>';
-  }
-  grid.innerHTML=html;
-  grid.querySelectorAll('[data-ava]').forEach(function(el){
-    el.addEventListener('click',function(){
-      var idx=parseInt(this.getAttribute('data-ava'),10);
-      if(window.PPGame && PPGame.tapAvatar) PPGame.tapAvatar(idx);
-      openAvatarPicker();
-    });
-  });
-  document.getElementById('avatarOverlay').classList.add('show');
-}
-
-/* Wire avatar badge click */
-document.addEventListener('DOMContentLoaded',function(){
-  var badge=document.getElementById('planBadge');
-  if(badge){
-    badge.style.cursor='pointer';
-    badge.addEventListener('click',function(){
-      if(window.PPGame && PPGame.exportState){
-        openAvatarPicker();
-      }
-    });
-  }
-});
-
-/* ============================================================
- *  FRIENDS SYSTEM — Firestore + Realtime Database
+ *  FRIENDS SYSTEM — QQ-Style — Firestore + Realtime Database
  *  Search users, friend requests, online status, RTDB chat
+ *  Tab navigation: Chats / Contacts / Discover
  * ============================================================ */
 var _chatFriendUid=null;
 var _chatUnsubscribe=null;
@@ -6364,69 +4029,14 @@ async function loadConversations(){
   }
 }
 
-/* Show contact profile with "Send Message" button (Contacts tab) */
-function showContactProfile(uid,name,avatar){
-  var svg=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(avatar||0):'';
-  var rankInfo=(window.PPGame&&PPGame.rankOf)?PPGame.rankOf(1):{name:'Bronze',color:'#cd7f32'};
-  var overlay=document.getElementById('contactProfileOverlay');
-  if(!overlay){
-    overlay=document.createElement('div');
-    overlay.id='contactProfileOverlay';
-    overlay.className='overlay';
-    overlay.innerHTML='<div class="modal sm" style="max-width:360px"><button class="x" data-close>&times;</button><div id="contactProfileContent"></div></div>';
-    document.body.appendChild(overlay);
-    overlay.querySelector('[data-close]').addEventListener('click',function(){overlay.classList.remove('show');});
-    overlay.addEventListener('click',function(e){if(e.target===overlay)overlay.classList.remove('show');});
-  }
-  var content=document.getElementById('contactProfileContent');
-  content.innerHTML='<div style="text-align:center">'+
-    '<div style="width:64px;height:64px;border-radius:14px;overflow:hidden;border:1px solid var(--border);margin:0 auto 8px">'+svg+'</div>'+
-    '<div style="font-size:16px;font-weight:800">'+esc(name)+'</div>'+
-    '<button onclick="document.getElementById(\'contactProfileOverlay\').classList.remove(\'show\');openChatWith(\''+uid+'\',\''+esc(name).replace(/'/g,"\\'")+'\','+avatar+');switchFriendsTab(\'chats\')" style="margin-top:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:10px 24px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">💬 Send Message</button>'+
-  '</div>';
-  overlay.classList.add('show');
-  /* Also try to load more profile data from Firestore */
-  if(fbReady&&currentUser){
-    (async function(){
-      try{
-        var pubSnap=await db.collection('pp_public').doc(uid).get();
-        var pubData=pubSnap.exists?pubSnap.data():null;
-        var userSnap=await db.collection('users').doc(uid).get();
-        var userData=userSnap.exists?userSnap.data():null;
-        var bio=(userData&&userData.bio)||(pubData&&pubData.bio)||'';
-        var lvl=1,coins=0,best=0;
-        if(userData&&userData.game){lvl=userData.game.lvl||1;coins=userData.game.coins||0;best=userData.game.best||0;}
-        var av=avatar||0;
-        if(userData&&userData.game&&userData.game.avatar) av=userData.game.avatar;
-        var svg2=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(av):'';
-        var rk=(window.PPGame&&PPGame.rankOf)?PPGame.rankOf(lvl):{name:'Bronze',color:'#cd7f32'};
-        var ttl=(window.PPGame&&PPGame.levelTitle)?PPGame.levelTitle(lvl):'Newcomer';
-        var statsHtml='<div style="display:flex;gap:8px;justify-content:center;margin-top:10px">'+
-          '<div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:4px 10px;text-align:center"><div style="font-size:12px;font-weight:700">Lv '+lvl+'</div><div style="font-size:9px;color:var(--muted)">Level</div></div>'+
-          '<div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:4px 10px;text-align:center"><div style="font-size:12px;font-weight:700">🪙 '+coins+'</div><div style="font-size:9px;color:var(--muted)">Coins</div></div>'+
-          '<div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:4px 10px;text-align:center"><div style="font-size:12px;font-weight:700">🔥 '+best+'</div><div style="font-size:9px;color:var(--muted)">Streak</div></div>'+
-        '</div>';
-        content.innerHTML='<div style="text-align:center">'+
-          '<div style="width:64px;height:64px;border-radius:14px;overflow:hidden;border:1px solid var(--border);margin:0 auto 8px">'+svg2+'</div>'+
-          '<div style="font-size:16px;font-weight:800">'+esc(name)+'</div>'+
-          '<div style="font-size:11px;color:var(--muted)">'+esc(ttl)+' <span style="border:1px solid '+rk.color+';color:'+rk.color+';padding:1px 6px;border-radius:10px;font-size:10px">'+esc(rk.name)+'</span></div>'+
-          statsHtml+
-          (bio?'<div style="margin-top:8px;font-size:13px;color:var(--text);font-style:italic;padding:8px;border-top:1px solid var(--border)">"'+esc(bio)+'"</div>':'')+
-          '<button onclick="document.getElementById(\'contactProfileOverlay\').classList.remove(\'show\');openChatWith(\''+uid+'\',\''+esc(name).replace(/'/g,"\\'")+'\','+av+');switchFriendsTab(\'chats\')" style="margin-top:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:10px 24px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">💬 Send Message</button>'+
-        '</div>';
-      }catch(e){}
-    })();
-  }
-}
-
 function friendRow(f){
   var dot=f.online?'#22d3ee':'#555';
   var svg=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(f.avatar||0):'';
-  return '<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;border-radius:0;cursor:pointer;transition:background .15s;border-bottom:1px solid rgba(255,255,255,.03)" onmouseenter="this.style.background=\'rgba(124,92,255,.08)\'" onmouseleave="this.style.background=\'transparent\'" onclick="showContactProfile(\''+f.uid+'\',\''+esc(f.name).replace(/'/g,"\\'")+'\','+f.avatar+')">'+
+  return '<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;border-radius:0;cursor:pointer;transition:background .15s;border-bottom:1px solid rgba(255,255,255,.03)" onmouseenter="this.style.background=\'rgba(124,92,255,.08)\'" onmouseleave="this.style.background=\'transparent\'" onclick="openChatWith(\''+f.uid+'\',\''+esc(f.name).replace(/'/g,"\\'")+'\','+f.avatar+')">'+
     '<div style="width:36px;height:36px;border-radius:10px;overflow:hidden;border:1px solid var(--border);position:relative">'+svg+
     '<span style="position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;border-radius:50%;background:'+dot+';border:2px solid var(--panel)"></span></div>'+
     '<span style="font-size:13px;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500">'+esc(f.name)+'</span>'+
-    '<span style="font-size:10px;color:var(--muted)">👤</span>'+
+    '<span style="font-size:10px;color:var(--muted)">💬</span>'+
   '</div>';
 }
 
@@ -6441,33 +4051,13 @@ function loadFirestoreChat(chatId,fUid,fName,fAvatar){
     var html='';
     snap.forEach(function(doc){
       var m=doc.data();
-      var m=doc.data();
       var isMe=m.senderId===currentUser.uid;
-      var senderName=m.senderName||'';
       var align=isMe?'right':'left';
-      var bubbleBg=isMe?'linear-gradient(135deg,#7c5cff,#5b3fd4)':'rgba(255,255,255,.08)';
-      var bubbleColor=isMe?'#fff':'var(--text)';
-      var tail=isMe?'border-right:6px solid #7c5cff;right:-6px;border-radius:0 0 0 8px;':'border-left:6px solid rgba(255,255,255,.08);left:-6px;border-radius:0 0 8px 0;';
-      var avatarSvg='';
-      if(!isMe){
-        try{if(window.PPGame&&PPGame.avatarSVG){var a=document.getElementById('chatFriendAvatar');if(a)avatarSvg=a.innerHTML;}}catch(e){}
-      }else{
-        try{if(window.PPGame&&PPGame.avatarSVG){var myAv=PPGame.exportState().avatar||0;avatarSvg=PPGame.avatarSVG(myAv);}}catch(e){}
-      }
+      var bg=isMe?'rgba(124,92,255,.15)':'rgba(34,211,238,.08)';
       var ts=m.timestamp?new Date(m.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'';
-      var avatarHtml='<div style="width:28px;height:28px;border-radius:7px;overflow:hidden;flex-shrink:0;border:1px solid var(--border)">'+avatarSvg+'</div>';
-      var displayName=senderName||(isMe?(currentUser.displayName||currentUser.email.split('@')[0]):fName);
-      var nameHtml='<div style="font-size:10px;color:'+(isMe?'var(--accent)':'var(--accent2)')+';font-weight:600;margin-bottom:2px;text-align:'+align+'">'+esc(displayName)+'</div>';
-      html+='<div style="display:flex;gap:6px;align-items:flex-end;align-self:'+align+';max-width:82%;position:relative">'+
-        avatarHtml+
-        '<div style="position:relative">'+
-          nameHtml+
-          '<div style="padding:8px 12px;border-radius:12px;background:'+bubbleBg+';color:'+bubbleColor+';font-size:13px;line-height:1.4">'+
-            esc(m.text||'')+
-          '</div>'+
-          '<div style="position:absolute;bottom:0;'+tail+'width:0;height:10px"></div>'+
-          '<div style="font-size:9px;color:var(--muted);margin-top:2px;text-align:'+align+'">'+ts+'</div>'+
-        '</div>'+
+      html+='<div style="align-self:'+align+';max-width:80%;padding:8px 12px;border-radius:12px;background:'+bg+';font-size:13px">'+
+        '<div>'+esc(m.text||'')+'</div>'+
+        '<div style="font-size:9px;color:var(--muted);margin-top:3px">'+ts+'</div>'+
       '</div>';
     });
     var el=document.getElementById('chatMessages');
@@ -6510,33 +4100,14 @@ window.openChatWith=function(fUid,fName,fAvatar){
         var html='';
         snap.forEach(function(child){
           var m=child.val();
-                  var isMe=m.senderId===currentUser.uid;
-        var senderName=m.senderName||'';
-        var align=isMe?'right':'left';
-        var bubbleBg=isMe?'linear-gradient(135deg,#7c5cff,#5b3fd4)':'rgba(255,255,255,.08)';
-        var bubbleColor=isMe?'#fff':'var(--text)';
-        var tail=isMe?'border-right:6px solid #7c5cff;right:-6px;border-radius:0 0 0 8px;':'border-left:6px solid rgba(255,255,255,.08);left:-6px;border-radius:0 0 8px 0;';
-        var avatarSvg='';
-        if(!isMe){
-          try{if(window.PPGame&&PPGame.avatarSVG){var a=document.getElementById('chatFriendAvatar');if(a)avatarSvg=a.innerHTML;}}catch(e){}
-        }else{
-          try{if(window.PPGame&&PPGame.avatarSVG){var myAv=PPGame.exportState().avatar||0;avatarSvg=PPGame.avatarSVG(myAv);}}catch(e){}
-        }
-        var ts=m.timestamp?new Date(m.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'';
-        var avatarHtml='<div style="width:28px;height:28px;border-radius:7px;overflow:hidden;flex-shrink:0;border:1px solid var(--border)">'+avatarSvg+'</div>';
-        var displayName=senderName||(isMe?(currentUser.displayName||currentUser.email.split('@')[0]):fName);
-        var nameHtml='<div style="font-size:10px;color:'+(isMe?'var(--accent)':'var(--accent2)')+';font-weight:600;margin-bottom:2px;text-align:'+align+'">'+esc(displayName)+'</div>';
-        html+='<div style="display:flex;gap:6px;align-items:flex-end;align-self:'+align+';max-width:82%;position:relative">'+
-          avatarHtml+
-          '<div style="position:relative">'+
-            nameHtml+
-            '<div style="padding:8px 12px;border-radius:12px;background:'+bubbleBg+';color:'+bubbleColor+';font-size:13px;line-height:1.4">'+
-              esc(m.text||'')+
-            '</div>'+
-            '<div style="position:absolute;bottom:0;'+tail+'width:0;height:10px"></div>'+
-            '<div style="font-size:9px;color:var(--muted);margin-top:2px;text-align:'+align+'">'+ts+'</div>'+
-          '</div>'+
-        '</div>';
+          var isMe=m.senderId===currentUser.uid;
+          var align=isMe?'right':'left';
+          var bg=isMe?'rgba(124,92,255,.15)':'rgba(34,211,238,.08)';
+          var ts=m.timestamp?new Date(m.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'';
+          html+='<div style="align-self:'+align+';max-width:80%;padding:8px 12px;border-radius:12px;background:'+bg+';font-size:13px">'+
+            '<div>'+esc(m.text||'')+'</div>'+
+            '<div style="font-size:9px;color:var(--muted);margin-top:3px">'+ts+'</div>'+
+          '</div>';
         });
         var el=document.getElementById('chatMessages');
         el.innerHTML=html||'<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">'+PPI18n.t('friends.no.messages')+'</div>';
@@ -6579,8 +4150,7 @@ window.sendChatMessage=async function(){
   if(rtdb){
     try{
       var msgRef=rtdb.ref('chat_rooms/'+chatId+'/messages').push();
-      var myName=currentUser.displayName||currentUser.email.split('@')[0];
-      await msgRef.set({senderId:currentUser.uid,senderName:myName,text:text,timestamp:ts});
+      await msgRef.set({senderId:currentUser.uid,text:text,timestamp:ts});
       /* Update chat room info */
       await rtdb.ref('chat_rooms/'+chatId+'/info').set({
         participants:[currentUser.uid,_chatFriendUid],
@@ -6589,6 +4159,7 @@ window.sendChatMessage=async function(){
         lastMessageSender:currentUser.uid
       });
       /* Update my conversation index */
+      var myName=currentUser.displayName||currentUser.email.split('@')[0];
       await rtdb.ref('user_conversations/'+currentUser.uid+'/'+chatId).set({
         friendId:_chatFriendUid,
         friendName:document.getElementById('chatFriendName').textContent,
@@ -6613,14 +4184,13 @@ window.sendChatMessage=async function(){
   /* Firestore fallback for sending messages */
   if(!db){toast('Chat unavailable','info');return;}
   try{
-    var myName=currentUser.displayName||currentUser.email.split('@')[0];
     await db.collection('chat_messages').doc(chatId).collection('messages').add({
       senderId:currentUser.uid,
-      senderName:myName,
       text:text,
       timestamp:ts
     });
     /* Also update conversation indexes in Firestore so loadConversations can find them */
+    var myName=currentUser.displayName||currentUser.email.split('@')[0];
     await db.collection('chat_conversations').doc(currentUser.uid).collection('list').doc(chatId).set({
       friendId:_chatFriendUid,
       friendName:document.getElementById('chatFriendName').textContent,
@@ -6729,249 +4299,471 @@ document.getElementById('friendsBtn').addEventListener('click',function(e){
   e.stopPropagation();
   toggleFriendsPanel();
 });
-document.getElementById('friendsPanelClose').addEventListener('click',function(){
-  var p=document.getElementById('friendsPanel');
-  if(p){p.style.display='none';}
-  closeChatWindow();
-  if(_friendsListUnsubscribe){try{_friendsListUnsubscribe();}catch(e){}_friendsListUnsubscribe=null;}
-  if(_friendReqUnsubscribe){try{_friendReqUnsubscribe();}catch(e){}_friendReqUnsubscribe=null;}
-  if(_convUnsubscribe){try{_convUnsubscribe();}catch(e){}_convUnsubscribe=null;}
-});
-document.getElementById('chatWindowClose').addEventListener('click',function(){
-  closeChatWindow();
-});
-
-/* Make chat window draggable by header */
+<script>
+/* ============================================================
+ *  PROMPT MATRIX — iframe game wrapper + scroll-hide header
+ * ============================================================ */
 (function(){
-  var cw=document.getElementById('chatWindow');
-  var hdr=document.getElementById('chatWindowHeader');
-  if(!cw||!hdr)return;
-  var dragging=false,ox=0,oy=0;
-  hdr.addEventListener('mousedown',function(e){
-    if(e.target.tagName==='BUTTON')return;
-    dragging=true;
-    var rect=cw.getBoundingClientRect();
-    ox=e.clientX-rect.left;
-    oy=e.clientY-rect.top;
-    e.preventDefault();
-  });
-  document.addEventListener('mousemove',function(e){
-    if(!dragging)return;
-    var x=e.clientX-ox;
-    var y=e.clientY-oy;
-    cw.style.left=x+'px';
-    cw.style.top=y+'px';
-    cw.style.right='auto';
-    cw.style.bottom='auto';
-  });
-  document.addEventListener('mouseup',function(){dragging=false;});
-})();
-
-/* Update friends button visibility */
-function updateFriendsBtn(){
-  var btn=document.getElementById('friendsBtn');
-  if(btn){
-    btn.style.display='inline-flex';
+  /* ---- game overlay (iframe-based) ---- */
+  var loaded=false;
+  function ensureLoaded(){
+    var f=document.getElementById('gameFrame');
+    if(f && !loaded){ f.src='game-pm.html'; loaded=true; }
   }
+  var _ppGameStart=0;
+  window.openGameOverlay=function(){
+    document.getElementById('game-overlay').classList.add('show');
+    document.body.style.overflow='hidden';
+    _ppGameStart=Date.now();
+    ensureLoaded();
+    /* Auto-fullscreen on mobile */
+    requestAnimationFrame(function(){
+      try{
+        var el=document.documentElement;
+        if(el.requestFullscreen) el.requestFullscreen().catch(function(){});
+        else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+        else if(el.msRequestFullscreen) el.msRequestFullscreen();
+        document.getElementById('game-overlay').classList.add('fullscreen-active');
+        /* Lock to landscape on mobile if supported */
+        if(screen.orientation && screen.orientation.lock){
+          screen.orientation.lock('landscape').catch(function(){});
+        }
+      }catch(e){}
+    });
+  };
+  window.closeGameOverlay=function(){
+    document.getElementById('game-overlay').classList.remove('show');
+    document.getElementById('game-overlay').classList.remove('fullscreen-active');
+    document.body.style.overflow='';
+    /* Exit fullscreen */
+    try{
+      if(document.fullscreenElement || document.webkitFullscreenElement){
+        if(document.exitFullscreen) document.exitFullscreen().catch(function(){});
+        else if(document.webkitExitFullscreen) document.webkitExitFullscreen();
+      }
+      if(screen.orientation && screen.orientation.unlock) screen.orientation.unlock();
+    }catch(e){}
+  };
+  /* receive victory from game.html: +100 coins + save high score */
+  window.addEventListener('message',function(e){
+    var d=e&&e.data; if(!d||d.type!=='pp_game_win') return;
+    try{ if(window.PPGame && PPGame.addCoins) PPGame.addCoins(100); }catch(_){}
+    var score=parseInt(d.score||0,10)||0;
+    try{
+      var prev=parseInt(localStorage.getItem('pp_game_best')||'0',10)||0;
+      if(score>prev) localStorage.setItem('pp_game_best',String(score));
+    }catch(_){}
+    try{ if(window.PPGame && PPGame.setGameScore) PPGame.setGameScore(score); }catch(_){}
+    /* compute elapsed clear time in whole seconds */
+    try{
+      var elapsed=_ppGameStart? Math.max(1, Math.round((Date.now()-_ppGameStart)/1000)) : 0;
+      if(elapsed && window.PPGame && PPGame.setGameTime) PPGame.setGameTime(elapsed);
+    }catch(_){}
+    try{ if(window.PPGame && PPGame.refresh) PPGame.refresh(); }catch(_){}
+    try{ if(typeof toast==='function') toast('🏆 PROMPT MATRIX cleared — +100 🪙 awarded!'); }catch(_){}
+  });
+
+  /* ---- header auto-hide: scroll up/swipe up -> show, the other way -> hide ---- */
+  var lastY=0, hdr=null, ticking=false, ts=0;
+  function getHdr(){ if(!hdr) hdr=document.querySelector('header'); return hdr; }
+  function showHdr(){ var h=getHdr(); if(h) h.classList.remove('pp-hide'); }
+  function hideHdr(){ var h=getHdr(); if(h) h.classList.add('pp-hide'); }
+  function onScroll(){
+    var y=window.pageYOffset||document.documentElement.scrollTop||0;
+    if(y<=10){ showHdr(); lastY=y; return; }
+    if(y>lastY+2){ hideHdr(); }
+    else if(y<lastY-2){ showHdr(); }
+    lastY=y;
+  }
+  window.addEventListener('scroll',function(){
+    if(ticking) return;
+    ticking=true;
+    requestAnimationFrame(function(){ onScroll(); ticking=false; });
+  },{passive:true});
+  /* touch fallback — agrees with the scroll listener so toolbar comes back
+     whenever the user is going *up* the page (finger swipes DOWN), and hides
+     when going *down* the page (finger swipes UP). Skip if touch is inside
+     a scrollable container (sidebar, modal, etc.). */
+  window.addEventListener('touchstart',function(e){
+    if(e.touches && e.touches.length) ts=e.touches[0].clientY;
+  },{passive:true});
+  window.addEventListener('touchmove',function(e){
+    if(!e.touches || !e.touches.length) return;
+    /* Skip if touch target is inside an internal scrollable container */
+    var target=e.target;
+    while(target && target!==document.body){
+      var style=window.getComputedStyle(target);
+      if(style.overflowY==='auto' || style.overflowY==='scroll') return;
+      target=target.parentElement;
+    }
+    var dy=e.touches[0].clientY-ts;
+    if(dy>20) showHdr();         /* finger swipes DOWN -> page goes up -> SHOW */
+    else if(dy<-20) hideHdr();   /* finger swipes UP   -> page goes down -> hide */
+  },{passive:true});
+  /* wheel events trigger on the smallest mouse-wheel nudge too — but only for
+     the main page scroll, not inside the sidebar/grid/modal/overlay containers */
+  window.addEventListener('wheel',function(e){
+    /* If the wheel event originates from an internal scrollable container, skip */
+    var target=e.target;
+    while(target && target!==document.body){
+      var style=window.getComputedStyle(target);
+      if(style.overflowY==='auto' || style.overflowY==='scroll'){
+        /* This is a scrollable container — let it handle its own scroll, don't toggle header */
+        return;
+      }
+      target=target.parentElement;
+    }
+    if(e.deltaY<-1) showHdr();
+    else if(e.deltaY>1){
+      var y=window.pageYOffset||document.documentElement.scrollTop||0;
+      if(y>40) hideHdr();
+    }
+  },{passive:true});
+
+  /* ---- AI carousel: auto-scroll while the cursor hovers a horizontal edge ---- */
+  function wireAutoScroll(){
+    var car=document.getElementById('aiCarousel');
+    if(!car) return;
+    var rafId=0, dir=0, speed=0;
+    function step(){
+      if(dir===0){ rafId=0; return; }
+      car.scrollLeft += dir*speed;
+      rafId=requestAnimationFrame(step);
+    }
+    function start(){ if(!rafId) rafId=requestAnimationFrame(step); }
+    car.addEventListener('mousemove',function(e){
+      var r=car.getBoundingClientRect();
+      var x=e.clientX-r.left, edge=Math.min(140, r.width*0.18);
+      if(x<edge){ dir=-1; speed=Math.max(2,Math.round((edge-x)/edge*9)); start(); }
+      else if(x>r.width-edge){ dir=1; speed=Math.max(2,Math.round((x-(r.width-edge))/edge*9)); start(); }
+      else { dir=0; }
+    });
+    car.addEventListener('mouseleave',function(){ dir=0; });
+  }
+  if(document.readyState!=='loading') wireAutoScroll();
+  else document.addEventListener('DOMContentLoaded', wireAutoScroll);
+})();
+</script>
+<script>
+/* ====== Scroll-triggered animations for Universe, Upsell, Footer ====== */
+(function(){
+  function initScrollAnimations(){
+    /* Universe section */
+    var uvEls = document.querySelectorAll('.uv-eyebrow, .uv-title, .uv-sub, .uv-cta');
+    if(uvEls.length){
+      var uvObs = new IntersectionObserver(function(entries){
+        entries.forEach(function(entry){
+          if(entry.isIntersecting){
+            entry.target.classList.add('uv-visible');
+            uvObs.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.18, rootMargin: '0px 0px -40px 0px' });
+      uvEls.forEach(function(el){ uvObs.observe(el); });
+    }
+    /* Optimizer section — scroll-triggered entrance */
+    var optCard = document.querySelector('.optimizer-card');
+    if(optCard){
+      /* Only add animation class if browser supports IntersectionObserver */
+      optCard.classList.add('opt-animate');
+      var optObs = new IntersectionObserver(function(entries){
+        entries.forEach(function(entry){
+          if(entry.isIntersecting){
+            entry.target.classList.add('opt-visible');
+            optObs.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.05, rootMargin: '0px 0px 0px 0px' });
+      optObs.observe(optCard);
+    }
+    /* Upsell section */
+    var upsell = document.querySelector('.upsell');
+    if(upsell){
+      var upsellObs = new IntersectionObserver(function(entries){
+        entries.forEach(function(entry){
+          if(entry.isIntersecting){
+            entry.target.classList.add('revealed');
+            upsellObs.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.15, rootMargin: '0px 0px -30px 0px' });
+      upsellObs.observe(upsell);
+    }
+    /* Footer */
+    var ft = document.querySelector('footer');
+    if(ft){
+      var ftObs = new IntersectionObserver(function(entries){
+        entries.forEach(function(entry){
+          if(entry.isIntersecting){
+            entry.target.classList.add('revealed');
+            ftObs.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1, rootMargin: '0px 0px -20px 0px' });
+      ftObs.observe(ft);
+    }
+  }
+  if(document.readyState !== 'loading') initScrollAnimations();
+  else document.addEventListener('DOMContentLoaded', initScrollAnimations);
+})();
+</script>
+<script src="fun.js" defer></script>
+<script src="demo-data.js" defer></script>
+<script src="social.js" defer></script>
+<script src="lemonsqueezy.js" defer></script>
+
+<!-- ============================================================
+  FAST LOAD v2: ENGLISH FIRST strategy
+  - Phase 1: Remaining EN chunks (async, with progress bar)
+  - Phase 2: User's saved language first chunk (if ZH/ES) for quick switch
+  - Phase 3: Remaining ZH + ES chunks (idle, low priority)
+  ============================================================ -->
+<script>
+(function(){
+  var initLang = window._ppInitLang || 'en';
+  var enRemaining = window._ppEnRemaining || [];
+  var zhFiles = window._ppZhFiles || [];
+  var esFiles = window._ppEsFiles || [];
+
+  /* ---- Progress bar ---- */
+  var progressBar = document.createElement('div');
+  progressBar.id = 'ppLoadBar';
+  progressBar.style.cssText = 'position:fixed;top:0;left:0;height:3px;z-index:99999;background:linear-gradient(90deg,#7c5cff,#22d3ee);transition:width .3s ease;width:0;box-shadow:0 0 10px rgba(124,92,255,.5)';
+  document.documentElement.appendChild(progressBar);
+
+  var progressLabel = document.createElement('div');
+  progressLabel.id = 'ppLoadLabel';
+  progressLabel.style.cssText = 'position:fixed;top:6px;left:50%;transform:translateX(-50%);z-index:99999;font-size:11px;color:#9aa4b2;background:rgba(11,15,26,.85);padding:3px 12px;border-radius:8px;backdrop-filter:blur(8px);border:1px solid rgba(124,92,255,.15);transition:opacity .3s;pointer-events:none';
+  progressLabel.textContent = 'Loading EN prompts...';
+  document.documentElement.appendChild(progressLabel);
+
+  var enLoaded = window._ppEnLoaded || 1;
+  var enTotal = window._ppEnTotal || enRemaining.length + 1;
+
+  function updateEnProgress(){
+    var pct = Math.round((enLoaded / enTotal) * 100);
+    progressBar.style.width = pct + '%';
+    progressLabel.textContent = 'Loading EN prompts ' + enLoaded + '/' + enTotal + ' (' + pct + '%)';
+    if(enLoaded >= enTotal){
+      setTimeout(function(){
+        progressBar.style.opacity = '0';
+        progressLabel.style.opacity = '0';
+        setTimeout(function(){ progressBar.remove(); progressLabel.remove(); }, 500);
+      }, 600);
+    }
+  }
+  updateEnProgress();
+
+  function loadFilesAsync(files, idx, onChunk, onDone){
+    if(idx >= files.length){ if(onDone) onDone(); return; }
+    var s = document.createElement('script');
+    s.src = files[idx];
+    s.async = true;
+    s.onload = function(){
+      if(onChunk) onChunk(idx);
+      setTimeout(function(){ loadFilesAsync(files, idx+1, onChunk, onDone); }, 30);
+    };
+    s.onerror = function(){
+      if(onChunk) onChunk(idx);
+      setTimeout(function(){ loadFilesAsync(files, idx+1, onChunk, onDone); }, 30);
+    };
+    document.body.appendChild(s);
+  }
+
+  /* ---- Phase 1: Load remaining EN chunks ---- */
+  if(enRemaining.length){
+    loadFilesAsync(enRemaining, 0, function(){
+      enLoaded++;
+      updateEnProgress();
+      if(typeof invalidateCatCache === 'function') invalidateCatCache();
+      if(typeof renderSidebar === 'function') renderSidebar();
+      if(typeof renderGrid === 'function') renderGrid();
+    }, function(){
+      /* ---- Phase 2: Load user's saved language first chunk (if ZH/ES) ---- */
+      var userLangFiles = [];
+      if(initLang === 'zh' && zhFiles.length) userLangFiles = [zhFiles[0]];
+      else if(initLang === 'es' && esFiles.length) userLangFiles = [esFiles[0]];
+
+      function loadOtherLangs(){
+        /* ---- Phase 3: Load all ZH and ES in idle time ---- */
+        var when = window.requestIdleCallback || function(cb){ setTimeout(cb, 1500); };
+        when(function(){
+          var otherFiles = zhFiles.concat(esFiles);
+          /* Skip files already loaded */
+          var alreadyLoaded = (window.PROMPTS_DATA_ZH && window.PROMPTS_DATA_ZH.length) ? 1 : 0;
+          if(initLang === 'zh') alreadyLoaded = Math.min(alreadyLoaded + 1, zhFiles.length);
+          var esLoaded = (window.PROMPTS_DATA_ES && window.PROMPTS_DATA_ES.length) ? 1 : 0;
+          if(initLang === 'es') esLoaded = Math.min(esLoaded + 1, esFiles.length);
+          var skipCount = alreadyLoaded + esLoaded;
+          var toLoad = otherFiles.slice(skipCount > 0 ? skipCount - 1 : 0);
+          var idx3 = 0;
+          function loadNext(){
+            if(idx3 >= toLoad.length) return;
+            var s = document.createElement('script');
+            s.src = toLoad[idx3];
+            s.async = true;
+            s.onload = function(){ idx3++; setTimeout(loadNext, 80); };
+            s.onerror = function(){ idx3++; setTimeout(loadNext, 80); };
+            document.body.appendChild(s);
+          }
+          loadNext();
+        });
+      }
+
+      if(userLangFiles.length){
+        loadFilesAsync(userLangFiles, 0, function(){
+          /* Re-init for user's preferred language */
+          if(typeof init === 'function') init();
+        }, loadOtherLangs);
+      } else {
+        loadOtherLangs();
+      }
+    });
+  } else {
+    /* Only 1 EN chunk — already loaded */
+    progressBar.style.width = '100%';
+    setTimeout(function(){
+      progressBar.style.opacity = '0';
+      progressLabel.style.opacity = '0';
+      setTimeout(function(){ progressBar.remove(); progressLabel.remove(); }, 500);
+    }, 400);
+    /* Load other languages in idle */
+    var when3 = window.requestIdleCallback || function(cb){ setTimeout(cb, 1500); };
+    when3(function(){
+      var allOther = zhFiles.concat(esFiles);
+      allOther.forEach(function(f){
+        var s = document.createElement('script');
+        s.src = f;
+        s.async = true;
+        document.body.appendChild(s);
+      });
+    });
+  }
+})();
+</script>
+
+<!-- ============================================================
+  NEW FEATURES: Friends, Avatar Picker, Bio Sync, Deep Link,
+  Achievements in Community, Enhanced Firebase Sync
+  ============================================================ -->
+<script>
+(function(){
+'use strict';
+
+/* ============================================================
+ *  DEEP LINK: #prompt=ID — open a specific prompt from share link
+ *  If Pro prompt and user not logged in / not Pro, show notice
+ * ============================================================ */
+function handleDeepLink(){
+  var hash=location.hash||'';
+  var m=hash.match(/prompt=(\d+)/);
+  if(!m) return;
+  var pid=parseInt(m[1],10);
+  if(isNaN(pid)) return;
+  /* Wait for data to be available */
+  function tryOpen(){
+    var prompts=getCurrentPrompts();
+    if(!prompts.length){ setTimeout(tryOpen,500); return; }
+    var p=prompts.find(function(x){return x.id===pid;});
+    if(!p){
+      /* Prompt may be in a different language data set, try EN */
+      if(typeof PROMPTS_DATA!=='undefined'){
+        p=PROMPTS_DATA.find(function(x){return x.id===pid;});
+      }
+    }
+    if(!p){ toast('Prompt not found'); return; }
+    if(!p.free && !isPro){
+      if(!currentUser){
+        toast(PPI18n.t('share.login.required','This is a Pro prompt. Please sign in to view it.'),'info');
+        setTimeout(function(){ openAuth(); },800);
+      }else{
+        toast(PPI18n.t('share.pro.required','This is a Pro prompt. Activate Pro to view it.'),'info');
+        setTimeout(function(){ openActivate(); },800);
+      }
+      return;
+    }
+    openPrompt(pid);
+    history.replaceState(null,'',location.pathname+location.search);
+  }
+  setTimeout(tryOpen,1500);
+}
+if(document.readyState!=='loading') handleDeepLink();
+else document.addEventListener('DOMContentLoaded',handleDeepLink);
+
+/* ============================================================
+ *  ENHANCED FIREBASE SYNC: ensure bio, coins, level, avatar,
+ *  Pro days, game credits all persist to cloud
+ * ============================================================ */
+var _origCloudSavePro = cloudSavePro;
+cloudSavePro = function(){
+  if(!(fbReady && currentUser)) return;
+  var gameData = (window.PPGame && PPGame.exportState) ? PPGame.exportState() : {};
+  userDocRef().set({
+    pro:(proUntil()===0 && isPro),
+    proUntil:proUntil(),
+    trialUsed:!!lsGet('pp_trial_used'),
+    proCode:lsGet('pp_pro_code')||'',
+    bio:document.getElementById('setBio')?document.getElementById('setBio').value.trim():userBio,
+    game:gameData,
+    updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+  },{merge:true}).catch(function(e){console.warn('save pro+game',e);});
+};
+
+/* Save bio + game state together */
+function cloudSaveBio(){
+  if(!(fbReady && currentUser)) return;
+  var bio=document.getElementById('setBio')?document.getElementById('setBio').value.trim():'';
+  var gameData=(window.PPGame && PPGame.exportState)?PPGame.exportState():{};
+  userDocRef().set({
+    bio:bio,
+    game:gameData,
+    updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+  },{merge:true}).catch(function(e){console.warn('save bio',e);});
 }
 
 /* ============================================================
- *  COMMUNITY PANEL — Leaderboards + My Badges
+ *  AVATAR PICKER — click avatar badge to open picker
  * ============================================================ */
-function openCommunityPanel(){
-  var overlay=document.getElementById('communityOverlay');
-  if(!overlay) return;
-  overlay.classList.add('show');
-  loadCommunityTab('level');
-}
-function loadCommunityTab(tab){
-  /* Highlight active tab */
-  document.querySelectorAll('#communityOverlay .com-tab').forEach(function(t){
-    if(t.getAttribute('data-com-tab')===tab){
-      t.style.color='var(--accent2)';
-      t.style.background='rgba(124,92,255,.12)';
-    }else{
-      t.style.color='var(--muted)';
-      t.style.background='none';
-    }
+function openAvatarPicker(){
+  var grid=document.getElementById('avatarGrid');
+  if(!grid) return;
+  var html='';
+  for(var i=0;i<200;i++){
+    var st=(window.PPGame && PPGame.avatarStatus)?PPGame.avatarStatus(i):{locked:i>=15};
+    var svg=(window.PPGame && PPGame.avatarSVG)?PPGame.avatarSVG(i):'';
+    var lockTag=st.locked?'<div style="position:absolute;top:0;right:0;font-size:8px;background:rgba(0,0,0,.6);padding:1px 3px;border-radius:3px">🔒</div>':'';
+    var equipped=(window.PPGame && PPGame.exportState && PPGame.exportState().avatar===i);
+    var border=equipped?'2px solid var(--accent2)':'2px solid transparent';
+    html+='<div data-ava="'+i+'" style="position:relative;width:48px;height:48px;border-radius:10px;overflow:hidden;border:'+border+';cursor:pointer;opacity:'+(st.locked?'0.5':'1')+'">'+svg+lockTag+'</div>';
+  }
+  grid.innerHTML=html;
+  grid.querySelectorAll('[data-ava]').forEach(function(el){
+    el.addEventListener('click',function(){
+      var idx=parseInt(this.getAttribute('data-ava'),10);
+      if(window.PPGame && PPGame.tapAvatar) PPGame.tapAvatar(idx);
+      openAvatarPicker();
+    });
   });
-  var content=document.getElementById('communityContent');
-  if(!content) return;
-
-  if(tab==='mybadges'){
-    loadMyBadges(content);
-    return;
-  }
-
-  if(tab==='moods'){
-    loadMoodWall(content);
-    return;
-  }
-
-  if(!fbReady||!db){
-    content.innerHTML='<div style="color:var(--muted);text-align:center;padding:30px">'+PPI18n.t('community.offline','{what}: Community')+'</div>';
-    return;
-  }
-
-  content.innerHTML='<div style="color:var(--muted);text-align:center;padding:30px">'+PPI18n.t('community.loading','Loading leaderboard…')+'</div>';
-
-  /* Show only the current user's own stats (not a public leaderboard) */
-  if(!currentUser || !window.PPGame || !PPGame.exportState){
-    content.innerHTML='<div style="color:var(--muted);text-align:center;padding:30px">Sign in to see your ranking.</div>';
-    return;
-  }
-  var g=PPGame.exportState();
-  var myLvl=g.lvl||1;
-  var myXp=g.xp||0;
-  var myCoins=g.coins||0;
-  var myAch=(g.ach||[]).length;
-  var totalAch=(window._ACH||window.ACH||[]).length;
-  var myAvatar=g.avatar||0;
-  var myName=currentUser.displayName||(currentUser.email?currentUser.email.split('@')[0]:'Player');
-  var avatarSVG=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(myAvatar):'';
-  var rk=(window.PPGame&&PPGame.rankOf)?PPGame.rankOf(myLvl):{name:'Bronze',color:'#cd7f32'};
-  var ttl=(window.PPGame&&PPGame.levelTitle)?PPGame.levelTitle(myLvl):'Newcomer';
-  var val='';
-  if(tab==='level') val='Lv.'+myLvl+' · '+myXp+' XP';
-  else if(tab==='badges') val=myAch+' '+PPI18n.t('community.achievements');
-  else if(tab==='coins') val='🪙 '+myCoins;
-  var html='<div style="font-size:12px;font-weight:700;color:var(--accent2);margin-bottom:10px">';
-  if(tab==='level') html+=PPI18n.t('community.top50.level');
-  else if(tab==='badges') html+=PPI18n.t('community.top50.badges');
-  else if(tab==='coins') html+=PPI18n.t('community.top50.coins');
-  html+='</div>';
-  html+='<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;background:rgba(124,92,255,.1);cursor:default">';
-  html+='<div style="width:28px;text-align:center;font-weight:700;font-size:13px;color:var(--gold)">★</div>';
-  html+='<div style="width:40px;height:40px;border-radius:10px;overflow:hidden;flex-shrink:0">'+avatarSVG+'</div>';
-  html+='<div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(myName)+' <span style="font-size:10px;color:var(--accent2)">'+PPI18n.t('community.you')+'</span></div>';
-  html+='<div style="font-size:11px;color:var(--muted)">'+esc(ttl)+' <span style="border:1px solid '+rk.color+';color:'+rk.color+';padding:1px 6px;border-radius:10px;font-size:10px">'+esc(rk.name)+'</span></div></div>';
-  html+='<div style="font-size:13px;color:var(--text);white-space:nowrap;font-weight:600">'+val+'</div>';
-  html+='</div>';
-  html+='<div style="font-size:11px;color:var(--muted);text-align:center;margin-top:16px">Keep using PromptRunic to level up and earn coins!</div>';
-  content.innerHTML=html;
+  document.getElementById('avatarOverlay').classList.add('show');
 }
 
-function loadMyBadges(content){
-  if(!window.PPGame||!PPGame.exportState){
-    content.innerHTML='<div style="color:var(--muted);text-align:center;padding:30px">Game system not loaded yet.</div>';
-    return;
-  }
-  var game=PPGame.exportState();
-  var achList=game.ach||[];
-  var ACH=window._ACH||window.ACH||[];
-
-  var html='<div style="font-size:13px;color:var(--accent2);margin-bottom:10px;font-weight:700">🎖️ '+achList.length+'/'+ACH.length+' Badges Unlocked</div>';
-
-  if(ACH.length>0){
-    html+='<div style="display:flex;flex-wrap:wrap;gap:6px">';
-    ACH.forEach(function(a){
-      var unlocked=achList.indexOf(a.id)>=0;
-      var nm=getCommunityAchName(a);
-      var ds=getCommunityAchDesc(a);
-      if(unlocked){
-        html+='<div style="display:flex;align-items:center;gap:6px;background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.25);padding:6px 10px;border-radius:8px;font-size:12px">';
-        html+='<span style="font-size:16px">'+a.ic+'</span>';
-        html+='<div><div style="font-weight:700">'+esc(nm)+'</div><div style="font-size:10px;color:var(--muted)">'+esc(ds)+'</div></div>';
-        html+='</div>';
-      }else{
-        html+='<div style="display:flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid var(--border);padding:6px 10px;border-radius:8px;font-size:12px;opacity:.5">';
-        html+='<span style="font-size:16px;filter:grayscale(1)">'+a.ic+'</span>';
-        html+='<div><div style="font-weight:700">'+esc(nm)+'</div><div style="font-size:10px;color:var(--muted)">'+esc(ds)+'</div></div>';
-        html+='</div>';
+/* Wire avatar badge click */
+document.addEventListener('DOMContentLoaded',function(){
+  var badge=document.getElementById('planBadge');
+  if(badge){
+    badge.style.cursor='pointer';
+    badge.addEventListener('click',function(){
+      if(window.PPGame && PPGame.exportState){
+        openAvatarPicker();
       }
     });
-    html+='</div>';
-  }else{
-    html+='<div style="color:var(--muted);text-align:center;padding:20px">No badges available yet.</div>';
-  }
-
-  content.innerHTML=html;
-}
-
-function getCommunityAchName(a){
-  var lang=(window.PPI18n&&PPI18n.lang)||'en';
-  if(lang==='zh'&&a.nmZh) return a.nmZh;
-  return a.nm||'Badge';
-}
-function getCommunityAchDesc(a){
-  var lang=(window.PPI18n&&PPI18n.lang)||'en';
-  if(lang==='zh'&&a.dsZh) return a.dsZh;
-  return a.ds||'';
-}
-
-/* ---- Mood Wall: show emojis users left on prompts ---- */
-function loadMoodWall(content){
-  content.innerHTML='<div style="color:var(--muted);text-align:center;padding:30px">'+PPI18n.t('community.loading','Loading…')+'</div>';
-  /* Read moods from pp_public collection — each doc may have a moods sub-object */
-  if(!fbReady||!db){
-    content.innerHTML='<div style="color:var(--muted);text-align:center;padding:30px">Sign in to see the Mood Wall.</div>';
-    return;
-  }
-  /* We collect mood entries from all pp_public docs that have a .moods field */
-  db.collection('pp_public').limit(100).get().then(function(snap){
-    var entries=[];
-    snap.forEach(function(doc){
-      var d=doc.data();
-      if(!d.moods||typeof d.moods!=='object') return;
-      var name=d.name||'User';
-      var avatar=d.avatar||0;
-      Object.keys(d.moods).forEach(function(promptId){
-        var emoji=d.moods[promptId];
-        if(!emoji) return;
-        entries.push({uid:doc.id,name:name,avatar:avatar,promptId:promptId,emoji:emoji});
-      });
-    });
-    if(!entries.length){
-      content.innerHTML='<div style="color:var(--muted);text-align:center;padding:30px">No moods yet. Be the first to set a mood on a prompt!</div>';
-      return;
-    }
-    /* Resolve prompt titles */
-    var prompts=getCurrentPrompts();
-    var pMap={};
-    prompts.forEach(function(p){ pMap[p.id]=p; });
-    var html='<div style="font-size:12px;font-weight:700;color:var(--accent2);margin-bottom:10px">😊 Recent Moods on Prompts</div>';
-    html+='<div style="display:flex;flex-direction:column;gap:6px">';
-    entries.slice(0,60).forEach(function(e){
-      var p=pMap[e.promptId];
-      var title=p?p.title:'Prompt #'+e.promptId;
-      var svg=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(e.avatar):'';
-      html+='<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;transition:background .15s" onmouseenter="this.style.background=\'rgba(255,255,255,.05)\'" onmouseleave="this.style.background=\'transparent\'" onclick="hideOverlays();openPrompt('+e.promptId+')">';
-      html+='<div style="width:28px;height:28px;border-radius:7px;overflow:hidden;flex-shrink:0">'+svg+'</div>';
-      html+='<div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(e.name)+'</div>';
-      html+='<div style="font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(title)+'</div></div>';
-      html+='<span style="font-size:20px;flex-shrink:0">'+e.emoji+'</span>';
-      html+='</div>';
-    });
-    html+='</div>';
-    content.innerHTML=html;
-  }).catch(function(e){
-    console.warn('mood wall',e);
-    content.innerHTML='<div style="color:var(--muted);text-align:center;padding:30px">Could not load mood wall.</div>';
-  });
-}
-
-/* Wire community tab clicks */
-document.querySelectorAll('#communityOverlay .com-tab').forEach(function(t){
-  t.addEventListener('click',function(){
-    loadCommunityTab(this.getAttribute('data-com-tab'));
-  });
-});
-document.querySelector('#communityOverlay [data-close]').addEventListener('click',function(){
-  document.getElementById('communityOverlay').classList.remove('show');
-  /* Also close any searchUserProfile or otherAvatarOverlay that might still be visible */
-  var sup=document.getElementById('searchUserProfile'); if(sup) sup.classList.remove('show');
-  var oao=document.getElementById('otherAvatarOverlay'); if(oao) oao.classList.remove('show');
-  var oach=document.getElementById('otherAchOverlay'); if(oach) oach.classList.remove('show');
-});
-document.getElementById('communityOverlay').addEventListener('click',function(e){
-  if(e.target===this){
-    this.classList.remove('show');
-    var sup=document.getElementById('searchUserProfile'); if(sup) sup.classList.remove('show');
-    var oao=document.getElementById('otherAvatarOverlay'); if(oao) oao.classList.remove('show');
-    var oach=document.getElementById('otherAchOverlay'); if(oach) oach.classList.remove('show');
   }
 });
 
+/* ============================================================
+</script>
+
+<script>
 /* ============================================================
  *  COMMUNITY ENHANCEMENTS: avatar viewer
  *  (Bio display + achievements button handled in social.js showUser)
@@ -7107,16 +4899,32 @@ function openOtherUserAchievements(uid,name,achN){
     list.innerHTML='<div style="color:var(--muted);text-align:center;padding:20px">Error loading achievements</div>';
   });
 }
+</script>
 
-/* ============================================================
- *  INIT: show friends button, sync data on auth change
- * ============================================================ */
+<script>
+/* ---- Missing event listeners (auth, account, sign-out, community) ---- */
+document.getElementById('authBtn').addEventListener('click',function(){
+  if(currentUser) openAccount(); else openAuth();
+});
+document.getElementById('accountBtn').addEventListener('click',function(e){
+  e.stopPropagation();
+  if(currentUser) openAccount(); else openAuth();
+});
+document.getElementById('coinBtn').addEventListener('click',function(e){
+  e.stopPropagation();
+  if(window.PPGame && PPGame.openProfile) PPGame.openProfile();
+  else if(window.PPGame && PPGame.openPanel) PPGame.openPanel();
+});
+document.getElementById('signOutBtn').addEventListener('click',function(){
+  doSignOut();
+});
+document.getElementById('communityBtn').addEventListener('click',function(){ openCommunityPanel(); });
+
+/* ---- openAccountSettings function ---- */
 window.openAccountSettings = function(){
   if(!currentUser) return;
-  // Close profile panel if open
   var profPanel=document.getElementById('ppProfile');
   if(profPanel) profPanel.classList.remove('show');
-  // Populate account overlay fields
   var methodNames={'password':PPI18n.t('method.password','Password'),'google.com':PPI18n.t('method.google.com','Google'),'facebook.com':'Facebook','github.com':PPI18n.t('method.github.com','GitHub')};
   var pm=(currentUser.providerData&&currentUser.providerData[0]&&currentUser.providerData[0].providerId)||'password';
   var accEmail=document.getElementById('accEmail');
@@ -7139,7 +4947,77 @@ window.openAccountSettings = function(){
   if(accMsg) accMsg.className='msg';
   document.getElementById('accountOverlay').classList.add('show');
 };
+window.openAuth = openAuth;
 
+/* ---- Community Panel ---- */
+function openCommunityPanel(){
+  var overlay=document.getElementById('communityOverlay');
+  if(!overlay) return;
+  overlay.classList.add('show');
+  loadCommunityTab('level');
+}
+function loadCommunityTab(tab){
+  var content=document.getElementById('communityContent');
+  if(!content) return;
+  // Update tab styles
+  document.querySelectorAll('.com-tab').forEach(function(t){
+    t.classList.remove('active');
+    t.style.color='var(--muted)';
+    t.style.background='none';
+  });
+  var activeTab=document.querySelector('.com-tab[data-com-tab="'+tab+'"]');
+  if(activeTab){
+    activeTab.classList.add('active');
+    activeTab.style.color='var(--accent2)';
+    activeTab.style.background='rgba(124,92,255,.1)';
+  }
+  if(tab==='level'||tab==='badges'||tab==='coins'){
+    if(!currentUser){ content.innerHTML='<p style="color:var(--muted);text-align:center;padding:30px">Sign in to see leaderboards</p>'; return; }
+    var gameData=(window.PPGame&&PPGame.exportState)?PPGame.exportState():{};
+    var html='<div style="text-align:center;padding:20px">';
+    if(tab==='level') html+='<div style="font-size:48px;margin-bottom:10px">🏆</div><h3 style="margin:0">Your Level: '+(gameData.lvl||1)+'</h3><p style="color:var(--muted)">'+(gameData.xp||0)+' XP</p>';
+    else if(tab==='badges') html+='<div style="font-size:48px;margin-bottom:10px">🏅</div><h3 style="margin:0">Your Badges: '+(gameData.ach||[]).length+'</h3>';
+    else if(tab==='coins') html+='<div style="font-size:48px;margin-bottom:10px">🪙</div><h3 style="margin:0">Your Coins: '+(gameData.coins||0)+'</h3>';
+    html+='</div>';
+    content.innerHTML=html;
+  } else if(tab==='mybadges'){
+    loadMyBadges(content);
+  } else if(tab==='moods'){
+    loadMoodWall(content);
+  }
+}
+function loadMyBadges(content){
+  if(!window._ACH){ content.innerHTML='<p style="color:var(--muted);text-align:center;padding:30px">Achievements not loaded yet</p>'; return; }
+  var gameData=(window.PPGame&&PPGame.exportState)?PPGame.exportState():{};
+  var unlocked=gameData.ach||[];
+  var html='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;padding:10px">';
+  _ACH.forEach(function(a){
+    var isUnlocked=unlocked.indexOf(a.id)>=0;
+    html+='<div style="background:'+(isUnlocked?'rgba(124,92,255,.1)':'var(--panel2)')+';border:1px solid '+(isUnlocked?'var(--accent2)':'var(--border)')+';border-radius:8px;padding:10px;text-align:center;opacity:'+(isUnlocked?'1':'.5')+'">';
+    html+='<div style="font-size:20px">'+a.ic+'</div>';
+    html+='<div style="font-size:11px;font-weight:700;margin-top:4px">'+getCommunityAchName(a)+'</div>';
+    html+='<div style="font-size:10px;color:var(--muted)">'+getCommunityAchDesc(a)+'</div>';
+    html+='</div>';
+  });
+  html+='</div>';
+  content.innerHTML=html;
+}
+function getCommunityAchName(a){ return (typeof PPI18n!=='undefined'&&PPI18n.lang==='zh')?(a.nmZh||a.nm):a.nm; }
+function getCommunityAchDesc(a){ return (typeof PPI18n!=='undefined'&&PPI18n.lang==='zh')?(a.dsZh||a.ds):a.ds; }
+
+/* Community tab click wiring */
+document.querySelectorAll('.com-tab').forEach(function(tab){
+  tab.addEventListener('click',function(){ loadCommunityTab(this.getAttribute('data-com-tab')); });
+});
+/* Community overlay close */
+var comOverlay=document.getElementById('communityOverlay');
+if(comOverlay){
+  comOverlay.querySelector('[data-close]').addEventListener('click',function(){ comOverlay.classList.remove('show'); });
+  comOverlay.addEventListener('click',function(e){ if(e.target===comOverlay) comOverlay.classList.remove('show'); });
+}
+</script>
+
+<script>
 var _origHandleAuthChange=handleAuthChange;
 handleAuthChange=async function(user){
   await _origHandleAuthChange(user);
@@ -7149,6 +5027,8 @@ handleAuthChange=async function(user){
     cloudSaveBio();
     setOnlineStatus();
     listenForConversations();
+    /* Sync public profile so other users can find this user by name/email */
+    if(typeof syncPublicProfile === 'function') syncPublicProfile();
   }
 };
 
@@ -7157,9 +5037,61 @@ var _origSaveAccount=saveAccountSettings;
 saveAccountSettings=async function(){
   await _origSaveAccount();
   cloudSaveBio();
+  syncPublicProfile();
 };
 
-})();
-</script>
+/* ---- Sync public profile to pp_public collection ----
+ * The pp_public collection is used for friend search. It stores a
+ * lightweight, publicly-readable document for each user with their
+ * displayName, email, avatar, level, and online status.
+ * This MUST be called whenever the user's profile changes. */
+function syncPublicProfile(){
+  if(!fbReady || !currentUser || !db) return;
+  var gameData = (window.PPGame && PPGame.exportState) ? PPGame.exportState() : {};
+  var displayName = currentUser.displayName || (currentUser.email ? currentUser.email.split('@')[0] : 'User');
+  var email = currentUser.email || '';
+  var avatar = gameData.avatar || 0;
+  var lvl = gameData.lvl || 1;
+  var bio = document.getElementById('setBio') ? document.getElementById('setBio').value.trim() : userBio;
+  var achCount = (gameData.ach || []).length;
+  var coins = gameData.coins || 0;
+  var xp = gameData.xp || 0;
+  var moods = {};
+  try{ moods = JSON.parse(localStorage.getItem('pp_moods')||'{}'); }catch(e){}
+  db.collection('pp_public').doc(currentUser.uid).set({
+    name: displayName,
+    email: email,
+    avatar: avatar,
+    lvl: lvl,
+    xp: xp,
+    achCount: achCount,
+    coins: coins,
+    bio: bio || '',
+    moods: moods,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  },{merge:true}).catch(function(e){
+    console.warn('syncPublicProfile', e);
+  });
+}
+
+/* ---- Expose friend/chat functions to global scope ----
+ * These functions are called from onclick handlers in HTML generated
+ * by the friends panel. They MUST be on window for the onclick to work. */
+window.searchUsers = searchUsers;
+window.sendFriendRequestTo = sendFriendRequestTo;
+window.acceptFriendRequest = acceptFriendRequest;
+window.declineFriendRequest = declineFriendRequest;
+window.viewSearchUser = viewSearchUser;
+window.switchFriendsTab = switchFriendsTab;
+window.toggleFriendsPanel = toggleFriendsPanel;
+window.openChatWith = openChatWith;
+window.closeChatWindow = closeChatWindow;
+window.sendChatMessage = sendChatMessage;
+window.loadSuggestedUsers = loadSuggestedUsers;
+window.loadFriendsList = loadFriendsList;
+window.loadFriendRequests = loadFriendRequests;
+window.loadConversations = loadConversations;
+window.loadMoodWall = loadMoodWall;
+window.syncPublicProfile = syncPublicProfile;
 </body>
 </html>

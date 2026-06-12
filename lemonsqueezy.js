@@ -77,15 +77,6 @@ var PLAN_DURATION_DAYS = {
   1073472: 0      /* Lifetime — 0 means permanent */
 };
 
-/* Coin pack product IDs — these products grant coins when activated.
- * The number of coins is determined by the product ID. */
-var COIN_PRODUCT_IDS = {
-  /* Coin Pack S — 1200 coins */
-  /* The product ID for coin packs needs to be filled from Lemon Squeezy dashboard.
-   * For now, we match by checking: if a valid license key's product_id is NOT in
-   * PRO_PRODUCT_IDS, it's treated as a coin pack. */
-};
-
 var COIN_VARIANTS = {
   /* replace with real variant IDs from your Lemon Squeezy dashboard */
 };
@@ -112,11 +103,7 @@ function configured(){ return !!BUY_PRO; }
  *   { ok:false, error:'network' }      (could not reach server)
  */
 function validateLicense(key){
-  /* Use the "activate" endpoint which also increments the activation count.
-   * This is needed because LemonSqueezy license keys have a limited number
-   * of activations. Using just "validate" may fail after the first activation. */
-  var ACTIVATE_URL = 'https://api.lemonsqueezy.com/v1/licenses/activate';
-  return fetch(ACTIVATE_URL, {
+  return fetch(VALIDATE_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
@@ -126,77 +113,22 @@ function validateLicense(key){
   })
   .then(function(r){ return r.json(); })
   .then(function(d){
-    if(!d || d.activated !== true) {
-      /* Check if activation limit was reached — the key is valid but maxed out.
-       * In this case, the license IS valid, it just can't be activated on more devices. */
-      if(d && d.error === 'activation_limit_reached'){
-        /* Key is valid but hit activation limit — still treat as valid since the user purchased it */
-        var meta = d.meta || {};
-        var licenseKey = d.license_key || {};
-        var productId = licenseKey.product_id || meta.product_id || 0;
-        var status = licenseKey.status || '';
-        if(status === 'expired' || status === 'disabled') return { ok:false };
-        /* Determine what this key unlocks */
-        if(PRO_PRODUCT_IDS.length && PRO_PRODUCT_IDS.indexOf(productId) >= 0){
-          var days = PLAN_DURATION_DAYS[productId];
-          if(typeof days === 'undefined') days = 0;
-          return { ok:true, kind:'pro', days: days };
-        }
-        var coins = COIN_VARIANTS[meta.variant_id];
-        if(coins) return { ok:true, kind:'coins', coins:coins };
-        /* If not Pro, treat as coins with default amount */
-        return { ok:true, kind:'coins', coins:1200 };
-      }
-      /* Try validate as fallback */
-      return fetch(VALIDATE_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Accept': 'application/json'
-        },
-        body: 'license_key=' + encodeURIComponent(key)
-      }).then(function(r2){ return r2.json(); }).then(function(d2){
-        if(!d2 || d2.valid !== true) return { ok:false, error: d2 && d2.error || 'invalid' };
-        var meta2 = d2.meta || {};
-        var status2 = d2.license_key && d2.license_key.status || d2.status || '';
-        if(status2 === 'expired' || status2 === 'inactive' || status2 === 'disabled') return { ok:false };
-        var productId2 = (d2.license_key && d2.license_key.product_id) || meta2.product_id || 0;
-        if(PRO_PRODUCT_IDS.length && PRO_PRODUCT_IDS.indexOf(productId2) >= 0){
-          var days2 = PLAN_DURATION_DAYS[productId2];
-          if(typeof days2 === 'undefined') days2 = 0;
-          return { ok:true, kind:'pro', days: days2 };
-        }
-        var coins2 = COIN_VARIANTS[meta2.variant_id];
-        if(coins2) return { ok:true, kind:'coins', coins:coins2 };
-        return { ok:true, kind:'coins', coins:1200 };
-      });
-    }
+    if(!d || d.valid !== true) return { ok:false };
     var meta = d.meta || {};
     var status = d.license_key && d.license_key.status || d.status || '';
     /* Reject expired / inactive licenses */
     if(status === 'expired' || status === 'inactive' || status === 'disabled') return { ok:false };
-    /* coin pack? — first check variant ID, then product ID mapping */
+    /* coin pack? */
     var coins = COIN_VARIANTS[meta.variant_id];
     if(coins) return { ok:true, kind:'coins', coins:coins };
-    /* Pro? — check against known Pro product IDs */
+    /* Pro? — any membership product ID counts */
     if(PRO_PRODUCT_IDS.length){
       if(PRO_PRODUCT_IDS.indexOf(meta.product_id) >= 0){
         var days = PLAN_DURATION_DAYS[meta.product_id];
         if(typeof days === 'undefined') days = 0;
         return { ok:true, kind:'pro', days: days };
       }
-      /* Valid license but NOT a Pro product — treat as coin pack.
-       * Default coin amounts by product ID pattern or 1200 as fallback. */
-      var defaultCoins = 1200;
-      /* Try to determine coins from the product — check if there's a store_products mapping */
-      var coinProductMap = {
-        /* Add your coin pack product IDs here from Lemon Squeezy dashboard.
-         * Key = product_id, Value = number of coins */
-      };
-      if(coinProductMap[meta.product_id]){
-        defaultCoins = coinProductMap[meta.product_id];
-      }
-      return { ok:true, kind:'coins', coins:defaultCoins };
+      return { ok:true, kind:'unknown' };
     }
     /* PRO_PRODUCT_IDS not set — treat any valid non-coin key as Pro */
     return { ok:true, kind:'pro', days: 0 };

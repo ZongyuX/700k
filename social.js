@@ -313,7 +313,7 @@ function paintBoard(kind){
     rows.forEach(function(r,i){
       var n=i+1, l=r.lvl||1;
       var medal = n===1?'🥇':n===2?'🥈':n===3?'🥉':n;
-      var val = kind==='coin' ? ('🪙 '+(r.coins||0)) : kind==='game' ? ('🎮 '+(r.gameScore||0)) : kind==='time' ? ('⏱️ '+fmtTime(r.gameTime) + (r.gameDiff ? ' (' + ['Easy','Normal','Hard','Very Hard','Hell','Impossible'][Math.min(r.gameDiff,5)] + ')' : '')) : ('Lv '+l);
+      var val = kind==='coin' ? ('🪙 '+(r.coins||0)) : kind==='game' ? ('🎮 '+(r.gameScore||0)) : kind==='time' ? ('⏱️ '+fmtTime(r.gameTime)) : ('Lv '+l);
       h += '<div class="sc-row'+(r._uid===mine?' me':'')+'" data-uid="'+esc(r._uid)+'">'
         + '<div class="sc-rank">'+medal+'</div>'
         + '<div class="sc-av">'+av(r.avatar||0)+'</div>'
@@ -380,7 +380,7 @@ function showUser(uid){
     + '<div class="statpill" style="cursor:pointer;transition:.15s;border-color:rgba(124,92,255,.3);position:relative" id="achStatPill" data-uid="'+esc(uid)+'" data-name="'+esc(r.name||_m)+'" data-ach="'+(r.achN||0)+'" onmouseenter="this.style.borderColor=\'rgba(124,92,255,.6)\';this.style.background=\'rgba(124,92,255,.08)\'" onmouseleave="this.style.borderColor=\'rgba(124,92,255,.3)\';this.style.background=\'var(--panel2)\'"><b>🏆 '+(r.achN||0)+'</b><span>'+PPI18n.t('community.achievements')+'</span><div style="position:absolute;bottom:2px;right:6px;font-size:8px;color:var(--accent2)">VIEW ▸</div></div>'
     + '<div class="statpill"><b>🔥 '+(r.best||0)+'</b><span>'+PPI18n.t('community.beststreak')+'</span></div>'
     + '<div class="statpill"><b>🎮 '+(r.gameScore||0)+'</b><span>'+PPI18n.t('community.matrixbest')+'</span></div>'
-    + '<div class="statpill"><b>⏱️ '+fmtTime(r.gameTime||0)+'</b><span>'+PPI18n.t('community.fastestclear')+(r.gameDiff ? ' ('+['Easy','Normal','Hard','Very Hard','Hell','Impossible'][Math.min(r.gameDiff,5)]+')' : '')+'</span></div></div>'
+    + '<div class="statpill"><b>⏱️ '+fmtTime(r.gameTime||0)+'</b><span>'+PPI18n.t('community.fastestclear')+'</span></div></div>'
     + '<div id="ppBioSection" style="padding:10px 0;margin-top:4px;border-top:1px solid var(--border);text-align:center"></div>';
   elById('ppComBack').addEventListener('click', function(){ paintCommunity(); });
   /* Make achievements pill clickable */
