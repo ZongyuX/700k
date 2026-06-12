@@ -1557,6 +1557,7 @@
   <div class="hbtns">
     <a href="#templates" data-i18n="header.prompts">Prompts</a>
     <a href="#guide" data-i18n="header.guide">Beginner Guide</a>
+    <button class="pp-chip" id="optimizerBtn" title="Prompt Optimizer" onclick="document.getElementById('optimizer').scrollIntoView({behavior:'smooth',block:'center'})">⚡<span class="btn-hide-sm"> Optimizer</span></button>
     <button class="pp-chip" id="communityBtn" data-i18n="header.community" title="Leaderboards & Mood Wall">🏆<span class="btn-hide-sm"> Community</span></button>
     <button class="hbtn-game" id="gameBtn" data-i18n="header.game">🎮<span class="btn-hide-sm"> Game</span></button>
     <button class="pp-chip" id="friendsBtn" title="Friends & Chat" onclick="if(typeof toggleFriendsPanel==='function')toggleFriendsPanel()">👥<span class="btn-hide-sm"> Friends</span></button>
@@ -1570,13 +1571,27 @@
 (function(){
   var hbtns=document.querySelector('.hbtns');
   if(!hbtns)return;
-  /* Mouse wheel → horizontal scroll */
+  /* Mouse wheel → horizontal scroll + header auto-hide */
   hbtns.addEventListener('wheel',function(e){
-    var delta=e.deltaY||e.deltaX;
-    if(Math.abs(delta)>0){
-      e.preventDefault();
-      this.scrollLeft+=delta*1.5;
+    var deltaY=e.deltaY||0;
+    var deltaX=e.deltaX||0;
+    /* Horizontal scroll for button bar */
+    var hDelta=deltaX||(Math.abs(deltaY)>0?deltaY*0.6:0);
+    if(Math.abs(hDelta)>0){
+      this.scrollLeft+=hDelta*1.5;
     }
+    /* If scrolling down (deltaY > 0), also collapse the header */
+    if(deltaY>1){
+      var hdr=document.querySelector('header');
+      if(hdr) hdr.classList.add('pp-hide');
+    }
+    /* If scrolling up (deltaY < 0), show the header */
+    if(deltaY<-1){
+      var hdr2=document.querySelector('header');
+      if(hdr2) hdr2.classList.remove('pp-hide');
+    }
+    /* Prevent page scroll while over the toolbar */
+    e.preventDefault();
   },{passive:false});
   /* Drag-to-scroll (mouse) */
   var isDrag=false,sx=0,sl=0,dm=false;
@@ -1611,9 +1626,16 @@
     isTouch=false;
     this.classList.remove('dragging');
   },{passive:true});
-  /* Prevent click after drag */
+  /* Prevent click after drag — only for non-button elements */
   hbtns.addEventListener('click',function(e){
-    if(dm){e.stopPropagation();e.preventDefault();dm=false;}
+    if(dm){
+      /* Don't block clicks on actual buttons/links — only block drag-to-scroll artifacts */
+      var tag=e.target.tagName;
+      if(tag!=='BUTTON'&&tag!=='A'&&tag!=='INPUT'){
+        e.stopPropagation();e.preventDefault();
+      }
+      dm=false;
+    }
   },true);
 })();
 </script>
@@ -2066,6 +2088,7 @@
       <button class="com-tab" data-com-tab="badges" style="padding:6px 12px;font-size:12px;font-weight:600;background:none;border:none;color:var(--muted);cursor:pointer;border-radius:6px;transition:.15s">🏅 <span data-i18n="community.tab.badges">Badges</span></button>
       <button class="com-tab" data-com-tab="coins" style="padding:6px 12px;font-size:12px;font-weight:600;background:none;border:none;color:var(--muted);cursor:pointer;border-radius:6px;transition:.15s">🪙 <span data-i18n="community.tab.coins">Coins</span></button>
       <button class="com-tab" data-com-tab="mybadges" style="padding:6px 12px;font-size:12px;font-weight:600;background:none;border:none;color:var(--muted);cursor:pointer;border-radius:6px;transition:.15s">🎖️ <span>My Badges</span></button>
+      <button class="com-tab" data-com-tab="moods" style="padding:6px 12px;font-size:12px;font-weight:600;background:none;border:none;color:var(--muted);cursor:pointer;border-radius:6px;transition:.15s">😊 <span data-i18n="community.tab.moods">Mood Wall</span></button>
     </div>
     <div id="communityContent" style="min-height:200px"></div>
   </div>
@@ -3172,21 +3195,27 @@ function openAccount(){
   if(!currentUser){ if(typeof openAuth==='function') openAuth(); return; }
   hideOverlays();
   // Open the profile panel from fun.js (avatar selection + stats)
-  if(window.PPGame && PPGame.openProfile){
-    PPGame.openProfile();
-  } else {
-    // Fallback to old account overlay if PPGame not loaded
-    const methodNames={'password':PPI18n.t('method.password'),'google.com':PPI18n.t('method.google.com'),'facebook.com':'Facebook','github.com':PPI18n.t('method.github.com')};
-    const pm=(currentUser.providerData&&currentUser.providerData[0]&&currentUser.providerData[0].providerId)||'password';
-    document.getElementById('accEmail').textContent=currentUser.email||'(no email)';
-    document.getElementById('accMethod').textContent=methodNames[pm]||pm;
-    document.getElementById('accPlan').textContent=planLabel();
-    document.getElementById('accFavs').textContent=PPI18n.t('account.saved.count').replace('{n}',favorites.length);
-    document.getElementById('setName').value=currentUser.displayName||'';
-    document.getElementById('setBio').value=userBio||'';
-    document.getElementById('setPass').value='';
-    document.getElementById('pwField').style.display=(pm==='password')?'block':'none';
-    document.getElementById('accMsg').className='msg';
+  try{
+    if(window.PPGame && PPGame.openProfile){
+      PPGame.openProfile();
+    } else {
+      // Fallback to old account overlay if PPGame not loaded
+      var methodNames={'password':PPI18n.t('method.password'),'google.com':PPI18n.t('method.google.com'),'facebook.com':'Facebook','github.com':PPI18n.t('method.github.com')};
+      var pm=(currentUser.providerData&&currentUser.providerData[0]&&currentUser.providerData[0].providerId)||'password';
+      document.getElementById('accEmail').textContent=currentUser.email||'(no email)';
+      document.getElementById('accMethod').textContent=methodNames[pm]||pm;
+      document.getElementById('accPlan').textContent=planLabel();
+      document.getElementById('accFavs').textContent=PPI18n.t('account.saved.count').replace('{n}',favorites.length);
+      document.getElementById('setName').value=currentUser.displayName||'';
+      document.getElementById('setBio').value=userBio||'';
+      document.getElementById('setPass').value='';
+      document.getElementById('pwField').style.display=(pm==='password')?'block':'none';
+      document.getElementById('accMsg').className='msg';
+      document.getElementById('accountOverlay').classList.add('show');
+    }
+  }catch(e){
+    console.warn('openAccount error',e);
+    // Last resort: show account settings
     document.getElementById('accountOverlay').classList.add('show');
   }
 }
@@ -5440,6 +5469,11 @@ function loadCommunityTab(tab){
     return;
   }
 
+  if(tab==='moods'){
+    loadMoodWall(content);
+    return;
+  }
+
   if(!fbReady||!db){
     content.innerHTML='<div style="color:var(--muted);text-align:center;padding:30px">'+PPI18n.t('community.offline','{what}: Community')+'</div>';
     return;
@@ -5532,6 +5566,57 @@ function getCommunityAchDesc(a){
   var lang=(window.PPI18n&&PPI18n.lang)||'en';
   if(lang==='zh'&&a.dsZh) return a.dsZh;
   return a.ds||'';
+}
+
+/* ---- Mood Wall: show emojis users left on prompts ---- */
+function loadMoodWall(content){
+  content.innerHTML='<div style="color:var(--muted);text-align:center;padding:30px">'+PPI18n.t('community.loading','Loading…')+'</div>';
+  /* Read moods from pp_public collection — each doc may have a moods sub-object */
+  if(!fbReady||!db){
+    content.innerHTML='<div style="color:var(--muted);text-align:center;padding:30px">Sign in to see the Mood Wall.</div>';
+    return;
+  }
+  /* We collect mood entries from all pp_public docs that have a .moods field */
+  db.collection('pp_public').limit(100).get().then(function(snap){
+    var entries=[];
+    snap.forEach(function(doc){
+      var d=doc.data();
+      if(!d.moods||typeof d.moods!=='object') return;
+      var name=d.name||'User';
+      var avatar=d.avatar||0;
+      Object.keys(d.moods).forEach(function(promptId){
+        var emoji=d.moods[promptId];
+        if(!emoji) return;
+        entries.push({uid:doc.id,name:name,avatar:avatar,promptId:promptId,emoji:emoji});
+      });
+    });
+    if(!entries.length){
+      content.innerHTML='<div style="color:var(--muted);text-align:center;padding:30px">No moods yet. Be the first to set a mood on a prompt!</div>';
+      return;
+    }
+    /* Resolve prompt titles */
+    var prompts=getCurrentPrompts();
+    var pMap={};
+    prompts.forEach(function(p){ pMap[p.id]=p; });
+    var html='<div style="font-size:12px;font-weight:700;color:var(--accent2);margin-bottom:10px">😊 Recent Moods on Prompts</div>';
+    html+='<div style="display:flex;flex-direction:column;gap:6px">';
+    entries.slice(0,60).forEach(function(e){
+      var p=pMap[e.promptId];
+      var title=p?p.title:'Prompt #'+e.promptId;
+      var svg=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(e.avatar):'';
+      html+='<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:8px;cursor:pointer;transition:background .15s" onmouseenter="this.style.background=\'rgba(255,255,255,.05)\'" onmouseleave="this.style.background=\'transparent\'" onclick="document.getElementById(\'communityOverlay\').classList.remove(\'show\');openPrompt('+e.promptId+')">';
+      html+='<div style="width:28px;height:28px;border-radius:7px;overflow:hidden;flex-shrink:0">'+svg+'</div>';
+      html+='<div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(e.name)+'</div>';
+      html+='<div style="font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(title)+'</div></div>';
+      html+='<span style="font-size:20px;flex-shrink:0">'+e.emoji+'</span>';
+      html+='</div>';
+    });
+    html+='</div>';
+    content.innerHTML=html;
+  }).catch(function(e){
+    console.warn('mood wall',e);
+    content.innerHTML='<div style="color:var(--muted);text-align:center;padding:30px">Could not load mood wall.</div>';
+  });
 }
 
 /* Wire community tab clicks */
@@ -6848,7 +6933,43 @@ function friendRow(f){
   '</div>';
 }
 
-/* ---- Open chat with friend (RTDB) ---- */
+/* ---- Firestore-based chat fallback (when RTDB is unavailable) ---- */
+var _firestoreChatUnsubscribe=null;
+function loadFirestoreChat(chatId,fUid,fName,fAvatar){
+  if(!fbReady||!db||!currentUser) return;
+  /* Use Firestore chat_messages collection as fallback */
+  var msgRef=db.collection('chat_messages').doc(chatId).collection('messages').orderBy('timestamp','asc').limitToLast(100);
+  if(_firestoreChatUnsubscribe){ try{_firestoreChatUnsubscribe();}catch(e){} _firestoreChatUnsubscribe=null; }
+  _firestoreChatUnsubscribe=msgRef.onSnapshot(function(snap){
+    var html='';
+    snap.forEach(function(doc){
+      var m=doc.data();
+      var isMe=m.senderId===currentUser.uid;
+      var align=isMe?'right':'left';
+      var bg=isMe?'rgba(124,92,255,.15)':'rgba(34,211,238,.08)';
+      var ts=m.timestamp?new Date(m.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'';
+      html+='<div style="align-self:'+align+';max-width:80%;padding:8px 12px;border-radius:12px;background:'+bg+';font-size:13px">'+
+        '<div>'+esc(m.text||'')+'</div>'+
+        '<div style="font-size:9px;color:var(--muted);margin-top:3px">'+ts+'</div>'+
+      '</div>';
+    });
+    var el=document.getElementById('chatMessages');
+    if(el){
+      el.innerHTML=html||'<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">'+PPI18n.t('friends.no.messages')+'</div>';
+      el.scrollTop=el.scrollHeight;
+    }
+  },function(e){
+    console.warn('Firestore chat listen error',e);
+    var el=document.getElementById('chatMessages');
+    if(el) el.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">Could not load messages. Please try again later.</div>';
+  });
+  /* Also replace the unsubscribe function so closeChatWindow works */
+  _chatUnsubscribe=function(){
+    if(_firestoreChatUnsubscribe){ try{_firestoreChatUnsubscribe();}catch(e){} _firestoreChatUnsubscribe=null; }
+  };
+}
+
+/* ---- Open chat with friend (RTDB with Firestore fallback) ---- */
 window.openChatWith=function(fUid,fName,fAvatar){
   _chatFriendUid=fUid;
   document.getElementById('chatFriendName').textContent=fName;
@@ -6861,91 +6982,125 @@ window.openChatWith=function(fUid,fName,fAvatar){
   document.getElementById('chatMessages').style.display='flex';
   document.getElementById('chatInputRow').style.display='flex';
   document.getElementById('chatMessages').innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">'+PPI18n.t('friends.loading.messages')+'</div>';
-  /* Listen for messages in Realtime Database */
-  if(_chatUnsubscribe) _chatUnsubscribe();
+  /* Unsubscribe previous listener */
+  if(_chatUnsubscribe){ try{_chatUnsubscribe();}catch(e){} _chatUnsubscribe=null; }
   var chatId=getChatRoomId(currentUser.uid,fUid);
-  if(!rtdb){
-    /* Try to re-initialize RTDB */
+  /* Try RTDB first, fall back to Firestore */
+  if(rtdb){
+    try{
+      var msgRef=rtdb.ref('chat_rooms/'+chatId+'/messages').orderByChild('timestamp').limitToLast(100);
+      _chatUnsubscribe=msgRef.on('value',function(snap){
+        var html='';
+        snap.forEach(function(child){
+          var m=child.val();
+          var isMe=m.senderId===currentUser.uid;
+          var align=isMe?'right':'left';
+          var bg=isMe?'rgba(124,92,255,.15)':'rgba(34,211,238,.08)';
+          var ts=m.timestamp?new Date(m.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'';
+          html+='<div style="align-self:'+align+';max-width:80%;padding:8px 12px;border-radius:12px;background:'+bg+';font-size:13px">'+
+            '<div>'+esc(m.text||'')+'</div>'+
+            '<div style="font-size:9px;color:var(--muted);margin-top:3px">'+ts+'</div>'+
+          '</div>';
+        });
+        var el=document.getElementById('chatMessages');
+        el.innerHTML=html||'<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">'+PPI18n.t('friends.no.messages')+'</div>';
+        el.scrollTop=el.scrollHeight;
+      },function(e){
+        console.warn('chat RTDB listen failed, trying Firestore fallback',e);
+        /* RTDB failed — fall back to Firestore-based chat */
+        loadFirestoreChat(chatId,fUid,fName,fAvatar);
+      });
+      /* Mark messages as read */
+      rtdb.ref('user_conversations/'+currentUser.uid+'/'+chatId).update({unreadCount:0}).catch(function(){});
+    }catch(e){
+      console.warn('RTDB chat error, using Firestore fallback',e);
+      loadFirestoreChat(chatId,fUid,fName,fAvatar);
+    }
+  }else{
+    /* No RTDB — use Firestore for chat */
     try{ if(typeof firebase!=='undefined'&&firebase.database) rtdb=firebase.database(); }catch(e){}
-    if(!rtdb){
-      document.getElementById('chatMessages').innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">Chat unavailable — Realtime Database not initialized.<br><button onclick="window.openChatWith(\''+fUid+'\',\''+esc(fName).replace(/'/g,"\\'")+'\','+(fAvatar||0)+')" style="margin-top:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer">Retry</button></div>';
-      return;
+    if(rtdb){
+      /* RTDB re-initialized, retry */
+      window.openChatWith(fUid,fName,fAvatar);
+    }else{
+      loadFirestoreChat(chatId,fUid,fName,fAvatar);
     }
   }
-  var msgRef=rtdb.ref('chat_rooms/'+chatId+'/messages').orderByChild('timestamp').limitToLast(100);
-  _chatUnsubscribe=msgRef.on('value',function(snap){
-    var html='';
-    snap.forEach(function(child){
-      var m=child.val();
-      var isMe=m.senderId===currentUser.uid;
-      var align=isMe?'right':'left';
-      var bg=isMe?'rgba(124,92,255,.15)':'rgba(34,211,238,.08)';
-      var ts=m.timestamp?new Date(m.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'';
-      html+='<div style="align-self:'+align+';max-width:80%;padding:8px 12px;border-radius:12px;background:'+bg+';font-size:13px">'+
-        '<div>'+esc(m.text||'')+'</div>'+
-        '<div style="font-size:9px;color:var(--muted);margin-top:3px">'+ts+'</div>'+
-      '</div>';
-    });
-    var el=document.getElementById('chatMessages');
-    el.innerHTML=html||'<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">'+PPI18n.t('friends.no.messages')+'</div>';
-    el.scrollTop=el.scrollHeight;
-  },function(e){
-    console.warn('chat listen',e);
-    var el=document.getElementById('chatMessages');
-    if(el) el.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">Could not load messages. <button onclick="window.openChatWith(\''+fUid+'\',\''+esc(fName).replace(/'/g,"\\'")+'\','+(fAvatar||0)+')" style="margin-top:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer">Retry</button></div>';
-  });
-  /* Mark messages as read */
-  rtdb.ref('user_conversations/'+currentUser.uid+'/'+chatId).update({unreadCount:0}).catch(function(){});
-  /* Also refresh conversations list if on chats tab */
   if(_currentFriendsTab==='chats') loadConversations();
 };
 
-/* ---- Send chat message (RTDB) ---- */
+/* ---- Send chat message (RTDB with Firestore fallback) ---- */
 window.sendChatMessage=async function(){
   if(!fbReady||!currentUser){toast(PPI18n.t('friends.signin'),'info');return;}
   if(!_chatFriendUid){toast('No chat selected','info');return;}
-  if(!rtdb){
-    try{ if(typeof firebase!=='undefined'&&firebase.database) rtdb=firebase.database(); }catch(e){}
-    if(!rtdb){toast('Chat unavailable — Realtime Database not initialized','info');return;}
-  }
   var input=document.getElementById('chatInput');
   var text=input.value.trim();
   if(!text) return;
   input.value='';
   var chatId=getChatRoomId(currentUser.uid,_chatFriendUid);
-  var msgRef=rtdb.ref('chat_rooms/'+chatId+'/messages').push();
   var ts=Date.now();
+  /* Try RTDB first */
+  if(rtdb){
+    try{
+      var msgRef=rtdb.ref('chat_rooms/'+chatId+'/messages').push();
+      await msgRef.set({senderId:currentUser.uid,text:text,timestamp:ts});
+      /* Update chat room info */
+      await rtdb.ref('chat_rooms/'+chatId+'/info').set({
+        participants:[currentUser.uid,_chatFriendUid],
+        lastMessage:text,
+        lastMessageTime:ts,
+        lastMessageSender:currentUser.uid
+      });
+      /* Update my conversation index */
+      var myName=currentUser.displayName||currentUser.email.split('@')[0];
+      await rtdb.ref('user_conversations/'+currentUser.uid+'/'+chatId).set({
+        friendId:_chatFriendUid,
+        friendName:document.getElementById('chatFriendName').textContent,
+        lastMessage:text,
+        lastMessageTime:ts,
+        unreadCount:0
+      });
+      /* Update friend's conversation index */
+      await rtdb.ref('user_conversations/'+_chatFriendUid+'/'+chatId).update({
+        friendId:currentUser.uid,
+        friendName:myName,
+        lastMessage:text,
+        lastMessageTime:ts
+      });
+      /* Increment friend's unread count */
+      rtdb.ref('user_conversations/'+_chatFriendUid+'/'+chatId+'/unreadCount').transaction(function(current){
+        return (current||0)+1;
+      }).catch(function(){});
+      return;
+    }catch(e){console.warn('RTDB send msg failed, trying Firestore',e);}
+  }
+  /* Firestore fallback for sending messages */
+  if(!db){toast('Chat unavailable','info');return;}
   try{
-    await msgRef.set({senderId:currentUser.uid,text:text,timestamp:ts});
-    /* Update chat room info */
-    await rtdb.ref('chat_rooms/'+chatId+'/info').set({
-      participants:[currentUser.uid,_chatFriendUid],
-      lastMessage:text,
-      lastMessageTime:ts,
-      lastMessageSender:currentUser.uid
+    await db.collection('chat_messages').doc(chatId).collection('messages').add({
+      senderId:currentUser.uid,
+      text:text,
+      timestamp:ts
     });
-    /* Update my conversation index */
+    /* Also update conversation indexes in Firestore so loadConversations can find them */
     var myName=currentUser.displayName||currentUser.email.split('@')[0];
-    await rtdb.ref('user_conversations/'+currentUser.uid+'/'+chatId).set({
+    await db.collection('chat_conversations').doc(currentUser.uid).collection('list').doc(chatId).set({
       friendId:_chatFriendUid,
       friendName:document.getElementById('chatFriendName').textContent,
       lastMessage:text,
       lastMessageTime:ts,
       unreadCount:0
-    });
-    /* Update friend's conversation index with unread count */
-    await rtdb.ref('user_conversations/'+_chatFriendUid+'/'+chatId).update({
+    },{merge:true});
+    await db.collection('chat_conversations').doc(_chatFriendUid).collection('list').doc(chatId).set({
       friendId:currentUser.uid,
       friendName:myName,
       lastMessage:text,
       lastMessageTime:ts
-    });
-    /* Increment friend's unread count atomically */
-    var friendConvRef=rtdb.ref('user_conversations/'+_chatFriendUid+'/'+chatId+'/unreadCount');
-    rtdb.ref('user_conversations/'+_chatFriendUid+'/'+chatId+'/unreadCount').transaction(function(current){
-      return (current||0)+1;
-    }).catch(function(){});
-  }catch(e){console.warn('send msg',e);}
+    },{merge:true});
+  }catch(e){
+    console.warn('Firestore send msg failed',e);
+    toast('Could not send message. Please try again.','info');
+  }
 };
 
 /* ---- Listen for conversations (unread count, new message notifications) ---- */
@@ -7231,6 +7386,8 @@ function syncPublicProfile(){
   var achCount = (gameData.ach || []).length;
   var coins = gameData.coins || 0;
   var xp = gameData.xp || 0;
+  var moods = {};
+  try{ moods = JSON.parse(localStorage.getItem('pp_moods')||'{}'); }catch(e){}
   db.collection('pp_public').doc(currentUser.uid).set({
     name: displayName,
     email: email,
@@ -7240,6 +7397,7 @@ function syncPublicProfile(){
     achCount: achCount,
     coins: coins,
     bio: bio || '',
+    moods: moods,
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   },{merge:true}).catch(function(e){
     console.warn('syncPublicProfile', e);
@@ -7263,6 +7421,7 @@ window.loadSuggestedUsers = loadSuggestedUsers;
 window.loadFriendsList = loadFriendsList;
 window.loadFriendRequests = loadFriendRequests;
 window.loadConversations = loadConversations;
+window.loadMoodWall = loadMoodWall;
 window.syncPublicProfile = syncPublicProfile;
 window.openAccount = openAccount;
 window.openAccountSettings = function(){

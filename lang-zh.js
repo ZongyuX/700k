@@ -15,6 +15,7 @@ var ZH = {
   'header.getpro': '获取专业版',
   'header.community': '社区',
   'header.friends': '好友',
+  'header.optimizer': '优化器',
 
   /* ---- Hero ---- */
   'hero.h1.prefix': 'PromptRunic',
@@ -400,6 +401,7 @@ var ZH = {
   'community.tab.badges': '🏅 徽章',
   'community.tab.avatars': '🎭 头像',
   'community.tab.games': '🎮 游戏',
+  'community.tab.moods': '心情墙',
   'community.tab.speed': '⏱️ 速度',
   'community.tab.mood': '😊 心情墙',
   'community.loading': '正在加载排行榜…',

@@ -15,6 +15,7 @@ var EN = {
   'header.getpro': 'Get Pro',
   'header.community': 'Community',
   'header.friends': 'Friends',
+  'header.optimizer': 'Optimizer',
 
   /* ---- Hero ---- */
   'hero.h1.prefix': 'PromptRunic',
@@ -396,6 +397,7 @@ var EN = {
   'community.tab.badges': '🏅 Badges',
   'community.tab.avatars': '🎭 Avatars',
   'community.tab.games': '🎮 Games',
+  'community.tab.moods': 'Mood Wall',
   'community.tab.speed': '⏱️ Speed',
   'community.tab.mood': '😊 Mood Wall',
   'community.loading': 'Loading leaderboard…',

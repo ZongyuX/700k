@@ -15,6 +15,7 @@ var ES = {
   'header.getpro': 'Obtener Pro',
   'header.community': 'Comunidad',
   'header.friends': 'Amigos',
+  'header.optimizer': 'Optimizador',
 
   /* ---- Hero ---- */
   'hero.h1.prefix': 'PromptRunic',
@@ -396,6 +397,7 @@ var ES = {
   'community.tab.badges': '🏅 Insignias',
   'community.tab.avatars': '🎭 Avatares',
   'community.tab.games': '🎮 Juegos',
+  'community.tab.moods': 'Muro de ánimos',
   'community.tab.speed': '⏱️ Velocidad',
   'community.tab.mood': '😊 Muro de ánimos',
   'community.loading': 'Cargando tabla de clasificación…',
