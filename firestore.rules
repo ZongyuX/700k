@@ -1,0 +1,17 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Game lobby collection
+    match /lobby/{mode}/table_{tableNum} {
+      allow read: if true;
+      allow write: if request.auth != null;
+      allow update: if request.auth != null;
+    }
+
+    // Game states collection
+    match /game_states/{gameId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+  }
+}
