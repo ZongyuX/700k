@@ -1970,16 +1970,7 @@
   <div class="modal sm">
     <button class="x" data-close>&times;</button>
     <h2 data-i18n="activate.title">Activate PromptRunic Pro</h2>
-    <div class="desc" data-i18n="activate.desc">Enter your code to unlock all 700,000+ prompts. Supports all Pro plans and coin packs.</div>
-    <div class="act-plans" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;justify-content:center">
-      <span class="tag" style="background:rgba(245,185,66,.12);color:var(--gold);font-size:11px;border-radius:6px;padding:3px 8px">3 Days</span>
-      <span class="tag" style="background:rgba(245,185,66,.12);color:var(--gold);font-size:11px;border-radius:6px;padding:3px 8px">1 Month</span>
-      <span class="tag" style="background:rgba(245,185,66,.12);color:var(--gold);font-size:11px;border-radius:6px;padding:3px 8px">3 Months</span>
-      <span class="tag" style="background:rgba(245,185,66,.12);color:var(--gold);font-size:11px;border-radius:6px;padding:3px 8px">6 Months</span>
-      <span class="tag" style="background:rgba(245,185,66,.12);color:var(--gold);font-size:11px;border-radius:6px;padding:3px 8px">12 Months</span>
-      <span class="tag" style="background:rgba(245,185,66,.15);color:var(--gold);font-size:11px;border-radius:6px;padding:3px 8px;font-weight:700">Lifetime</span>
-      <span class="tag" style="background:rgba(100,200,255,.1);color:#64c8ff;font-size:11px;border-radius:6px;padding:3px 8px">Coin Packs</span>
-    </div>
+    <div class="desc" data-i18n="activate.desc">Unlock all 700,000+ prompts on this site.</div>
     <div class="pro-box" id="actLoginReminder" style="background:rgba(245,185,66,.08);border:1px solid rgba(245,185,66,.3);border-radius:10px;padding:14px 18px;margin-bottom:14px">
       <h3 style="color:var(--gold);font-size:14px;margin-bottom:6px" data-i18n="activate.login.title">Account Required</h3>
       <p style="font-size:13px;color:var(--muted);line-height:1.6" data-i18n="activate.login.desc">To use Pro, you must be signed in with a registered account or continue with Google/GitHub. Your Pro membership is linked to your account and syncs across all devices.</p>
@@ -1994,7 +1985,7 @@
       <button class="mbtn mbtn-ghost" id="buyBtn" data-i18n="activate.buy">View membership plans</button>
     </div>
     <div class="msg" id="actMsg"></div>
-    <div class="note" data-i18n="activate.note">Each activation code can only be used once. Pro and coins are linked to your account and sync across all devices.</div>
+    <div class="note" data-i18n="activate.note">Pro is linked to your account. Sign in to activate and sync your Pro access across all devices.</div>
   </div>
 </div>
 
@@ -2120,85 +2111,52 @@
   </div>
 </div>
 
-<!-- ===== QQ-Style Friends Panel (sidebar) ===== -->
-<div class="friends-panel" id="friendsPanel" style="position:fixed;top:0;right:0;width:360px;max-width:100vw;height:100vh;background:var(--panel);border-left:1px solid var(--border);z-index:10000;box-shadow:-4px 0 24px rgba(0,0,0,.5);overflow:hidden;flex-direction:column;display:none">
-  <!-- Header -->
-  <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px 10px;background:linear-gradient(135deg,rgba(124,92,255,.15),rgba(34,211,238,.08));border-bottom:1px solid var(--border)">
-    <div style="display:flex;align-items:center;gap:8px">
-      <div style="width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:16px">💬</div>
-      <h4 style="margin:0;font-size:15px;font-weight:700;letter-spacing:.3px">Messages</h4>
-    </div>
-    <button id="friendsPanelClose" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:8px;transition:.15s" onmouseenter="this.style.background='rgba(255,255,255,.08)'" onmouseleave="this.style.background='none'">&times;</button>
-  </div>
-  <!-- Tab Bar -->
-  <div id="friendsTabBar" style="display:flex;border-bottom:1px solid var(--border);background:var(--panel2)">
-    <button class="qq-tab active" data-tab="chats" style="flex:1;padding:10px 0;font-size:13px;font-weight:600;background:none;border:none;color:var(--accent2);cursor:pointer;border-bottom:2px solid var(--accent2);transition:.2s;position:relative">💬 Chats</button>
-    <button class="qq-tab" data-tab="contacts" style="flex:1;padding:10px 0;font-size:13px;font-weight:600;background:none;border:none;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:.2s;position:relative">👥 Contacts<span id="friendReqBadge" style="display:none;position:absolute;top:4px;right:16px;width:16px;height:16px;border-radius:50%;background:#ef4444;color:#fff;font-size:9px;font-weight:700;text-align:center;line-height:16px"></span></button>
-    <button class="qq-tab" data-tab="discover" style="flex:1;padding:10px 0;font-size:13px;font-weight:600;background:none;border:none;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:.2s">🔍 Discover</button>
-  </div>
-  <!-- Tab Content: Chats -->
-  <div id="tabChats" style="flex:1;overflow-y:auto;padding:0">
-    <div id="conversationsList" style="padding:0"></div>
-  </div>
-  <!-- Tab Content: Contacts -->
-  <div id="tabContacts" style="flex:1;overflow-y:auto;display:none;padding:0">
-    <!-- Friend Requests Section -->
-    <div id="contactReqSection" style="border-bottom:1px solid var(--border)">
-      <div id="contactReqHeader" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;cursor:pointer" onclick="toggleContactReqSection()">
-        <span style="font-size:12px;font-weight:700;color:var(--gold)">📨 Friend Requests</span>
-        <span id="contactReqCount" style="font-size:11px;color:var(--muted)"></span>
-        <span id="contactReqArrow" style="font-size:10px;color:var(--muted);transition:.2s">▼</span>
-      </div>
-      <div id="contactReqList" style="display:none;padding:0 14px 10px;max-height:200px;overflow-y:auto"></div>
-    </div>
-    <!-- Pending Sent Section -->
-    <div id="contactPendingSection" style="border-bottom:1px solid var(--border);display:none">
-      <div style="padding:8px 14px 4px"><span style="font-size:12px;font-weight:700;color:var(--gold)">⏳ Pending Sent</span></div>
-      <div id="contactPendingList" style="padding:0 14px 10px"></div>
-    </div>
-    <!-- Friends List -->
-    <div id="contactFriendsList" style="padding:0"></div>
-  </div>
-  <!-- Tab Content: Discover -->
-  <div id="tabDiscover" style="flex:1;overflow-y:auto;display:none;padding:0">
-    <div style="padding:14px 14px 8px">
-      <div style="font-size:12px;font-weight:700;color:var(--accent2);margin-bottom:10px">🔍 Find Friends</div>
-      <div style="display:flex;gap:6px">
-        <input type="text" id="friendSearchInput" placeholder="Search by username or email..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:10px;font-size:13px;outline:none;transition:border .2s" onfocus="this.style.borderColor='var(--accent2)'" onblur="this.style.borderColor='var(--border)'" />
-        <button id="friendSearchBtn" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:9px 16px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;transition:.15s;white-space:nowrap" onmouseenter="this.style.transform='scale(1.04)'" onmouseleave="this.style.transform='scale(1)'">Search</button>
-      </div>
-    </div>
-    <div id="friendSearchResults" style="padding:0 14px 14px"></div>
-    <!-- Suggested Users -->
-    <div style="padding:0 14px 14px">
-      <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px">✨ Suggested for You</div>
-      <div id="suggestedUsers"></div>
+<!-- Friends Panel (sidebar) -->
+<div class="friends-panel" id="friendsPanel" style="position:fixed;top:60px;right:0;width:340px;max-width:90vw;height:calc(100vh - 60px);background:var(--panel);border-left:1px solid var(--border);z-index:10000;box-shadow:-4px 0 24px rgba(0,0,0,.4);overflow:hidden;flex-direction:column;display:none">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--border)">
+    <h4 style="margin:0;font-size:14px">👥 Friends</h4>
+    <div style="display:flex;gap:6px">
+      <button id="friendSearchToggle" style="background:none;border:1px solid var(--border);color:var(--accent2);padding:2px 8px;border-radius:6px;font-size:11px;cursor:pointer">🔍 Search</button>
+      <button id="friendReqToggle" style="background:none;border:1px solid var(--border);color:var(--gold);padding:2px 8px;border-radius:6px;font-size:11px;cursor:pointer;position:relative">📨 Requests<span id="friendReqBadge" style="display:none;position:absolute;top:-4px;right:-4px;width:14px;height:14px;border-radius:50%;background:#ef4444;color:#fff;font-size:8px;text-align:center;line-height:14px"></span></button>
+      <button id="friendsPanelClose" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:6px;transition:.15s" onmouseenter="this.style.background='rgba(255,255,255,.08)'" onmouseleave="this.style.background='none'">&times;</button>
     </div>
   </div>
-  <!-- Unread indicator bar at bottom -->
+  <!-- Search users sub-panel -->
+  <div id="friendSearchPanel" style="display:none;padding:10px 14px;border-bottom:1px solid var(--border)">
+    <div style="display:flex;gap:6px">
+      <input type="text" id="friendSearchInput" placeholder="Search by username or email" style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:8px;font-size:13px" />
+      <button id="friendSearchBtn" style="background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff;border:none;padding:7px 12px;border-radius:8px;font-size:13px;cursor:pointer">Go</button>
+    </div>
+    <div id="friendSearchResults" style="margin-top:8px;max-height:200px;overflow-y:auto"></div>
+  </div>
+  <!-- Friend requests sub-panel -->
+  <div id="friendReqPanel" style="display:none;padding:10px 14px;border-bottom:1px solid var(--border)">
+    <div id="friendReqList" style="max-height:200px;overflow-y:auto"></div>
+  </div>
+  <div id="friendsList" style="flex:1;overflow-y:auto;padding:8px 10px"></div>
+  <!-- Unread indicator -->
   <div id="unreadIndicator" style="display:none;padding:8px 14px;border-top:1px solid var(--border);text-align:center;font-size:12px;color:var(--accent2);cursor:pointer;background:rgba(124,92,255,.06)"></div>
 </div>
 
-<!-- ===== Chat Window (per friend) — QQ-style floating ===== -->
-<div class="chat-window" id="chatWindow" style="display:none!important;position:fixed;bottom:20px;right:380px;width:360px;max-width:90vw;background:var(--panel);border:1px solid var(--border);border-radius:16px;z-index:10001;box-shadow:0 8px 32px rgba(0,0,0,.5);overflow:hidden;resize:both;min-width:280px;min-height:340px">
-  <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,rgba(124,92,255,.1),rgba(34,211,238,.05));cursor:move" id="chatWindowHeader">
-    <div style="display:flex;align-items:center;gap:10px;cursor:pointer" id="chatFriendInfo">
-      <div id="chatFriendAvatar" style="width:34px;height:34px;border-radius:10px;overflow:hidden;border:1px solid var(--border)"></div>
+<!-- Chat Window (per friend) -->
+<div class="chat-window" id="chatWindow" style="display:none!important;position:fixed;bottom:20px;right:360px;width:340px;max-width:90vw;background:var(--panel);border:1px solid var(--border);border-radius:14px;z-index:10001;box-shadow:0 8px 32px rgba(0,0,0,.5);overflow:hidden;resize:both;min-width:260px;min-height:320px">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border);cursor:move" id="chatWindowHeader">
+    <div style="display:flex;align-items:center;gap:8px;cursor:pointer" id="chatFriendInfo">
+      <div id="chatFriendAvatar" style="width:28px;height:28px;border-radius:8px;overflow:hidden;border:1px solid var(--border)"></div>
       <div>
-        <span id="chatFriendName" style="font-size:14px;font-weight:700">Friend</span>
-        <span id="chatFriendStatus" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#555;margin-left:5px;vertical-align:middle"></span>
-        <div id="chatFriendSub" style="font-size:10px;color:var(--muted)">offline</div>
+        <span id="chatFriendName" style="font-size:13px;font-weight:700">Friend</span>
+        <span id="chatFriendStatus" style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#555;margin-left:4px;vertical-align:middle"></span>
       </div>
     </div>
-    <div style="display:flex;gap:4px">
-      <button onclick="toggleChatMinimize()" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 6px;border-radius:6px;transition:.15s" onmouseenter="this.style.background='rgba(255,255,255,.08)'" onmouseleave="this.style.background='none'">─</button>
-      <button id="chatWindowClose" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:.15s" onmouseenter="this.style.background='rgba(239,68,68,.15)';this.style.color='#ef4444'" onmouseleave="this.style.background='none';this.style.color='var(--muted)'">&times;</button>
+    <div style="display:flex;gap:6px">
+      <button onclick="toggleChatMinimize()" style="background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;padding:2px 4px">_</button>
+      <button id="chatWindowClose" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:2px 8px;border-radius:4px;transition:.15s">&times;</button>
     </div>
   </div>
-  <div id="chatMessages" style="height:300px;overflow-y:auto;padding:12px 16px;font-size:13px;display:flex;flex-direction:column;gap:8px"></div>
-  <div id="chatInputRow" style="display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--border);background:var(--panel2)">
-    <input type="text" id="chatInput" placeholder="Type a message..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:10px;font-size:13px;outline:none;transition:border .2s" onfocus="this.style.borderColor='var(--accent2)'" onblur="this.style.borderColor='var(--border)'" />
-    <button onclick="sendChatMessage()" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:9px 18px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;transition:.15s" onmouseenter="this.style.transform='scale(1.04)'" onmouseleave="this.style.transform='scale(1)'">Send</button>
+  <div id="chatMessages" style="height:280px;overflow-y:auto;padding:10px 14px;font-size:13px;display:flex;flex-direction:column;gap:6px"></div>
+  <div id="chatInputRow" style="display:flex;gap:6px;padding:8px 10px;border-top:1px solid var(--border)">
+    <input type="text" id="chatInput" placeholder="Type a message..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:8px;font-size:13px" />
+    <button onclick="sendChatMessage()" style="background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff;border:none;padding:7px 14px;border-radius:8px;font-size:13px;cursor:pointer">Send</button>
   </div>
 </div>
 
@@ -2444,10 +2402,7 @@ function evalProState(){
   const until = proUntil();
   if(until>0 && Date.now()>until){
     lsDel('pp_pro_code'); lsDel('pp_pro_until');
-    isPro=false; proExpired=true;
-    /* Sync the expired state to cloud so the Firestore doc is accurate */
-    if(fbReady && currentUser) cloudSavePro();
-    return;
+    isPro=false; proExpired=true; return;
   }
   /* Pro only works for logged-in users — without login, treat as free */
   if(!currentUser){ isPro=false; return; }
@@ -2479,7 +2434,7 @@ function init(){
   }
   if(!window._mailLinkWired){
     var mailLink=document.getElementById('mailLink');
-    if(mailLink) mailLink.addEventListener('click',()=>{ window.location.href='mailto:zongxie22@gmail.com'; });
+    if(mailLink) mailLink.addEventListener('click',()=>{ window.location.href='mailto:zongyufred@gmail.com'; });
     window._mailLinkWired=true;
   }
   /* Reset category filter so it matches the current language's data */
@@ -2645,93 +2600,15 @@ function initFirebase(){
 
 async function handleAuthChange(user){
   currentUser=user||null;
-
-  /* Helper: clear all account-specific localStorage keys */
-  function clearAccountKeys(){
-    /* Pro / trial */
-    lsDel('pp_pro_code'); lsDel('pp_pro_until'); lsDel('pp_trial_used');
-    /* Used license keys */
-    try{
-      var usedKeys=JSON.parse(localStorage.getItem('pp_used_keys')||'[]');
-      usedKeys.forEach(function(k){ lsDel('pp_used_key_'+k); });
-    }catch(e){}
-    lsDel('pp_used_keys');
-    /* Promo usage */
-    try{
-      var promoUsed=JSON.parse(localStorage.getItem('pp_promo_used')||'[]');
-      promoUsed.forEach(function(c){ lsDel('pp_promo_'+c); });
-    }catch(e){}
-    lsDel('pp_promo_used');
-    /* Demo friend requests */
-    lsDel('pp_demo_sent');
-    /* Marketing opt-in */
-    lsDel('pp_optin');
-    /* Favorites — prevent bleed between accounts */
-    lsDel('pp_favorites');
-    /* Game high score — clear account-specific best score if present */
-    if(currentUser){
-      lsDel('pp_game_best_'+currentUser.uid);
-    }
-    lsDel('pp_game_best'); /* legacy key */
-    /* Game-pm (Prompt Matrix) credits / unlocks — these are shared across
-     * accounts unless we clear them. They live in the same localStorage
-     * as the parent page (same origin). */
-    var pmKeys=['pm_unlock_credits','pm_unlocked_towers','pm_unlocked_monsters',
-                'pm_unlocked_skills','pm_used_keys','pm_hard_cleared','pm_last_license'];
-    pmKeys.forEach(function(k){ try{localStorage.removeItem(k);}catch(e){} });
-  }
-
-  if(!user){
-    /* ---- LOGGING OUT ---- */
-    /* Switch PPGame to guest mode — this reads/writes pp_game_guest */
-    if(window.PPGame && PPGame.setUserId){
-      PPGame.setUserId(null); // switches to pp_game_guest key
-    }
-    /* Clear all account-specific keys (pro, trial, keys, promos, pm_*) */
-    clearAccountKeys();
-    isPro=false; proExpired=false;
-    /* Clear friends/chat state */
-    if(typeof _chatFriendUid!=='undefined') _chatFriendUid=null;
-  } else {
-    /* ---- LOGGING IN ---- */
-    /* Before clearing anything, save the current guest game state as a backup
-     * so new accounts can optionally import it. Only save if there is
-     * meaningful guest progress (non-default state). */
-    var guestGameRaw = localStorage.getItem('pp_game_guest');
-    if(guestGameRaw && !localStorage.getItem('pp_guest_backup')){
-      try{
-        var guestObj = JSON.parse(guestGameRaw);
-        /* Only backup if the guest actually earned something (xp > 0 or coins > 0 or lvl > 1) */
-        if((guestObj.xp||0) > 0 || (guestObj.coins||0) > 0 || (guestObj.lvl||0) > 1){
-          localStorage.setItem('pp_guest_backup', guestGameRaw);
-        }
-      }catch(e){}
-    }
-    /* Clear ALL account-specific data to prevent bleed from previous account */
-    clearAccountKeys();
-    /* Reset in-memory state */
-    isPro=false; proExpired=false;
-    /* Switch PPGame to this user's UID-prefixed key */
-    if(window.PPGame && PPGame.setUserId){
-      PPGame.setUserId(user.uid);
-    }
-  }
   /* Re-evaluate Pro state — Pro only works for logged-in users */
   evalProState();
   if(currentUser){
     try{ await loadUserDoc(currentUser); }catch(e){ console.warn('loadUserDoc',e); }
   }
-  /* Refresh game state from cloud — each account has independent game data */
   refreshAuthUI();
   refreshBadge();
   renderSidebar();
   renderGrid();
-  /* Refresh friends panel if it's open */
-  try{
-    if(currentUser && typeof loadFriendsList==='function') loadFriendsList();
-    if(currentUser && typeof loadFriendRequests==='function') loadFriendRequests();
-    if(currentUser && typeof loadConversations==='function') loadConversations();
-  }catch(e){}
 }
 
 function userDocRef(){ return db.collection('users').doc(currentUser.uid); }
@@ -2749,86 +2626,41 @@ async function loadUserDoc(user){
   const method=(user.providerData&&user.providerData[0]&&user.providerData[0].providerId)||'password';
 
   if(!snap.exists){
-    /* New account — ALWAYS start as Free. Only a purchased subscription
-     * can grant Pro; never inherit leftover local pro state from a
-     * previous session / different account.
-     * New accounts start with ZERO game progress by default.
-     * Guest progress import is offered via showGuestImportDialog() below. */
-    lsDel('pp_pro_code'); lsDel('pp_pro_until'); isPro=false; proExpired=false;
     const doc={
       email:user.email||'', displayName:user.displayName||'', method:method,
-      favorites:localFavs, pro:false, proUntil:0,
-      trialUsed:false, proCode:'',
+      favorites:localFavs, pro:localPermanent, proUntil:localUntil,
+      trialUsed:localTrialUsed, proCode:lsGet('pp_pro_code')||'',
       marketingOptIn:(lsGet('pp_optin')!=='0'),
       bio:'',
-      game:null, /* new accounts start with no game progress */
+      game:(window.PPGame?PPGame.exportState():null),
       createdAt:TS, updatedAt:TS
     };
     try{ await ref.set(doc); }catch(e){ console.warn('user doc create',e); }
     applyUserState(doc);
-    /* Also create pp_public document for new accounts so they're searchable */
-    try{
-      var pubName = user.displayName || (user.email ? user.email.split('@')[0] : 'User');
-      db.collection('pp_public').doc(user.uid).set({
-        name: pubName,
-        email: user.email || '',
-        avatar: 0,
-        lvl: 1,
-        bio: '',
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      },{merge:true});
-    }catch(e){ console.warn('pp_public create',e); }
-    /* Check if the user had guest progress they might want to import */
-    if(localStorage.getItem('pp_guest_backup')){
-      showGuestImportDialog();
-    }
   }else{
     const d=snap.data()||{};
-    /* Returning account — clear any guest backup (only new accounts get the import prompt) */
-    localStorage.removeItem('pp_guest_backup');
     const merged=[];
     [].concat(Array.isArray(d.favorites)?d.favorites:[], localFavs).forEach(id=>{
       if(merged.indexOf(id)<0) merged.push(id);
     });
-    /* Validate cloud pro state: only grant pro if there's a real license
-     * key (not a placeholder like 'ACCOUNT' or empty). This ensures only
-     * purchased subscriptions can provide Pro access. */
-    var cloudProCode = d.proCode || '';
-    var hasRealProCode = cloudProCode && cloudProCode !== 'ACCOUNT';
-    var cloudPermanent = hasRealProCode && !!d.pro;
-    var permanent=cloudPermanent||localPermanent;
-    /* If the cloud says pro=true but the proCode is just a placeholder,
-     * don't grant permanent pro — force the user to re-activate. */
-    if(d.pro && !hasRealProCode){
-      permanent = false;
-    }
-    var untilM=permanent?0:Math.max(d.proUntil||0, localUntil||0);
-    /* Also reject timed pro without a real code */
-    if(untilM > 0 && !hasRealProCode && !localPermanent){
-      var localCode = lsGet('pp_pro_code') || '';
-      if(!localCode || localCode === 'ACCOUNT' || localCode === 'TRIAL'){
-        untilM = 0; /* no valid code — clear timed pro */
-      }
-    }
+    const permanent=(!!d.pro)||localPermanent;
+    const untilM=permanent?0:Math.max(d.proUntil||0, localUntil||0);
     const trialUsedM=(!!d.trialUsed)||localTrialUsed;
     const state={
       email:user.email||d.email||'', method:method,
       favorites:merged, pro:permanent, proUntil:untilM, trialUsed:trialUsedM,
-      proCode:cloudProCode,
       marketingOptIn:(d.marketingOptIn!==false)
     };
     try{
       await ref.set({
         email:state.email, displayName:user.displayName||d.displayName||'', method:method,
         favorites:merged, pro:permanent, proUntil:untilM, trialUsed:trialUsedM,
-        proCode:cloudProCode,
         updatedAt:TS
       },{merge:true});
     }catch(e){ console.warn('user doc merge',e); }
     applyUserState(state);
     userBio = d.bio || '';
     if(window.PPGame && d.game) PPGame.importState(d.game);
-    else if(window.PPGame && PPGame.resetToDefaults) PPGame.resetToDefaults();
     /* Merge promo usage from cloud */
     if(Array.isArray(d.promoUsed)){
       var localPromoList=[];
@@ -2836,14 +2668,6 @@ async function loadUserDoc(user){
       var allPromos=[].concat(d.promoUsed,localPromoList).filter(function(v,i,a){return a.indexOf(v)===i;});
       lsSet('pp_promo_used',JSON.stringify(allPromos));
       allPromos.forEach(function(c){ lsSet('pp_promo_'+c,'1'); });
-    }
-    /* Merge used license keys from cloud (one-time-use enforcement) */
-    if(Array.isArray(d.usedKeys)){
-      var localUsedKeys=[];
-      try{ localUsedKeys=JSON.parse(lsGet('pp_used_keys')||'[]'); }catch(e){ localUsedKeys=[]; }
-      var allUsedKeys=[].concat(d.usedKeys,localUsedKeys).filter(function(v,i,a){return a.indexOf(v)===i;});
-      lsSet('pp_used_keys',JSON.stringify(allUsedKeys));
-      allUsedKeys.forEach(function(k){ lsSet('pp_used_key_'+k,'1'); });
     }
   }
 }
@@ -2853,108 +2677,13 @@ function applyUserState(s){
   favorites=Array.isArray(s.favorites)?s.favorites.slice():[];
   saveFavs();
   if(s.pro){
-    /* Use the real license key from the cloud doc.
-     * Only a genuine license key (from a purchased subscription) grants Pro.
-     * Reject placeholder codes like 'ACCOUNT' — if no real code exists,
-     * the user must re-activate with a valid key. */
-    var code=s.proCode || lsGet('pp_pro_code') || '';
-    if(code && code !== 'ACCOUNT'){
-      lsSet('pp_pro_code', code);
-      lsDel('pp_pro_until'); isPro=true; proExpired=false;
-    }else{
-      /* No valid license key — cannot grant Pro */
-      lsDel('pp_pro_code'); lsDel('pp_pro_until'); isPro=false;
-    }
+    lsSet('pp_pro_code', lsGet('pp_pro_code')||'ACCOUNT'); lsDel('pp_pro_until'); isPro=true; proExpired=false;
   }else if(s.proUntil && Date.now()<s.proUntil){
-    var code=s.proCode || lsGet('pp_pro_code') || '';
-    if(code && code !== 'TRIAL'){
-      lsSet('pp_pro_code', code);
-    }else if(code === 'TRIAL'){
-      /* 'TRIAL' is acceptable for timed subscriptions that were activated
-       * via valid promo codes (ZX14D-, ZX1M-). Keep for backward compat. */
-      lsSet('pp_pro_code', code);
-    }else{
-      lsSet('pp_pro_code', 'TRIAL');
-    }
-    lsSet('pp_pro_until',String(s.proUntil)); isPro=true; proExpired=false;
+    lsSet('pp_pro_code','TRIAL'); lsSet('pp_pro_until',String(s.proUntil)); isPro=true; proExpired=false;
   }else{
     lsDel('pp_pro_code'); lsDel('pp_pro_until'); isPro=false;
   }
   if(s.trialUsed) lsSet('pp_trial_used','1');
-}
-
-/* ============================================================
- *  GUEST PROGRESS IMPORT — offer new accounts the chance to
- *  carry over their guest XP/coins/level.
- * ============================================================ */
-function showGuestImportDialog(){
-  var backupRaw = localStorage.getItem('pp_guest_backup');
-  if(!backupRaw) return;
-  var guestData;
-  try{ guestData = JSON.parse(backupRaw); }catch(e){ localStorage.removeItem('pp_guest_backup'); return; }
-  var gLvl = guestData.lvl || 1;
-  var gCoins = guestData.coins || 0;
-  var gXp = guestData.xp || 0;
-  /* Don't offer import for trivial progress */
-  if(gLvl <= 1 && gCoins <= 0 && gXp <= 0){
-    localStorage.removeItem('pp_guest_backup');
-    return;
-  }
-
-  /* Build modal */
-  var overlay = document.createElement('div');
-  overlay.className = 'overlay show';
-  overlay.id = 'guestImportOverlay';
-  overlay.style.zIndex = '10001';
-  var modal = document.createElement('div');
-  modal.className = 'modal sm';
-  modal.innerHTML = '<h2>🎮 Import Guest Progress?</h2>'
-    +'<div class="desc" style="margin:12px 0;line-height:1.6">'
-    +'You have guest progress from before you signed up:<br>'
-    +'<strong>Level '+gLvl+'</strong> &middot; <strong>'+gCoins+' 🪙</strong> &middot; <strong>'+gXp+' XP</strong><br><br>'
-    +'Would you like to import this progress to your new account?'
-    +'</div>'
-    +'<div style="display:flex;gap:10px;margin-top:16px">'
-    +'<button class="mbtn mbtn-primary" id="guestImportYes" style="flex:1">Yes, import</button>'
-    +'<button class="mbtn mbtn-ghost" id="guestImportNo" style="flex:1">No, start fresh</button>'
-    +'</div>';
-  overlay.appendChild(modal);
-  document.body.appendChild(overlay);
-
-  /* Close on backdrop click */
-  overlay.addEventListener('click', function(e){ if(e.target===overlay) closeGuestImport(false); });
-
-  document.getElementById('guestImportYes').addEventListener('click', function(){
-    closeGuestImport(true);
-  });
-  document.getElementById('guestImportNo').addEventListener('click', function(){
-    closeGuestImport(false);
-  });
-
-  function closeGuestImport(doImport){
-    overlay.classList.remove('show');
-    setTimeout(function(){ if(overlay.parentNode) overlay.parentNode.removeChild(overlay); }, 300);
-    if(doImport){
-      /* Import guest data into the current account's game state */
-      if(window.PPGame && PPGame.importState){
-        PPGame.importState(guestData);
-        /* Save imported state to cloud */
-        if(fbReady && currentUser){
-          var gameData = PPGame.exportState();
-          userDocRef().set({
-            game: gameData,
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-          },{merge:true}).catch(function(e){ console.warn('import guest to cloud',e); });
-          /* Update public profile with imported level */
-          try{
-            if(typeof syncPublicProfile === 'function') syncPublicProfile();
-          }catch(e){}
-        }
-      }
-    }
-    /* Always clear the backup after showing the dialog */
-    localStorage.removeItem('pp_guest_backup');
-  }
 }
 
 /* save current favorites / Pro to the signed-in user's cloud doc */
@@ -3050,25 +2779,14 @@ function doPasswordReset(){
   const m=document.getElementById('authMsg'); m.style.display='block'; m.className='msg';
   const email=document.getElementById('authEmail').value.trim();
   if(!email){ m.className='msg err'; m.textContent=PPI18n.t('auth.resetplaceholder'); return; }
-  /* Use actionCodeSettings to set the project name to PromptRunic
-   * in the password reset email (replaces default project-179379045554) */
-  var actionCodeSettings = {
-    url: window.location.origin + window.location.pathname,
-    handleCodeInApp: false
-  };
-  auth.sendPasswordResetEmail(email, actionCodeSettings).then(()=>{
+  auth.sendPasswordResetEmail(email).then(()=>{
     m.className='msg ok'; m.textContent=PPI18n.t('auth.resetsent');
   }).catch(e=>{ m.className='msg err'; m.textContent=authErrMsg(e); });
 }
 
 function doSignOut(){
   if(!fbReady || !auth) return;
-  /* The actual clearing of account data happens in handleAuthChange(!user)
-   * which fires after auth.signOut(). We just trigger the sign-out here;
-   * handleAuthChange will clear all account-specific localStorage keys,
-   * switch PPGame to guest mode, and reset in-memory state. */
-  isPro=false; proExpired=false;
-  auth.signOut().then(()=>{ hideOverlays(); toast(PPI18n.t('auth.signedout')); refreshBadge(); renderGrid(); });
+  auth.signOut().then(()=>{ hideOverlays(); toast(PPI18n.t('auth.signedout')); });
 }
 
 function setAuthMode(mode){
@@ -3677,156 +3395,87 @@ function openActivate(){
   }
   document.getElementById('actOverlay').classList.add('show');
 }
-var _redeemProcessing = false;
-
 async function redeemCode(){
   const key=document.getElementById('codeInput').value.trim();
   const m=document.getElementById('actMsg');
   if(!key){ m.className='msg err'; m.textContent=PPI18n.t('activate.entercode'); return; }
 
-  /* Prevent concurrent submissions */
-  if(_redeemProcessing){ return; }
-
-  /* Require login for any activation (Pro, coins, credits) */
+  /* Require login for Pro activation */
   if(!currentUser){
     m.className='msg err';
     m.textContent=PPI18n.t('activate.login.required');
     return;
   }
 
-  /* ---- Check if this EXACT license key has already been used ---- */
-  /* Use the async version which checks localStorage AND the global
-   * Firestore used_license_keys collection (prevents reuse across
-   * different accounts and devices) */
-  var usedResult = await isLicenseUsedAsync(key);
-  if(usedResult.used){
-    m.className='msg err';
-    if(usedResult.byOtherAccount){
-      /* Different account used this code — show "already activated" message */
-      m.textContent=PPI18n.t('activate.code.used.other');
-    }else{
-      /* Same account already used this code */
-      m.textContent=PPI18n.t('activate.code.used');
-    }
-    return;
-  }
-
-  _redeemProcessing = true;
   m.className='msg'; m.textContent=PPI18n.t('activate.checking'); m.style.display='block';
 
   /* ---- Promo codes (advertising / marketing) ---- */
   const promoKey = key.toUpperCase();
 
-  /* ZXTEST- : REMOVED — free permanent Pro is no longer allowed.
-   * Only a purchased subscription can grant Pro access. */
+  /* ZXTEST- : test mode — permanent Pro unlock */
+  if(promoKey.indexOf('ZXTEST-')===0){
+    if(isPromoUsed('ZXTEST')) return promoAlreadyUsed(m,'ZXTEST');
+    markPromoUsed('ZXTEST');
+    return unlock(key,m,PPI18n.t('activate.testmode'));
+  }
 
   /* ZX14D- : free 14-day Pro trial */
   if(promoKey.indexOf('ZX14D-')===0){
-    if(isPromoUsed('ZX14D')){ _redeemProcessing=false; return promoAlreadyUsed(m,'ZX14D'); }
+    if(isPromoUsed('ZX14D')) return promoAlreadyUsed(m,'ZX14D');
     markPromoUsed('ZX14D');
-    await markLicenseUsedAsync(key);
-    _redeemProcessing=false;
     return unlockTimed(key,m,14,PPI18n.t('activate.promo.14d'));
   }
 
   /* ZX1M- : free 1-month (30-day) Pro */
   if(promoKey.indexOf('ZX1M-')===0){
-    if(isPromoUsed('ZX1M')){ _redeemProcessing=false; return promoAlreadyUsed(m,'ZX1M'); }
+    if(isPromoUsed('ZX1M')) return promoAlreadyUsed(m,'ZX1M');
     markPromoUsed('ZX1M');
-    await markLicenseUsedAsync(key);
-    _redeemProcessing=false;
     return unlockTimed(key,m,30,PPI18n.t('activate.promo.1m'));
   }
 
   /* ZX5000C- : add 5000 coins */
   if(promoKey.indexOf('ZX5000C-')===0){
-    if(isPromoUsed('ZX5000C')){ _redeemProcessing=false; return promoAlreadyUsed(m,'ZX5000C'); }
+    if(isPromoUsed('ZX5000C')) return promoAlreadyUsed(m,'ZX5000C');
     markPromoUsed('ZX5000C');
-    await markLicenseUsedAsync(key);
     if(window.PPGame && PPGame.addCoins) PPGame.addCoins(5000);
     m.className='msg ok';
     m.textContent=PPI18n.t('activate.promo.5000c');
-    _redeemProcessing=false;
     return;
   }
 
   if(!window.PPLemon || !PPLemon.validateLicense){
     m.className='msg err';
     m.textContent=PPI18n.t('activate.notready');
-    _redeemProcessing=false;
     return;
   }
   /* verify the license key with Lemon Squeezy */
   try{
     const res=await PPLemon.validateLicense(key);
-    console.log('[PromptRunic] redeemCode result:', JSON.stringify(res));
-
-    /* ---- DOUBLE-CHECK: after Lemon Squeezy validation, verify key
-     * was not already used (prevents race condition and ensures
-     * Firestore-based tracking is checked even if local check missed it) ---- */
-    var secondCheck = await isLicenseUsedAsync(key);
-    if(secondCheck.used){
-      m.className='msg err';
-      if(secondCheck.byOtherAccount){
-        m.textContent=PPI18n.t('activate.code.used.other');
-      }else{
-        m.textContent=PPI18n.t('activate.code.used');
-      }
-      _redeemProcessing=false;
-      return;
-    }
-
     if(res.ok && res.kind==='pro'){
-      /* Mark the key as used BEFORE unlocking to prevent reuse */
-      await markLicenseUsedAsync(key);
       /* Lifetime (days===0) → permanent; subscription (days>0) → set expiry */
       if(res.days && res.days > 0){
-        _redeemProcessing=false;
         return unlockTimed(key,m,res.days,PPI18n.t('activate.unlocked.sub').replace('{d}',res.days));
       }
-      _redeemProcessing=false;
       return unlock(key,m,PPI18n.t('activate.unlocked'));
     }
     if(res.ok && res.kind==='coins'){
-      /* Mark the key as used BEFORE adding coins to prevent reuse */
-      await markLicenseUsedAsync(key);
       if(window.PPGame && PPGame.addCoins) PPGame.addCoins(res.coins);
       m.className='msg ok';
       m.textContent=PPI18n.t('activate.coincode').replace('{n}',res.coins);
-      _redeemProcessing=false;
       return;
     }
     if(res.ok){
-      /* Valid key but couldn't determine type (unknown product).
-       * Still mark as used so it can't be re-entered. */
-      await markLicenseUsedAsync(key);
-      console.warn('[PromptRunic] Valid key but unknown product type. product_id=' +
-        (res.product_id||'?') + ', product_name=' + (res.product_name||'?'));
-      m.className='msg err';
-      m.textContent=PPI18n.t('activate.notpro') + ' (Product: ' + (res.product_name||res.product_id||'unknown') + ')';
-      _redeemProcessing=false;
+      m.className='msg err'; m.textContent=PPI18n.t('activate.notpro');
       return;
     }
     if(res.error==='network'){
       m.className='msg err'; m.textContent=PPI18n.t('activate.network');
-      _redeemProcessing=false;
       return;
     }
-    if(res.error==='limit'){
-      /* Activation limit reached means this code was already activated before.
-       * Mark it as used locally/cloud to prevent future attempts. */
-      await markLicenseUsedAsync(key);
-      m.className='msg err'; m.textContent=PPI18n.t('activate.code.used.other');
-      _redeemProcessing=false;
-      return;
-    }
-    /* All other failures (invalid code, not found, etc.) */
-    m.className='msg err'; m.textContent=PPI18n.t('activate.code.used.other');
+    m.className='msg err'; m.textContent=PPI18n.t('activate.invalid');
   }catch(e){
-    console.error('[PromptRunic] redeemCode exception:', e);
     m.className='msg err'; m.textContent=PPI18n.t('activate.network');
   }
-  _redeemProcessing=false;
 }
 
 /* Check / mark promo code usage (per account or per browser) */
@@ -3856,177 +3505,6 @@ function markPromoUsed(code){
 function promoAlreadyUsed(m,code){
   m.className='msg err';
   m.textContent=PPI18n.t('activate.promo.used');
-}
-
-/* ---- License key one-time-use tracking ----
- * Every license key (whether Pro, coin, or credit) can only be used ONCE.
- * This prevents the same code from being entered repeatedly, even across
- * different accounts and devices.
- *
- * Tracking layers:
- *   1. localStorage pp_used_keys array + per-key flags (fast, local)
- *   2. Firestore users/{uid}/usedKeys array (synced on login)
- *   3. Firestore global used_license_keys/{normalizedKey} (cross-account)
- *
- * redeemCode() calls isLicenseUsedAsync() which checks all three layers.
- */
-function isLicenseUsed(key){
-  var normalizedKey = key.trim().toUpperCase();
-  /* Check local list */
-  var usedKeys=[];
-  try{ usedKeys=JSON.parse(lsGet('pp_used_keys')||'[]'); }catch(e){ usedKeys=[]; }
-  if(usedKeys.indexOf(normalizedKey)>=0) return true;
-  /* Check per-key flag (set when signed in) */
-  if(lsGet('pp_used_key_'+normalizedKey)) return true;
-  /* Also check the current pro code — if this is the key that's already
-   * providing the active Pro subscription, it's already used */
-  if(lsGet('pp_pro_code') && lsGet('pp_pro_code').trim().toUpperCase() === normalizedKey) return true;
-  return false;
-}
-
-/* Async version: also checks the global Firestore used_license_keys collection.
- * This is the authoritative check — it prevents the same activation code
- * from being used by different accounts on different devices.
- * MUST be used in redeemCode() before processing any license key.
- *
- * Returns an object: { used: boolean, byOtherAccount: boolean }
- *   used=true, byOtherAccount=false → same account already used this key
- *   used=true, byOtherAccount=true  → a DIFFERENT account already used this key
- *   used=false → key has never been used
- */
-async function isLicenseUsedAsync(key){
-  /* First, do the fast synchronous check (local storage) */
-  if(isLicenseUsed(key)) return {used:true, byOtherAccount:false};
-  var normalizedKey = key.trim().toUpperCase();
-
-  /* Check Firestore: global used_license_keys collection (cross-account) */
-  if(fbReady && db){
-    try{
-      var globalDoc = await db.collection('used_license_keys').doc(normalizedKey).get();
-      if(globalDoc.exists){
-        /* This key was already used — check if by this account or another */
-        var globalData = globalDoc.data()||{};
-        var isOtherAccount = globalData.usedBy && currentUser && globalData.usedBy !== currentUser.uid;
-        /* Mark it locally too */
-        markLicenseUsed(key);
-        return {used:true, byOtherAccount: isOtherAccount};
-      }
-    }catch(e){
-      console.warn('[PromptRunic] Could not check global used keys:', e);
-      /* Fallback: check the user's subcollection (in case global collection
-       * is blocked by Firestore rules) */
-      if(currentUser){
-        try{
-          var subDoc = await db.collection('users').doc(currentUser.uid).collection('used_license_keys').doc(normalizedKey).get();
-          if(subDoc.exists){
-            markLicenseUsed(key);
-            var subData = subDoc.data()||{};
-            var isOther = subData.usedBy && subData.usedBy !== currentUser.uid;
-            return {used:true, byOtherAccount: isOther};
-          }
-        }catch(e2){
-          console.warn('[PromptRunic] Could not check user subcollection used keys:', e2);
-        }
-      }
-    }
-  }
-  /* Check Firestore: current user's usedKeys array (in case local was cleared) */
-  if(fbReady && db && currentUser){
-    try{
-      var userDoc = await db.collection('users').doc(currentUser.uid).get();
-      if(userDoc.exists){
-        var userData = userDoc.data()||{};
-        var cloudUsedKeys = userData.usedKeys || [];
-        if(cloudUsedKeys.indexOf(normalizedKey) >= 0){
-          /* This key was already used by this account — mark locally */
-          markLicenseUsed(key);
-          return {used:true, byOtherAccount:false};
-        }
-      }
-    }catch(e){
-      console.warn('[PromptRunic] Could not check user used keys:', e);
-    }
-  }
-  return {used:false, byOtherAccount:false};
-}
-function markLicenseUsed(key){
-  /* Synchronous version — writes to localStorage immediately, then
-   * fires off async Firestore writes (fire-and-forget).
-   * For the await version, use markLicenseUsedAsync() instead. */
-  var normalizedKey = key.trim().toUpperCase();
-  var usedKeys=[];
-  try{ usedKeys=JSON.parse(lsGet('pp_used_keys')||'[]'); }catch(e){ usedKeys=[]; }
-  if(usedKeys.indexOf(normalizedKey)<0) usedKeys.push(normalizedKey);
-  lsSet('pp_used_keys',JSON.stringify(usedKeys));
-  /* Per-key flag */
-  lsSet('pp_used_key_'+normalizedKey,'1');
-  /* Fire-and-forget Firestore writes */
-  _markLicenseUsedCloud(normalizedKey);
-}
-
-/* Async version: awaits all Firestore writes to ensure the key is
- * properly recorded before returning. This is the RECOMMENDED version
- * to use in redeemCode() to guarantee one-time-use enforcement. */
-async function markLicenseUsedAsync(key){
-  var normalizedKey = key.trim().toUpperCase();
-  /* 1. Write to localStorage (immediate, reliable) */
-  var usedKeys=[];
-  try{ usedKeys=JSON.parse(lsGet('pp_used_keys')||'[]'); }catch(e){ usedKeys=[]; }
-  if(usedKeys.indexOf(normalizedKey)<0) usedKeys.push(normalizedKey);
-  lsSet('pp_used_keys',JSON.stringify(usedKeys));
-  lsSet('pp_used_key_'+normalizedKey,'1');
-
-  /* 2. Await cloud writes to guarantee persistence */
-  await _markLicenseUsedCloud(normalizedKey);
-}
-
-/* Internal: write used key to Firestore (both user doc and global registry).
- * Returns a Promise so callers can await it if needed. */
-function _markLicenseUsedCloud(normalizedKey){
-  if(!currentUser || !fbReady) return Promise.resolve();
-
-  var promises = [];
-
-  /* Write to user's cloud doc */
-  try{
-    promises.push(
-      userDocRef().set({
-        usedKeys:firebase.firestore.FieldValue.arrayUnion(normalizedKey),
-        updatedAt:firebase.firestore.FieldValue.serverTimestamp()
-      },{merge:true}).catch(function(e){
-        console.warn('markLicenseUsed cloud sync failed:', e);
-      })
-    );
-  }catch(e){ console.warn('markLicenseUsed cloud sync',e); }
-
-  /* Write to the GLOBAL used_license_keys collection.
-   * This is the authoritative cross-account registry — once a key is
-   * written here, no other account can ever use it again. */
-  try{
-    promises.push(
-      db.collection('used_license_keys').doc(normalizedKey).set({
-        usedBy: currentUser.uid,
-        usedAt: firebase.firestore.FieldValue.serverTimestamp(),
-        key: normalizedKey
-      }).catch(function(e){
-        console.warn('markLicenseUsed global registry failed:', e);
-        /* If the global registry write fails (e.g., Firestore rules),
-         * try an alternative path: write to a subcollection under the
-         * user's own document where rules are more permissive. */
-        try{
-          db.collection('users').doc(currentUser.uid).collection('used_license_keys').doc(normalizedKey).set({
-            usedBy: currentUser.uid,
-            usedAt: firebase.firestore.FieldValue.serverTimestamp(),
-            key: normalizedKey
-          }).catch(function(e2){
-            console.warn('markLicenseUsed user subcollection fallback failed:', e2);
-          });
-        }catch(e3){}
-      })
-    );
-  }catch(e){ console.warn('markLicenseUsed global registry',e); }
-
-  return Promise.all(promises);
 }
 
 function unlock(key,m,text){
@@ -5047,9 +4525,8 @@ runQuickOptimizer = function(){
     try{ if(window.PPGame && PPGame.addCoins) PPGame.addCoins(100); }catch(_){}
     var score=parseInt(d.score||0,10)||0;
     try{
-      var bestKey = currentUser ? ('pp_game_best_'+currentUser.uid) : 'pp_game_best_guest';
-      var prev=parseInt(localStorage.getItem(bestKey)||'0',10)||0;
-      if(score>prev) localStorage.setItem(bestKey,String(score));
+      var prev=parseInt(localStorage.getItem('pp_game_best')||'0',10)||0;
+      if(score>prev) localStorage.setItem('pp_game_best',String(score));
     }catch(_){}
     try{ if(window.PPGame && PPGame.setGameScore) PPGame.setGameScore(score); }catch(_){}
     /* compute elapsed clear time in whole seconds */
@@ -5405,8 +4882,6 @@ cloudSavePro = function(){
     game:gameData,
     updatedAt:firebase.firestore.FieldValue.serverTimestamp()
   },{merge:true}).catch(function(e){console.warn('save pro+game',e);});
-  /* Also sync public profile when Pro state changes (avatar/level may have changed) */
-  if(typeof syncPublicProfile === 'function') syncPublicProfile();
 };
 
 /* Save bio + game state together */
@@ -5461,9 +4936,8 @@ document.addEventListener('DOMContentLoaded',function(){
 });
 
 /* ============================================================
- *  FRIENDS SYSTEM — QQ-Style — Firestore + Realtime Database
+ *  FRIENDS SYSTEM — Firestore + Realtime Database
  *  Search users, friend requests, online status, RTDB chat
- *  Tab navigation: Chats / Contacts / Discover
  * ============================================================ */
 var _chatFriendUid=null;
 var _chatUnsubscribe=null;
@@ -5472,43 +4946,10 @@ var _friendReqUnsubscribe=null;
 var _convUnsubscribe=null;
 var _totalUnread=0;
 var _origTitle=document.title;
-var _currentFriendsTab='chats';
-var _contactReqOpen=false;
 
 /* Helper: get chat room ID for two users */
 function getChatRoomId(uid1,uid2){
   return [uid1,uid2].sort().join('_');
-}
-
-/* ---- Tab switching ---- */
-function switchFriendsTab(tab){
-  _currentFriendsTab=tab;
-  var tabs=document.querySelectorAll('#friendsTabBar .qq-tab');
-  tabs.forEach(function(t){
-    if(t.getAttribute('data-tab')===tab){
-      t.style.color='var(--accent2)';
-      t.style.borderBottom='2px solid var(--accent2)';
-    }else{
-      t.style.color='var(--muted)';
-      t.style.borderBottom='2px solid transparent';
-    }
-  });
-  document.getElementById('tabChats').style.display=tab==='chats'?'block':'none';
-  document.getElementById('tabContacts').style.display=tab==='contacts'?'block':'none';
-  document.getElementById('tabDiscover').style.display=tab==='discover'?'block':'none';
-  /* Load data for the tab */
-  if(tab==='chats'){loadConversations();}
-  if(tab==='contacts'){loadFriendsList();loadFriendRequests();}
-  if(tab==='discover'){loadSuggestedUsers();}
-}
-
-/* ---- Toggle contact request section ---- */
-function toggleContactReqSection(){
-  _contactReqOpen=!_contactReqOpen;
-  var list=document.getElementById('contactReqList');
-  var arrow=document.getElementById('contactReqArrow');
-  list.style.display=_contactReqOpen?'block':'none';
-  arrow.textContent=_contactReqOpen?'▲':'▼';
 }
 
 /* ---- Toggle friends panel ---- */
@@ -5516,7 +4957,6 @@ function toggleFriendsPanel(){
   var p=document.getElementById('friendsPanel');
   if(p.style.display==='none'||!p.style.display){
     p.style.display='flex';
-    switchFriendsTab(_currentFriendsTab);
     loadFriendsList();
     loadFriendRequests();
     listenForConversations();
@@ -5541,7 +4981,7 @@ function toggleChatMinimize(){
 }
 function closeChatWindow(){
   var cw=document.getElementById('chatWindow');
-  if(cw) cw.style.cssText='display:none!important;position:fixed;bottom:20px;right:380px;width:360px;max-width:90vw;background:var(--panel);border:1px solid var(--border);border-radius:16px;z-index:10001;box-shadow:0 8px 32px rgba(0,0,0,.5);overflow:hidden;resize:both;min-width:280px;min-height:340px';
+  if(cw) cw.style.cssText='display:none!important;position:fixed;bottom:20px;right:360px;width:340px;max-width:90vw;background:var(--panel);border:1px solid var(--border);border-radius:14px;z-index:10001;box-shadow:0 8px 32px rgba(0,0,0,.5);overflow:hidden;resize:both;min-width:260px;min-height:320px';
   if(_chatUnsubscribe){
     try{_chatUnsubscribe();}catch(e){}
     _chatUnsubscribe=null;
@@ -5555,17 +4995,17 @@ async function searchUsers(){
   var query=document.getElementById('friendSearchInput').value.trim();
   if(!query){document.getElementById('friendSearchResults').innerHTML='';return;}
   var results=document.getElementById('friendSearchResults');
-  results.innerHTML='<div style="color:var(--muted);font-size:12px;padding:12px;text-align:center">Searching...</div>';
+  results.innerHTML='<div style="color:var(--muted);font-size:12px;padding:8px">Searching...</div>';
   try{
     var html='';
     var seen={};
     var users=[];
-    /* Search by email (exact match) in users collection */
+    /* Search by email (exact match) */
     try{
       var snap1=await db.collection('users').where('email','==',query).limit(5).get();
       snap1.forEach(function(d){if(!seen[d.id]&&d.id!==currentUser.uid){seen[d.id]=1;users.push({uid:d.id,data:d.data()});}});
     }catch(e){console.warn('email search',e);}
-    /* Search by displayName prefix in pp_public (populated by syncPublicProfile) */
+    /* Search by displayName prefix in pp_public */
     try{
       var snap2=await db.collection('pp_public').where('name','>=',query).where('name','<=',query+'\uf8ff').limit(10).get();
       snap2.forEach(function(d){
@@ -5575,7 +5015,7 @@ async function searchUsers(){
           users.push({uid:d.id,data:{displayName:dd.name,email:dd.email||'',avatar:dd.avatar||0,lvl:dd.lvl||1,bio:dd.bio||''}});
         }
       });
-    }catch(e){console.warn('name search pp_public',e);}
+    }catch(e){console.warn('name search',e);}
     /* Search by email prefix in pp_public */
     try{
       var snap3=await db.collection('pp_public').where('email','>=',query).where('email','<=',query+'\uf8ff').limit(10).get();
@@ -5586,72 +5026,12 @@ async function searchUsers(){
           users.push({uid:d.id,data:{displayName:dd.name,email:dd.email||'',avatar:dd.avatar||0,lvl:dd.lvl||1,bio:dd.bio||''}});
         }
       });
-    }catch(e){console.warn('email prefix search pp_public',e);}
+    }catch(e){console.warn('email prefix search',e);}
     /* Fallback: try displayName in users collection */
     try{
       var snap4=await db.collection('users').where('displayName','>=',query).where('displayName','<=',query+'\uf8ff').limit(10).get();
       snap4.forEach(function(d){if(!seen[d.id]&&d.id!==currentUser.uid){seen[d.id]=1;users.push({uid:d.id,data:d.data()});}});
     }catch(e){console.warn('displayname search',e);}
-    /* Search game-related user data: try users where game.displayName matches */
-    try{
-      var snap5=await db.collection('users').where('game.displayName','>=',query).where('game.displayName','<=',query+'\uf8ff').limit(10).get();
-      snap5.forEach(function(d){
-        if(!seen[d.id]&&d.id!==currentUser.uid){
-          seen[d.id]=1;
-          var dd=d.data()||{};
-          var gd=dd.game||{};
-          users.push({uid:d.id,data:{displayName:gd.displayName||dd.displayName||dd.email||'User',email:dd.email||'',avatar:gd.avatar||0,lvl:gd.lvl||1,bio:dd.bio||''}});
-        }
-      });
-    }catch(e){console.warn('game displayname search',e);}
-    /* FALLBACK: If no Firestore query returned results (possibly due to
-     * missing indexes), try getting all users and filtering client-side.
-     * This is less efficient but ensures search works even without
-     * Firestore composite indexes configured. */
-    if(!users.length && query.length >= 2){
-      try{
-        var allUsersSnap = await db.collection('users').limit(50).get();
-        var ql = query.toLowerCase();
-        allUsersSnap.forEach(function(d){
-          if(seen[d.id] || d.id===currentUser.uid) return;
-          var dd = d.data()||{};
-          var gd = dd.game||{};
-          var name = dd.displayName || gd.displayName || dd.email || '';
-          if(name.toLowerCase().indexOf(ql) >= 0 || (dd.email||'').toLowerCase().indexOf(ql) >= 0){
-            seen[d.id]=1;
-            users.push({uid:d.id, data:{
-              displayName: name,
-              email: dd.email||'',
-              avatar: gd.avatar||0,
-              lvl: gd.lvl||1,
-              bio: dd.bio||''
-            }});
-          }
-        });
-      }catch(e){console.warn('client-side search fallback',e);}
-    }
-    /* Also try pp_public client-side fallback if no results */
-    if(!users.length && query.length >= 2){
-      try{
-        var allPubSnap = await db.collection('pp_public').limit(50).get();
-        var ql = query.toLowerCase();
-        allPubSnap.forEach(function(d){
-          if(seen[d.id] || d.id===currentUser.uid) return;
-          var dd = d.data()||{};
-          var name = dd.name || dd.email || '';
-          if(name.toLowerCase().indexOf(ql) >= 0 || (dd.email||'').toLowerCase().indexOf(ql) >= 0){
-            seen[d.id]=1;
-            users.push({uid:d.id, data:{
-              displayName: name,
-              email: dd.email||'',
-              avatar: dd.avatar||0,
-              lvl: dd.lvl||1,
-              bio: dd.bio||''
-            }});
-          }
-        });
-      }catch(e){console.warn('pp_public client-side search fallback',e);}
-    }
     /* Also search demo/fake users from PPDemo — appear identical to real users */
     if(window.PPDemo&&PPDemo.users){
       var ql=query.toLowerCase();
@@ -5664,7 +5044,7 @@ async function searchUsers(){
         }
       });
     }
-    if(!users.length){results.innerHTML='<div style="color:var(--muted);font-size:12px;padding:12px;text-align:center">No users found for "'+esc(query)+'"</div>';return;}
+    if(!users.length){results.innerHTML='<div style="color:var(--muted);font-size:12px;padding:8px">No users found for "'+esc(query)+'"</div>';return;}
     users.forEach(function(u){
       var d=u.data||{};
       var name=d.displayName||d.email||'User';
@@ -5680,43 +5060,17 @@ async function searchUsers(){
       var alreadySent=isDemo&&_demoSentHas(u.uid);
       var btnHtml=alreadySent?
         '<button id="'+btnId+'" style="background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.3);color:var(--accent2);padding:4px 10px;border-radius:6px;font-size:11px;cursor:default" disabled>Sent</button>':
-        '<button id="'+btnId+'" onclick="event.stopPropagation();sendFriendRequestTo(\''+u.uid+'\',\''+esc(name).replace(/'/g,"\\'")+'\',\''+btnId+'\')" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer">+ Add</button>';
-      html+='<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;border:1px solid var(--border);margin-bottom:6px;background:var(--panel2);transition:background .15s" onmouseenter="this.style.background=\'rgba(124,92,255,.08)\'" onmouseleave="this.style.background=\'var(--panel2)\'">'+
-        '<div style="width:36px;height:36px;border-radius:10px;overflow:hidden;border:1px solid var(--border);cursor:pointer;transition:transform .15s" onclick="viewSearchUser(\''+u.uid+'\',\''+esc(name).replace(/'/g,"\\'")+'\')" onmouseenter="this.style.transform=\'scale(1.12)\'" onmouseleave="this.style.transform=\'scale(1)\'">'+svg+'</div>'+
-        '<div style="flex:1;min-width:0;cursor:pointer" onclick="viewSearchUser(\''+u.uid+'\',\''+esc(name).replace(/'/g,"\\'")+'\')"><div style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(name)+'</div>'+
+        '<button id="'+btnId+'" onclick="event.stopPropagation();sendFriendRequestTo(\''+u.uid+'\',\''+esc(name).replace(/'/g,"\\'")+'\',\''+btnId+'\')" style="background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer">+ Add</button>';
+      html+='<div style="display:flex;align-items:center;gap:8px;padding:8px;border-radius:8px;border:1px solid var(--border);margin-bottom:4px;background:var(--panel2);cursor:pointer" onclick="viewSearchUser(\''+u.uid+'\',\''+esc(name).replace(/'/g,"\\'")+'\')">'+
+        '<div style="width:32px;height:32px;border-radius:8px;overflow:hidden;border:1px solid var(--border)">'+svg+'</div>'+
+        '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(name)+'</div>'+
         subLine+bioLine+
         '</div>'+
         btnHtml+
       '</div>';
     });
     results.innerHTML=html;
-  }catch(e){console.warn('search users',e);results.innerHTML='<div style="color:var(--muted);font-size:12px;padding:12px;text-align:center">Error searching. Try again.</div>';}
-}
-
-/* ---- Load suggested users for Discover tab ---- */
-function loadSuggestedUsers(){
-  var container=document.getElementById('suggestedUsers');
-  if(!container) return;
-  if(window.PPDemo&&PPDemo.users&&PPDemo.users.length){
-    var html='';
-    PPDemo.users.slice(0,5).forEach(function(u){
-      var svg=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(u.avatar||0):'';
-      var alreadySent=_demoSentHas(u._uid);
-      var btnId='sugBtn_'+u._uid.replace(/[^a-zA-Z0-9]/g,'_');
-      var btnHtml=alreadySent?
-        '<button id="'+btnId+'" style="background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.3);color:var(--accent2);padding:4px 10px;border-radius:6px;font-size:11px;cursor:default" disabled>Sent</button>':
-        '<button id="'+btnId+'" onclick="sendFriendRequestTo(\''+u._uid+'\',\''+esc(u.name).replace(/'/g,"\\'")+'\',\''+btnId+'\')" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer">+ Add</button>';
-      html+='<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)">'+
-        '<div style="width:34px;height:34px;border-radius:10px;overflow:hidden;border:1px solid var(--border)">'+svg+'</div>'+
-        '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(u.name)+'</div>'+
-        '<div style="font-size:10px;color:var(--muted)">Lvl '+(u.lvl||1)+'</div></div>'+
-        btnHtml+
-      '</div>';
-    });
-    container.innerHTML=html;
-  }else{
-    container.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:10px">No suggestions yet</div>';
-  }
+  }catch(e){console.warn('search users',e);results.innerHTML='<div style="color:var(--muted);font-size:12px">Error searching. Try again.</div>';}
 }
 
 /* View a searched user's profile summary in a popup */
@@ -5734,7 +5088,7 @@ function viewSearchUser(uid,name){
   }
   var content=document.getElementById('searchUserProfileContent');
 
-  /* Demo user: show profile with stats like community panel */
+  /* Demo user: show profile identical to real user with Add Friend button */
   if(uid.indexOf('demo_')===0){
     var demoUser=null;
     if(window.PPDemo&&PPDemo.users){
@@ -5745,12 +5099,7 @@ function viewSearchUser(uid,name){
     var dName=demoUser?demoUser.name:name||'User';
     var dAvatar=demoUser?demoUser.avatar||0:0;
     var dLvl=demoUser?demoUser.lvl||1:1;
-    var dXp=demoUser?demoUser.xp||0:0;
-    var dCoins=demoUser?demoUser.coins||0:0;
-    var dBest=demoUser?demoUser.best||0:0;
     var svg=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(dAvatar):'';
-    var dRankInfo=(window.PPGame&&PPGame.rankOf)?PPGame.rankOf(dLvl):{name:'Bronze',color:'#cd7f32'};
-    var dTitleInfo=(window.PPGame&&PPGame.levelTitle)?PPGame.levelTitle(dLvl):'Newcomer';
     var fakeBios=[
       "just here for the prompts lol",
       "AI enthusiast \ud83e\udd16 coffee addict \u2615",
@@ -5774,16 +5123,10 @@ function viewSearchUser(uid,name){
     var demoAlreadySent=_demoSentHas(uid);
     var profileBtnHtml=demoAlreadySent?
       '<button id="profileAddBtn" style="margin-top:12px;background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.3);color:var(--accent2);padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:default" disabled>Sent</button>':
-      '<button id="profileAddBtn" onclick="sendFriendRequestTo(\''+uid+'\',\''+esc(dName).replace(/'/g,"\\'")+'\',\'profileAddBtn\');document.getElementById(\'searchUserProfile\').classList.remove(\'show\')" style="margin-top:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">+ Add Friend</button>';
+      '<button id="profileAddBtn" onclick="sendFriendRequestTo(\''+uid+'\',\''+esc(dName).replace(/'/g,"\\'")+'\',\'profileAddBtn\');document.getElementById(\'searchUserProfile\').classList.remove(\'show\')" style="margin-top:12px;background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff;border:none;padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">+ Add Friend</button>';
     content.innerHTML='<div style="text-align:center">'+
-      '<div style="width:80px;height:80px;border-radius:16px;overflow:hidden;border:1px solid var(--border);margin:0 auto 8px">'+svg+'</div>'+
+      '<div style="width:64px;height:64px;border-radius:14px;overflow:hidden;border:1px solid var(--border);margin:0 auto 8px">'+svg+'</div>'+
       '<div style="font-size:16px;font-weight:800">'+esc(dName)+'</div>'+
-      '<div style="font-size:11px;color:var(--muted)">'+esc(dTitleInfo)+' <span style="border:1px solid '+dRankInfo.color+';color:'+dRankInfo.color+';padding:1px 6px;border-radius:10px;font-size:10px">'+esc(dRankInfo.name)+'</span></div>'+
-      '<div style="display:flex;gap:8px;justify-content:center;margin-top:8px">'+
-        '<div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:4px 10px;text-align:center"><div style="font-size:12px;font-weight:700">Lv '+dLvl+'</div><div style="font-size:9px;color:var(--muted)">Level</div></div>'+
-        '<div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:4px 10px;text-align:center"><div style="font-size:12px;font-weight:700">🪙 '+dCoins+'</div><div style="font-size:9px;color:var(--muted)">Coins</div></div>'+
-        '<div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:4px 10px;text-align:center"><div style="font-size:12px;font-weight:700">🔥 '+dBest+'</div><div style="font-size:9px;color:var(--muted)">Streak</div></div>'+
-      '</div>'+
       '<div style="margin-top:8px;font-size:13px;color:var(--text);font-style:italic;padding:8px;border-top:1px solid var(--border)">"'+esc(bio)+'"</div>'+
       profileBtnHtml+
     '</div>';
@@ -5791,127 +5134,24 @@ function viewSearchUser(uid,name){
     return;
   }
 
-  if(!fbReady){
-    /* Not ready yet — show minimal profile with just the name */
-    content.innerHTML='<div style="text-align:center">'+
-      '<div style="font-size:16px;font-weight:800">'+esc(name)+'</div>'+
-      '<div style="font-size:12px;color:var(--muted);margin-top:8px">Loading profile...</div>'+
-    '</div>';
-    overlay.classList.add('show');
-    return;
-  }
-  db.collection('users').doc(uid).get().then(async function(doc){
-    /* Helper: check friend status for the current user vs this uid */
-    var friendStatus='none';
-    if(fbReady&&currentUser){
-      try{
-        var friendDoc=await db.collection('friends').doc(currentUser.uid).collection('list').doc(uid).get();
-        if(friendDoc.exists){
-          var fs=friendDoc.data().status;
-          if(fs==='accepted') friendStatus='accepted';
-          else if(fs==='pending_sent') friendStatus='sent';
-          else if(fs==='pending_received') friendStatus='received';
-        }
-      }catch(e){}
-      /* Also check notifications for a pending request FROM this user */
-      if(friendStatus==='none'){
-        try{
-          var notifCheck=await db.collection('notifications').doc(currentUser.uid).collection('items')
-            .where('type','==','friend_request')
-            .where('from','==',uid)
-            .where('status','==','pending')
-            .get();
-          if(!notifCheck.empty) friendStatus='received';
-        }catch(e){}
-      }
-    }
-    function profileBtnHtml(btnUid,btnName){
-      if(friendStatus==='accepted') return '<button id="profileAddBtn" style="margin-top:12px;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);color:#7ee2a4;padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:default" disabled>Already Friends</button>';
-      if(friendStatus==='sent') return '<button id="profileAddBtn" style="margin-top:12px;background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.3);color:var(--accent2);padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:default" disabled>Sent</button>';
-      if(friendStatus==='received') return '<button id="profileAddBtn" style="margin-top:12px;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);color:#7ee2a4;padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:default" disabled>Request Received</button>';
-      return '<button id="profileAddBtn" onclick="sendFriendRequestTo(\''+btnUid+'\',\''+esc(btnName).replace(/'/g,"\\'")+'\',\'profileAddBtn\');document.getElementById(\'searchUserProfile\').classList.remove(\'show\')" style="margin-top:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">+ Add Friend</button>';
-    }
-    if(!doc.exists){
-      /* User doc doesn't exist — try pp_public as fallback */
-      db.collection('pp_public').doc(uid).get().then(function(pubDoc){
-        var pd=pubDoc.data()||{};
-        var bio=pd.bio||'';
-        var displayName=pd.name||name||'User';
-        var email=pd.email||'';
-        var avatar=pd.avatar||0;
-        var svg=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(avatar):'';
-        content.innerHTML='<div style="text-align:center">'+
-          '<div style="width:80px;height:80px;border-radius:16px;overflow:hidden;border:1px solid var(--border);margin:0 auto 8px">'+svg+'</div>'+
-          '<div style="font-size:16px;font-weight:800">'+esc(displayName)+'</div>'+
-          '<div style="font-size:12px;color:var(--muted)">'+esc(email)+'</div>'+
-          (bio?'<div style="margin-top:8px;font-size:13px;color:var(--text);font-style:italic;padding:8px;border-top:1px solid var(--border)">"'+esc(bio)+'"</div>':'')+
-          profileBtnHtml(uid,displayName)+
-        '</div>';
-        overlay.classList.add('show');
-      }).catch(function(e2){
-        console.warn('view user pp_public fallback',e2);
-        /* Last resort: show minimal profile */
-        content.innerHTML='<div style="text-align:center">'+
-          '<div style="font-size:16px;font-weight:800">'+esc(name)+'</div>'+
-          profileBtnHtml(uid,name)+
-        '</div>';
-        overlay.classList.add('show');
-      });
-      return;
-    }
+  if(!fbReady) return;
+  db.collection('users').doc(uid).get().then(function(doc){
     var d=doc.data()||{};
     var bio=d.bio||'';
     var displayName=d.displayName||name||'User';
     var email=d.email||'';
     var avatar=0;
-    var lvl=1, xp=0, coins=0, bestStreak=0;
-    try{
-      if(d.game&&d.game.avatar) avatar=d.game.avatar;
-      if(d.game&&d.game.lvl) lvl=d.game.lvl;
-      if(d.game&&d.game.xp) xp=d.game.xp;
-      if(d.game&&d.game.coins) coins=d.game.coins;
-      if(d.game&&d.game.best) bestStreak=d.game.best;
-    }catch(e){}
+    try{if(d.game&&d.game.avatar) avatar=d.game.avatar;}catch(e){}
     var svg=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(avatar):'';
-    var rankInfo=(window.PPGame&&PPGame.rankOf)?PPGame.rankOf(lvl):{name:'Bronze',color:'#cd7f32'};
-    var titleInfo=(window.PPGame&&PPGame.levelTitle)?PPGame.levelTitle(lvl):'Newcomer';
     content.innerHTML='<div style="text-align:center">'+
-      '<div style="width:80px;height:80px;border-radius:16px;overflow:hidden;border:1px solid var(--border);margin:0 auto 8px">'+svg+'</div>'+
+      '<div style="width:64px;height:64px;border-radius:14px;overflow:hidden;border:1px solid var(--border);margin:0 auto 8px">'+svg+'</div>'+
       '<div style="font-size:16px;font-weight:800">'+esc(displayName)+'</div>'+
-      '<div style="font-size:11px;color:var(--muted)">'+esc(titleInfo)+' <span style="border:1px solid '+rankInfo.color+';color:'+rankInfo.color+';padding:1px 6px;border-radius:10px;font-size:10px">'+esc(rankInfo.name)+'</span></div>'+
       '<div style="font-size:12px;color:var(--muted)">'+esc(email)+'</div>'+
-      '<div style="display:flex;gap:8px;justify-content:center;margin-top:8px">'+
-        '<div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:4px 10px;text-align:center"><div style="font-size:12px;font-weight:700">Lv '+lvl+'</div><div style="font-size:9px;color:var(--muted)">Level</div></div>'+
-        '<div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:4px 10px;text-align:center"><div style="font-size:12px;font-weight:700">🪙 '+coins+'</div><div style="font-size:9px;color:var(--muted)">Coins</div></div>'+
-        '<div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:4px 10px;text-align:center"><div style="font-size:12px;font-weight:700">🔥 '+bestStreak+'</div><div style="font-size:9px;color:var(--muted)">Streak</div></div>'+
-      '</div>'+
       (bio?'<div style="margin-top:8px;font-size:13px;color:var(--text);font-style:italic;padding:8px;border-top:1px solid var(--border)">"'+esc(bio)+'"</div>':'')+
-      profileBtnHtml(uid,displayName)+
+      '<button id="profileAddBtn" onclick="sendFriendRequestTo(\''+uid+'\',\''+esc(displayName).replace(/'/g,"\\'")+'\',\'profileAddBtn\');document.getElementById(\'searchUserProfile\').classList.remove(\'show\')" style="margin-top:12px;background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff;border:none;padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">+ Add Friend</button>'+
     '</div>';
     overlay.classList.add('show');
-  }).catch(function(e){
-    console.warn('view user',e);
-    /* Instead of just showing "Could not load profile", try pp_public as fallback */
-    db.collection('pp_public').doc(uid).get().then(function(pubDoc){
-      var pd=pubDoc.data()||{};
-      var pName=pd.name||name||'User';
-      var pEmail=pd.email||'';
-      var pAvatar=pd.avatar||0;
-      var pBio=pd.bio||'';
-      var svg=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(pAvatar):'';
-      content.innerHTML='<div style="text-align:center">'+
-        '<div style="width:80px;height:80px;border-radius:16px;overflow:hidden;border:1px solid var(--border);margin:0 auto 8px">'+svg+'</div>'+
-        '<div style="font-size:16px;font-weight:800">'+esc(pName)+'</div>'+
-        '<div style="font-size:12px;color:var(--muted)">'+esc(pEmail)+'</div>'+
-        (pBio?'<div style="margin-top:8px;font-size:13px;color:var(--text);font-style:italic;padding:8px;border-top:1px solid var(--border)">"'+esc(pBio)+'"</div>':'')+
-        profileBtnHtml(uid,pName)+
-      '</div>';
-      overlay.classList.add('show');
-    }).catch(function(e2){
-      console.warn('view user pp_public fallback also failed',e2);
-      toast('Could not load profile','info');
-    });
-  });
+  }).catch(function(e){console.warn('view user',e);toast('Could not load profile','info');});
 }
 
 /* ---- Demo user friend request local storage ---- */
@@ -5923,41 +5163,6 @@ function _demoSentSave(uid,name){
 }
 function _demoSentHas(uid){return !!_demoSentMap()[uid];}
 
-/* ---- Set button to "Sent" state (used by sendFriendRequestTo) ---- */
-function _setBtnSent(btnId,isProfileBtn){
-  var btn=document.getElementById(btnId);
-  if(btn){
-    if(isProfileBtn){
-      btn.textContent='Sent';
-      btn.style.cssText='margin-top:12px;background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.3);color:var(--accent2);padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:default';
-    }else{
-      btn.textContent='Sent';
-      btn.style.cssText='background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.3);color:var(--accent2);padding:4px 10px;border-radius:6px;font-size:11px;cursor:default';
-    }
-    btn.disabled=true;
-    btn.onclick=null;
-  }
-  /* Also update the other button type if it exists */
-  if(!isProfileBtn){
-    var pBtn=document.getElementById('profileAddBtn');
-    if(pBtn){_setBtnSent('profileAddBtn',true);}
-  }else{
-    /* Try updating search result buttons too */
-    var allBtns=document.querySelectorAll('[id^="addBtn_"]');
-    allBtns.forEach(function(b){_setBtnSent(b.id,false);});
-  }
-}
-
-/* ---- Revert button to "+ Add" state on error ---- */
-function _revertBtnAdd(btnId){
-  var btn=document.getElementById(btnId);
-  if(btn){
-    btn.textContent='+ Add';
-    btn.style.cssText='background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer';
-    btn.disabled=false;
-  }
-}
-
 /* ---- Send friend request ---- */
 async function sendFriendRequestTo(uid,name,btnId){
   if(!fbReady||!currentUser){toast('Please sign in first','info');return;}
@@ -5966,201 +5171,91 @@ async function sendFriendRequestTo(uid,name,btnId){
   if(uid.indexOf('demo_')===0){
     if(_demoSentHas(uid)){toast('Request already sent','info');return;}
     _demoSentSave(uid,name);
-    /* Update ALL buttons to "Sent" state immediately */
-    _setBtnSent(btnId,btnId==='profileAddBtn');
+    /* Update button to "Sent" state immediately */
+    if(btnId){
+      var dBtn=document.getElementById(btnId);
+      if(dBtn){
+        dBtn.textContent='Sent';
+        dBtn.style.cssText='background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.3);color:var(--accent2);padding:4px 10px;border-radius:6px;font-size:11px;cursor:default';
+        dBtn.disabled=true;
+        dBtn.onclick=null;
+      }
+    }
+    /* Also update profile popup button if open */
+    var pBtn=document.getElementById('profileAddBtn');
+    if(pBtn){
+      pBtn.textContent='Sent';
+      pBtn.style.cssText='margin-top:12px;background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.3);color:var(--accent2);padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:default';
+      pBtn.disabled=true;
+      pBtn.onclick=null;
+    }
     toast('Friend request sent to '+name);
     loadFriendsList();
     return;
   }
-  /* Real user: Immediately update button to "Sent" state BEFORE async write */
-  _setBtnSent(btnId,btnId==='profileAddBtn');
+  /* Real user: Immediately update button to "Sent" state */
+  if(btnId){
+    var btn=document.getElementById(btnId);
+    if(btn){
+      btn.textContent='Sent';
+      btn.style.cssText='background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.3);color:var(--accent2);padding:4px 10px;border-radius:6px;font-size:11px;cursor:default';
+      btn.disabled=true;
+      btn.onclick=null;
+    }
+  }
   try{
-    /* Check if already friends in our own list */
+    /* Check if already friends or pending */
     var existing=await db.collection('friends').doc(currentUser.uid).collection('list').doc(uid).get();
     if(existing.exists){
       var st=existing.data().status;
-      if(st==='pending_sent'||st==='pending_received'){toast('Request already sent','info');return;}
+      if(st==='pending_sent'){toast('Request already sent','info');return;}
       if(st==='accepted'){toast('Already friends','info');return;}
     }
-
-    /* Check if there's already a pending request in the global collection */
-    var existingReq=await db.collection('friend_requests')
-      .where('from','==',currentUser.uid)
-      .where('to','==',uid)
-      .where('status','==','pending')
-      .get();
-    if(!existingReq.empty){
-      toast('Request already sent','info');
-      return;
-    }
-
-    /* Also check for a reverse pending request (they sent us one first) */
-    var reverseReq=await db.collection('friend_requests')
-      .where('from','==',uid)
-      .where('to','==',currentUser.uid)
-      .where('status','==','pending')
-      .get();
-    if(!reverseReq.empty){
-      toast('This user already sent you a request — check your incoming requests!','info');
-      return;
-    }
-
+    /* Write pending request for both users */
+    var batch=db.batch();
+    batch.set(db.collection('friends').doc(currentUser.uid).collection('list').doc(uid),{
+      uid:uid,name:name,status:'pending_sent',addedAt:firebase.firestore.FieldValue.serverTimestamp()
+    },{merge:true});
     var myName=currentUser.displayName||currentUser.email.split('@')[0];
-
-    /* Write to our own friends list as "pending_sent" FIRST (this should
-     * always work since Firestore rules allow users to write to their own
-     * friends subcollection). */
-    try{
-      await db.collection('friends').doc(currentUser.uid).collection('list').doc(uid).set({
-        uid:uid,name:name,status:'pending_sent',addedAt:firebase.firestore.FieldValue.serverTimestamp()
-      },{merge:true});
-    }catch(selfWriteErr){
-      console.warn('Could not write to own friends list:', selfWriteErr);
-    }
-
-    /* Write a friend request to the GLOBAL friend_requests collection.
-     * If this fails (e.g., Firestore rules), the request still exists
-     * in our own friends list so we can track it. */
-    try{
-      await db.collection('friend_requests').add({
-        from: currentUser.uid,
-        fromName: myName,
-        to: uid,
-        toName: name,
-        status: 'pending',
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-    }catch(globalWriteErr){
-      console.warn('Could not write to global friend_requests (non-critical):', globalWriteErr);
-    }
-
-    /* Write a notification to the top-level notifications collection so the
-     * target user can see the friend request even if the friends subcollection
-     * write fails due to Firestore rules.
-     * Firestore rules recommendation:
-     *   match /notifications/{userId}/items/{itemId} {
-     *     allow read: if request.auth != null && request.auth.uid == userId;
-     *     allow create: if request.auth != null;
-     *   }
-     */
-    try{
-      await db.collection('notifications').doc(uid).collection('items').add({
-        type:'friend_request',
-        from:currentUser.uid,
-        fromName:myName,
-        status:'pending',
-        createdAt:firebase.firestore.FieldValue.serverTimestamp()
-      });
-    }catch(notifErr){
-      console.warn('Could not write notification (non-critical):', notifErr);
-    }
-
-    /* Also write a pending_received entry in the target user's friends list
-     * so they can see the request even without the global collection.
-     * This may fail due to Firestore rules — the notifications collection
-     * above is the reliable fallback. */
-    try{
-      await db.collection('friends').doc(uid).collection('list').doc(currentUser.uid).set({
-        uid:currentUser.uid,name:myName,status:'pending_received',addedAt:firebase.firestore.FieldValue.serverTimestamp()
-      },{merge:true});
-    }catch(otherWriteErr){
-      console.warn('Could not write to other user friends list (expected — they will use notifications collection):', otherWriteErr);
-    }
-
+    batch.set(db.collection('friends').doc(uid).collection('list').doc(currentUser.uid),{
+      uid:currentUser.uid,name:myName,status:'pending_received',addedAt:firebase.firestore.FieldValue.serverTimestamp()
+    },{merge:true});
+    await batch.commit();
     toast('Friend request sent to '+name);
     loadFriendsList();
     loadFriendRequests();
   }catch(e){
     console.warn('send friend req',e);
     toast('Error sending request','info');
-    /* Revert button on error */
-    _revertBtnAdd(btnId);
+    if(btnId){
+      var btn3=document.getElementById(btnId);
+      if(btn3){btn3.textContent='+ Add';btn3.style.cssText='background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer';btn3.disabled=false;}
+    }
   }
 }
 
 /* ---- Load friend requests ---- */
-async function loadFriendRequests(){
+function loadFriendRequests(){
   if(!fbReady||!currentUser) return;
-  var list=document.getElementById('contactReqList');
-  var countEl=document.getElementById('contactReqCount');
-  try{
-    var items=[];
-
-    /* Method 1: Read from global friend_requests collection (primary) */
-    try{
-      var reqSnap=await db.collection('friend_requests')
-        .where('to','==',currentUser.uid)
-        .where('status','==','pending')
-        .get();
-      reqSnap.forEach(function(doc){
-        var d=doc.data();
-        items.push({uid:d.from,name:d.fromName||'User',addedAt:d.createdAt||null,requestDocId:doc.id});
-      });
-    }catch(reqErr){
-      console.warn('friend_requests query failed, trying fallback',reqErr);
-    }
-
-    /* Method 2: Also check own friends list for pending_received (legacy) */
-    try{
-      var snap=await db.collection('friends').doc(currentUser.uid).collection('list').get();
-      snap.forEach(function(doc){
-        var d=doc.data();
-        if(d.status==='pending_received'){
-          /* Avoid duplicates */
-          var alreadyExists=items.some(function(it){return it.uid===(d.uid||doc.id);});
-          if(!alreadyExists){
-            items.push({uid:d.uid||doc.id,name:d.name||'User',addedAt:d.addedAt||null,requestDocId:null});
-          }
-        }
-      });
-    }catch(e1){
-      console.warn('friends list pending_received query failed',e1);
-    }
-
-    /* Method 3: Also check notifications collection for friend_request notifications */
-    try{
-      var notifSnap=await db.collection('notifications').doc(currentUser.uid).collection('items')
-        .where('type','==','friend_request')
-        .where('status','==','pending')
-        .get();
-      notifSnap.forEach(function(doc){
-        var d=doc.data();
-        var notifUid=d.from||'';
-        /* Avoid duplicates with methods 1 & 2 */
-        var alreadyExists=items.some(function(it){return it.uid===notifUid;});
-        if(!alreadyExists&&notifUid){
-          items.push({uid:notifUid,name:d.fromName||'User',addedAt:d.createdAt||null,requestDocId:null,notifDocId:doc.id});
-        }
-      });
-    }catch(notifErr){
-      console.warn('notifications query failed',notifErr);
-    }
-
-    /* Sort client-side by addedAt descending */
-    items.sort(function(a,b){
-      var ta=a.addedAt?((a.addedAt.toDate?a.addedAt.toDate():a.addedAt).getTime()):0;
-      var tb=b.addedAt?((b.addedAt.toDate?b.addedAt.toDate():b.addedAt).getTime()):0;
-      return tb-ta;
-    });
-    updateReqBadge(items.length);
-    if(countEl) countEl.textContent=items.length?'('+items.length+')':'';
-    if(!items.length){
-      list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:10px">No pending requests</div>';
-      return;
-    }
+  var list=document.getElementById('friendReqList');
+  db.collection('friends').doc(currentUser.uid).collection('list').where('status','==','pending_received').orderBy('addedAt','desc').get().then(function(snap){
+    if(snap.empty){list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:10px">No pending requests</div>';updateReqBadge(0);return;}
     var html='';
-    items.forEach(function(item){
-      html+='<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;border:1px solid var(--border);margin-bottom:4px;background:var(--panel2)">'+
-        '<div style="flex:1;font-size:13px;font-weight:600">'+esc(item.name)+'</div>'+
-        '<button onclick="acceptFriendRequest(\''+item.uid+'\',\''+esc(item.name).replace(/'/g,"\\'")+'\',\''+(item.requestDocId||'')+'\')" style="background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);color:#7ee2a4;padding:5px 12px;border-radius:8px;font-size:11px;cursor:pointer;font-weight:600">Accept</button>'+
-        '<button onclick="declineFriendRequest(\''+item.uid+'\',\''+(item.requestDocId||'')+'\')" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:#ef4444;padding:5px 12px;border-radius:8px;font-size:11px;cursor:pointer;font-weight:600">Decline</button>'+
+    var count=0;
+    snap.forEach(function(doc){
+      count++;
+      var d=doc.data();
+      var uid=d.uid||doc.id;
+      var name=d.name||'User';
+      html+='<div style="display:flex;align-items:center;gap:8px;padding:8px;border-radius:8px;border:1px solid var(--border);margin-bottom:4px;background:var(--panel2)">'+
+        '<div style="flex:1;font-size:13px">'+esc(name)+'</div>'+
+        '<button onclick="acceptFriendRequest(\''+uid+'\',\''+esc(name).replace(/'/g,"\\'")+'\')" style="background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);color:#7ee2a4;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer">Accept</button>'+
+        '<button onclick="declineFriendRequest(\''+uid+'\')" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:#ef4444;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer">Decline</button>'+
       '</div>';
     });
     list.innerHTML=html;
-  }catch(e){
-    console.warn('load req',e);
-    list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:10px">Could not load requests</div>';
-  }
+    updateReqBadge(count);
+  }).catch(function(e){console.warn('load req',e);list.innerHTML='<div style="color:var(--muted);font-size:12px">Error loading</div>';});
 }
 
 function updateReqBadge(count){
@@ -6171,211 +5266,44 @@ function updateReqBadge(count){
 }
 
 /* Accept friend request */
-async function acceptFriendRequest(uid,name,requestDocId){
+async function acceptFriendRequest(uid,name){
   if(!fbReady||!currentUser) return;
   var myName=currentUser.displayName||currentUser.email.split('@')[0];
-  try{
-    /* Write to our own friends list as "accepted" */
-    await db.collection('friends').doc(currentUser.uid).collection('list').doc(uid).set({
-      uid:uid,name:name,status:'accepted',addedAt:firebase.firestore.FieldValue.serverTimestamp()
-    },{merge:true});
-
-    /* Try to write to the other user's friends list too (may fail due to rules) */
-    try{
-      await db.collection('friends').doc(uid).collection('list').doc(currentUser.uid).set({
-        uid:currentUser.uid,name:myName,status:'accepted',addedAt:firebase.firestore.FieldValue.serverTimestamp()
-      },{merge:true});
-    }catch(otherWriteErr){
-      console.warn('Could not write to other user friends list (non-critical):', otherWriteErr);
-    }
-
-    /* Update the friend_requests document to "accepted" */
-    if(requestDocId){
-      try{
-        await db.collection('friend_requests').doc(requestDocId).update({status:'accepted'});
-      }catch(reqUpdateErr){
-        console.warn('Could not update friend_requests doc (non-critical):', reqUpdateErr);
-      }
-    }else{
-      /* No requestDocId — try to find and update the request */
-      try{
-        var reqSnap=await db.collection('friend_requests')
-          .where('from','==',uid)
-          .where('to','==',currentUser.uid)
-          .where('status','==','pending')
-          .get();
-        reqSnap.forEach(function(doc){
-          doc.ref.update({status:'accepted'});
-        });
-      }catch(e){}
-    }
-
-    /* Also mark the notification as accepted */
-    try{
-      var notifSnap=await db.collection('notifications').doc(currentUser.uid).collection('items')
-        .where('type','==','friend_request')
-        .where('from','==',uid)
-        .where('status','==','pending')
-        .get();
-      notifSnap.forEach(function(doc){
-        doc.ref.update({status:'accepted'});
-      });
-    }catch(e){}
-
-    toast(name+' is now your friend!');
-    loadFriendRequests();
-    loadFriendsList();
-  }catch(e){
-    console.warn('accept friend',e);
-    toast('Error accepting request','info');
-  }
+  var batch=db.batch();
+  batch.set(db.collection('friends').doc(currentUser.uid).collection('list').doc(uid),{
+    uid:uid,name:name,status:'accepted',addedAt:firebase.firestore.FieldValue.serverTimestamp()
+  },{merge:true});
+  batch.set(db.collection('friends').doc(uid).collection('list').doc(currentUser.uid),{
+    uid:currentUser.uid,name:myName,status:'accepted',addedAt:firebase.firestore.FieldValue.serverTimestamp()
+  },{merge:true});
+  try{await batch.commit();toast(name+' is now your friend!');loadFriendRequests();loadFriendsList();}
+  catch(e){console.warn('accept friend',e);toast('Error accepting request','info');}
 }
 
 /* Decline friend request */
-async function declineFriendRequest(uid,requestDocId){
+async function declineFriendRequest(uid){
   if(!fbReady||!currentUser) return;
-  try{
-    /* Remove from our own friends list */
-    try{
-      await db.collection('friends').doc(currentUser.uid).collection('list').doc(uid).delete();
-    }catch(e){}
-
-    /* Update the friend_requests document to "declined" */
-    if(requestDocId){
-      try{
-        await db.collection('friend_requests').doc(requestDocId).update({status:'declined'});
-      }catch(e){}
-    }else{
-      /* No requestDocId — try to find and update the request */
-      try{
-        var reqSnap=await db.collection('friend_requests')
-          .where('from','==',uid)
-          .where('to','==',currentUser.uid)
-          .where('status','==','pending')
-          .get();
-        reqSnap.forEach(function(doc){
-          doc.ref.update({status:'declined'});
-        });
-      }catch(e){}
-    }
-
-    /* Also mark the notification as declined */
-    try{
-      var notifSnap2=await db.collection('notifications').doc(currentUser.uid).collection('items')
-        .where('type','==','friend_request')
-        .where('from','==',uid)
-        .where('status','==','pending')
-        .get();
-      notifSnap2.forEach(function(doc){
-        doc.ref.update({status:'declined'});
-      });
-    }catch(e){}
-
-    loadFriendRequests();
-    loadFriendsList();
-  }catch(e){
-    console.warn('decline friend',e);
-  }
+  var batch=db.batch();
+  batch.delete(db.collection('friends').doc(currentUser.uid).collection('list').doc(uid));
+  batch.delete(db.collection('friends').doc(uid).collection('list').doc(currentUser.uid));
+  try{await batch.commit();loadFriendRequests();loadFriendsList();}
+  catch(e){console.warn('decline friend',e);}
 }
 
-/* ---- Cancel/withdraw a sent friend request ---- */
-async function cancelFriendRequest(uid,name){
-  if(!currentUser) return;
-  /* Demo user: remove from localStorage only */
-  if(uid.indexOf('demo_')===0){
-    var m=_demoSentMap();
-    delete m[uid];
-    localStorage.setItem('pp_demo_sent',JSON.stringify(m));
-    toast('Friend request to '+(name||'user')+' withdrawn');
-    loadFriendsList();
-    return;
-  }
-  if(!fbReady) return;
-  try{
-    /* Remove from our own friends list */
-    await db.collection('friends').doc(currentUser.uid).collection('list').doc(uid).delete();
-    /* Update any matching friend_requests to "cancelled" */
-    try{
-      var reqSnap=await db.collection('friend_requests')
-        .where('from','==',currentUser.uid)
-        .where('to','==',uid)
-        .where('status','==','pending')
-        .get();
-      reqSnap.forEach(function(doc){
-        doc.ref.update({status:'cancelled'});
-      });
-    }catch(e){}
-    /* Also mark the notification as cancelled so the other user stops seeing it */
-    try{
-      var notifSnap=await db.collection('notifications').doc(uid).collection('items')
-        .where('type','==','friend_request')
-        .where('from','==',currentUser.uid)
-        .where('status','==','pending')
-        .get();
-      notifSnap.forEach(function(doc){
-        doc.ref.update({status:'cancelled'});
-      });
-    }catch(e){}
-    /* Also try to remove the pending_received entry from the other user's list */
-    try{
-      await db.collection('friends').doc(uid).collection('list').doc(currentUser.uid).delete();
-    }catch(e){}
-    toast('Friend request to '+(name||'user')+' withdrawn');
-    loadFriendsList();
-    loadFriendRequests();
-  }catch(e){
-    console.warn('cancel friend req',e);
-    toast('Error cancelling request','info');
-  }
-}
-window.cancelFriendRequest = cancelFriendRequest;
-
-/* ---- Load friends list with online/offline (Contacts tab) ---- */
+/* ---- Load friends list with online/offline ---- */
 async function loadFriendsList(){
-  var list=document.getElementById('contactFriendsList');
-  if(!fbReady||!currentUser){
-    list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">Sign in to see friends</div>';
-    return;
-  }
+  var list=document.getElementById('friendsList');
+  if(!fbReady||!currentUser){list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">Sign in to see friends</div>';return;}
   list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">Loading...</div>';
   try{
-    /* Load accepted friends — NO orderBy (avoids composite index requirement) */
-    var snap;
-    try{
-      snap=await db.collection('friends').doc(currentUser.uid).collection('list').where('status','==','accepted').get();
-    }catch(e1){
-      console.warn('accepted query failed, trying fallback',e1);
-      /* Fallback: get all and filter client-side */
-      var allSnap=await db.collection('friends').doc(currentUser.uid).collection('list').get();
-      var filteredDocs=[];
-      allSnap.forEach(function(doc){
-        if(doc.data().status==='accepted') filteredDocs.push(doc);
-      });
-      snap={docs:filteredDocs,forEach:function(cb){filteredDocs.forEach(cb);}};
-    }
-    /* Load pending sent requests — NO orderBy */
-    var pendingSnap;
-    try{
-      pendingSnap=await db.collection('friends').doc(currentUser.uid).collection('list').where('status','==','pending_sent').get();
-    }catch(e2){
-      console.warn('pending_sent query failed, trying fallback',e2);
-      var allSnap2=await db.collection('friends').doc(currentUser.uid).collection('list').get();
-      var filteredDocs2=[];
-      allSnap2.forEach(function(doc){
-        if(doc.data().status==='pending_sent') filteredDocs2.push(doc);
-      });
-      pendingSnap={docs:filteredDocs2,forEach:function(cb){filteredDocs2.forEach(cb);}};
-    }
+    /* Load accepted friends */
+    var snap=await db.collection('friends').doc(currentUser.uid).collection('list').where('status','==','accepted').orderBy('addedAt','desc').get();
+    /* Load pending sent requests */
+    var pendingSnap=await db.collection('friends').doc(currentUser.uid).collection('list').where('status','==','pending_sent').orderBy('addedAt','desc').get();
     var pending=[];
     pendingSnap.forEach(function(doc){
       var d=doc.data();
-      pending.push({uid:d.uid||doc.id,name:d.name||'User',avatar:0,addedAt:d.addedAt||null});
-    });
-    /* Sort pending client-side */
-    pending.sort(function(a,b){
-      var ta=a.addedAt?((a.addedAt.toDate?a.addedAt.toDate():a.addedAt).getTime()):0;
-      var tb=b.addedAt?((b.addedAt.toDate?b.addedAt.toDate():b.addedAt).getTime()):0;
-      return tb-ta;
+      pending.push({uid:d.uid||doc.id,name:d.name||'User',avatar:0});
     });
     /* Also include demo user pending requests from localStorage */
     var demoMap=_demoSentMap();
@@ -6394,28 +5322,6 @@ async function loadFriendsList(){
         pending.push({uid:dUid,name:demoMap[dUid].name||'User',avatar:dAvatar,demo:true});
       }
     }
-    /* Show pending section */
-    var pendingSection=document.getElementById('contactPendingSection');
-    var pendingListEl=document.getElementById('contactPendingList');
-    if(pending.length&&pendingSection&&pendingListEl){
-      pendingSection.style.display='block';
-      var ph='';
-      pending.forEach(function(f){
-        var fSvg=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(f.avatar||0):'';
-        var isDemo=f.demo||false;
-        var cancelBtn='<button onclick="cancelFriendRequest(\''+f.uid+'\',\''+esc(f.name).replace(/'/g,"\\'")+'\')" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:#ef4444;padding:2px 8px;border-radius:6px;font-size:10px;cursor:pointer;font-weight:600;margin-left:4px">Withdraw</button>';
-        ph+='<div style="display:flex;align-items:center;gap:8px;padding:6px 4px;border-radius:8px;opacity:.6">'+
-          '<div style="width:28px;height:28px;border-radius:8px;overflow:hidden;border:1px solid var(--border)">'+fSvg+'</div>'+
-          '<span style="font-size:13px;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(f.name)+'</span>'+
-          '<span style="font-size:10px;color:var(--gold);font-style:italic">Sent</span>'+
-          cancelBtn+
-        '</div>';
-      });
-      pendingListEl.innerHTML=ph;
-    }else if(pendingSection){
-      pendingSection.style.display='none';
-    }
-
     var online=[];
     var offline=[];
     for(var i=0;i<snap.docs.length;i++){
@@ -6437,93 +5343,41 @@ async function loadFriendsList(){
       else offline.push(fObj);
     }
     var html='';
+    /* Pending sent requests section */
+    if(pending.length){
+      html+='<div style="font-size:11px;color:var(--gold);font-weight:700;padding:4px 0">PENDING ('+pending.length+')</div>';
+      pending.forEach(function(f){
+        var fSvg=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(f.avatar||0):'';
+        html+='<div style="display:flex;align-items:center;gap:8px;padding:6px 4px;border-radius:8px;opacity:.6">'+
+          '<div style="width:28px;height:28px;border-radius:8px;overflow:hidden;border:1px solid var(--border)">'+fSvg+'</div>'+
+          '<span style="font-size:13px;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(f.name)+'</span>'+
+          '<span style="font-size:10px;color:var(--gold);font-style:italic">Sent</span>'+
+        '</div>';
+      });
+    }
     if(online.length){
-      html+='<div style="font-size:11px;color:var(--accent2);font-weight:700;padding:10px 14px 4px">🟢 ONLINE ('+online.length+')</div>';
+      html+='<div style="font-size:11px;color:var(--accent2);font-weight:700;padding:4px 0">ONLINE ('+online.length+')</div>';
       online.forEach(function(f){html+=friendRow(f);});
     }
     if(offline.length){
-      html+='<div style="font-size:11px;color:var(--muted);font-weight:700;padding:10px 14px 4px">⚫ OFFLINE ('+offline.length+')</div>';
+      html+='<div style="font-size:11px;color:var(--muted);font-weight:700;padding:8px 0 4px">OFFLINE ('+offline.length+')</div>';
       offline.forEach(function(f){html+=friendRow(f);});
     }
     if(!online.length&&!offline.length&&!pending.length){
-      list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:30px 14px">No friends yet.<br>Go to Discover tab to find and add friends!</div>';
+      list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">No friends yet. Use Search to find and add friends!</div>';
     }else{
       list.innerHTML=html;
     }
-  }catch(e){
-    console.warn('load friends',e);
-    /* Graceful fallback — don't show scary error */
-    list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:30px 14px">Could not load friends list.<br>Please try again later.</div>';
-  }
-}
-
-/* ---- Load conversations (Chats tab) ---- */
-async function loadConversations(){
-  var list=document.getElementById('conversationsList');
-  if(!list) return;
-  if(!fbReady||!currentUser||!rtdb){
-    list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:30px">Sign in to see chats</div>';
-    return;
-  }
-  list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">Loading...</div>';
-  try{
-    var convRef=rtdb.ref('user_conversations/'+currentUser.uid).orderByChild('lastMessageTime');
-    convRef.once('value',function(snap){
-      var convs=[];
-      snap.forEach(function(child){
-        var c=child.val();
-        if(c.friendId&&c.friendName) convs.push(c);
-      });
-      /* Reverse to show most recent first */
-      convs.reverse();
-      if(!convs.length){
-        list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:30px 14px">No conversations yet.<br>Start a chat from Contacts!</div>';
-        return;
-      }
-      var html='';
-      convs.forEach(function(c){
-        var unread=(c.unreadCount&&c.unreadCount>0)?c.unreadCount:0;
-        var badge=unread?'<div style="min-width:18px;height:18px;border-radius:9px;background:#ef4444;color:#fff;font-size:10px;font-weight:700;text-align:center;line-height:18px;padding:0 4px;flex-shrink:0">'+unread+'</div>':'';
-        var lastMsg=c.lastMessage||'';
-        if(lastMsg.length>30) lastMsg=lastMsg.substring(0,30)+'...';
-        var ts=c.lastMessageTime?new Date(c.lastMessageTime):null;
-        var timeStr=ts?ts.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'';
-        var dateStr='';
-        if(ts){
-          var today=new Date();
-          if(ts.toDateString()===today.toDateString()) dateStr=timeStr;
-          else dateStr=ts.toLocaleDateString([],{month:'short',day:'numeric'});
-        }
-        html+='<div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;transition:background .15s" onmouseenter="this.style.background=\'rgba(124,92,255,.08)\'" onmouseleave="this.style.background=\'transparent\'" onclick="openChatWith(\''+c.friendId+'\',\''+esc(c.friendName).replace(/'/g,"\\'")+'\',0)">'+
-          '<div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,rgba(124,92,255,.2),rgba(34,211,238,.1));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">💬</div>'+
-          '<div style="flex:1;min-width:0">'+
-            '<div style="display:flex;justify-content:space-between;align-items:center">'+
-              '<span style="font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(c.friendName)+'</span>'+
-              '<span style="font-size:10px;color:var(--muted);flex-shrink:0;margin-left:8px">'+dateStr+'</span>'+
-            '</div>'+
-            '<div style="font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px">'+esc(lastMsg)+'</div>'+
-          '</div>'+
-          badge+
-        '</div>';
-      });
-      list.innerHTML=html;
-    },function(e){
-      console.warn('load convs',e);
-      list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">Could not load conversations</div>';
-    });
-  }catch(e){
-    console.warn('load convs',e);
-    list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">Could not load conversations</div>';
-  }
+  }catch(e){console.warn('load friends',e);list.innerHTML='<div style="color:var(--muted);font-size:12px">Error loading friends</div>';}
 }
 
 function friendRow(f){
   var dot=f.online?'#22d3ee':'#555';
   var svg=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(f.avatar||0):'';
-  return '<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;border-radius:0;cursor:pointer;transition:background .15s;border-bottom:1px solid rgba(255,255,255,.03)" onmouseenter="this.style.background=\'rgba(124,92,255,.08)\'" onmouseleave="this.style.background=\'transparent\'" onclick="openChatWith(\''+f.uid+'\',\''+esc(f.name).replace(/'/g,"\\'")+'\','+f.avatar+')">'+
-    '<div style="width:36px;height:36px;border-radius:10px;overflow:hidden;border:1px solid var(--border);position:relative">'+svg+
-    '<span style="position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;border-radius:50%;background:'+dot+';border:2px solid var(--panel)"></span></div>'+
-    '<span style="font-size:13px;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500">'+esc(f.name)+'</span>'+
+  return '<div style="display:flex;align-items:center;gap:8px;padding:6px 4px;border-radius:8px;cursor:pointer;transition:background .15s" onmouseenter="this.style.background=\'rgba(124,92,255,.1)\'" onmouseleave="this.style.background=\'transparent\'" onclick="openChatWith(\''+f.uid+'\',\''+esc(f.name).replace(/'/g,"\\'")+'\','+f.avatar+')">'+
+    '<div style="width:28px;height:28px;border-radius:8px;overflow:hidden;border:1px solid var(--border);position:relative">'+svg+
+    '<span style="position:absolute;bottom:-1px;right:-1px;width:8px;height:8px;border-radius:50%;background:'+dot+';border:2px solid var(--panel)"></span></div>'+
+    '<span style="font-size:13px;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(f.name)+'</span>'+
     '<span style="font-size:10px;color:var(--muted)">💬</span>'+
   '</div>';
 }
@@ -6532,12 +5386,11 @@ function friendRow(f){
 window.openChatWith=function(fUid,fName,fAvatar){
   _chatFriendUid=fUid;
   document.getElementById('chatFriendName').textContent=fName;
-  document.getElementById('chatFriendSub').textContent='Chat';
   /* Set avatar */
   var avEl=document.getElementById('chatFriendAvatar');
   var svg=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(fAvatar||0):'';
   avEl.innerHTML=svg;
-  document.getElementById('chatWindow').style.cssText='display:block!important;position:fixed;bottom:20px;right:380px;width:360px;max-width:90vw;background:var(--panel);border:1px solid var(--border);border-radius:16px;z-index:10001;box-shadow:0 8px 32px rgba(0,0,0,.5);overflow:hidden;resize:both;min-width:280px;min-height:340px';
+  document.getElementById('chatWindow').style.cssText='display:block!important;position:fixed;bottom:20px;right:360px;width:340px;max-width:90vw;background:var(--panel);border:1px solid var(--border);border-radius:14px;z-index:10001;box-shadow:0 8px 32px rgba(0,0,0,.5);overflow:hidden;resize:both;min-width:260px;min-height:320px';
   document.getElementById('chatMessages').style.display='flex';
   document.getElementById('chatInputRow').style.display='flex';
   document.getElementById('chatMessages').innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">Loading messages...</div>';
@@ -6554,9 +5407,9 @@ window.openChatWith=function(fUid,fName,fAvatar){
       var align=isMe?'right':'left';
       var bg=isMe?'rgba(124,92,255,.15)':'rgba(34,211,238,.08)';
       var ts=m.timestamp?new Date(m.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'';
-      html+='<div style="align-self:'+align+';max-width:80%;padding:8px 12px;border-radius:12px;background:'+bg+';font-size:13px">'+
+      html+='<div style="align-self:'+align+';max-width:80%;padding:6px 10px;border-radius:10px;background:'+bg+';font-size:13px">'+
         '<div>'+esc(m.text||'')+'</div>'+
-        '<div style="font-size:9px;color:var(--muted);margin-top:3px">'+ts+'</div>'+
+        '<div style="font-size:9px;color:var(--muted);margin-top:2px">'+ts+'</div>'+
       '</div>';
     });
     var el=document.getElementById('chatMessages');
@@ -6565,8 +5418,6 @@ window.openChatWith=function(fUid,fName,fAvatar){
   },function(e){console.warn('chat listen',e);});
   /* Mark messages as read */
   rtdb.ref('user_conversations/'+currentUser.uid+'/'+chatId).update({unreadCount:0}).catch(function(){});
-  /* Also refresh conversations list if on chats tab */
-  if(_currentFriendsTab==='chats') loadConversations();
 };
 
 /* ---- Send chat message (RTDB) ---- */
@@ -6653,10 +5504,6 @@ function listenForConversations(){
         existingBadge.remove();
       }
     }
-    /* Refresh conversations list if on chats tab */
-    if(_currentFriendsTab==='chats'&&document.getElementById('friendsPanel').style.display==='flex'){
-      loadConversations();
-    }
   },function(e){console.warn('conv listen',e);});
 }
 
@@ -6678,11 +5525,15 @@ document.getElementById('friendSearchBtn').addEventListener('click',searchUsers)
 document.getElementById('friendSearchInput').addEventListener('keydown',function(e){
   if(e.key==='Enter'){e.preventDefault();searchUsers();}
 });
-/* Tab bar clicks */
-document.querySelectorAll('#friendsTabBar .qq-tab').forEach(function(tab){
-  tab.addEventListener('click',function(){
-    switchFriendsTab(this.getAttribute('data-tab'));
-  });
+document.getElementById('friendSearchToggle').addEventListener('click',function(){
+  var p=document.getElementById('friendSearchPanel');
+  p.style.display=p.style.display==='none'?'block':'none';
+  if(p.style.display==='block') document.getElementById('friendSearchInput').focus();
+});
+document.getElementById('friendReqToggle').addEventListener('click',function(){
+  var p=document.getElementById('friendReqPanel');
+  p.style.display=p.style.display==='none'?'block':'none';
+  if(p.style.display==='block') loadFriendRequests();
 });
 document.getElementById('unreadIndicator').addEventListener('click',function(){
   /* Open the conversation with unread messages */
@@ -6863,8 +5714,6 @@ handleAuthChange=async function(user){
     cloudSaveBio();
     setOnlineStatus();
     listenForConversations();
-    /* Sync public profile so other users can find this user by name/email */
-    if(typeof syncPublicProfile === 'function') syncPublicProfile();
   }
 };
 
@@ -6873,52 +5722,7 @@ var _origSaveAccount=saveAccountSettings;
 saveAccountSettings=async function(){
   await _origSaveAccount();
   cloudSaveBio();
-  syncPublicProfile();
 };
-
-/* ---- Sync public profile to pp_public collection ----
- * The pp_public collection is used for friend search. It stores a
- * lightweight, publicly-readable document for each user with their
- * displayName, email, avatar, level, and online status.
- * This MUST be called whenever the user's profile changes. */
-function syncPublicProfile(){
-  if(!fbReady || !currentUser || !db) return;
-  var gameData = (window.PPGame && PPGame.exportState) ? PPGame.exportState() : {};
-  var displayName = currentUser.displayName || (currentUser.email ? currentUser.email.split('@')[0] : 'User');
-  var email = currentUser.email || '';
-  var avatar = gameData.avatar || 0;
-  var lvl = gameData.lvl || 1;
-  var bio = document.getElementById('setBio') ? document.getElementById('setBio').value.trim() : userBio;
-  db.collection('pp_public').doc(currentUser.uid).set({
-    name: displayName,
-    email: email,
-    avatar: avatar,
-    lvl: lvl,
-    bio: bio || '',
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-  },{merge:true}).catch(function(e){
-    console.warn('syncPublicProfile', e);
-  });
-}
-
-/* ---- Expose friend/chat functions to global scope ----
- * These functions are called from onclick handlers in HTML generated
- * by the friends panel. They MUST be on window for the onclick to work. */
-window.searchUsers = searchUsers;
-window.sendFriendRequestTo = sendFriendRequestTo;
-window.acceptFriendRequest = acceptFriendRequest;
-window.declineFriendRequest = declineFriendRequest;
-window.viewSearchUser = viewSearchUser;
-window.switchFriendsTab = switchFriendsTab;
-window.toggleFriendsPanel = toggleFriendsPanel;
-window.openChatWith = openChatWith;
-window.closeChatWindow = closeChatWindow;
-window.sendChatMessage = sendChatMessage;
-window.loadSuggestedUsers = loadSuggestedUsers;
-window.loadFriendsList = loadFriendsList;
-window.loadFriendRequests = loadFriendRequests;
-window.loadConversations = loadConversations;
-window.syncPublicProfile = syncPublicProfile;
 
 })();
 </script>

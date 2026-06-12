@@ -204,7 +204,7 @@ var ES = {
 
   /* ---- Activate Modal ---- */
   'activate.title': 'Activar PromptRunic Pro',
-  'activate.desc': 'Ingresa tu código para desbloquear los más de 700,000+ prompts. Soporta todos los planes Pro y paquetes de monedas.',
+  'activate.desc': 'Desbloquea los más de 700,000+ prompts en este sitio.',
   'activate.login.title': 'Cuenta requerida',
   'activate.login.desc': 'Para usar Pro, debes iniciar sesión con una cuenta registrada o continuar con Google/GitHub. Tu membresía Pro está vinculada a tu cuenta y se sincroniza en todos los dispositivos.',
   'activate.login.btn': 'Iniciar sesión / Crear cuenta',
@@ -214,7 +214,7 @@ var ES = {
   'activate.code.placeholder': 'ej. 8B7C-4FA2-9D11-...',
   'activate.redeem': 'Activar',
   'activate.buy': 'Ver planes de membresía',
-  'activate.note': 'Cada código de activación solo puede usarse una vez. Pro y monedas están vinculados a tu cuenta y se sincronizan en todos los dispositivos.',
+  'activate.note': 'Pro está vinculado a tu cuenta. Inicia sesión para activar y sincronizar tu acceso Pro en todos los dispositivos.',
   'activate.entercode': 'Por favor ingresa tu código de activación.',
   'activate.checking': 'Verificando…',
   'activate.notready': 'La activación aún no está lista. Por favor intenta de nuevo en un momento.',
@@ -234,9 +234,6 @@ var ES = {
   'activate.promo.1m': '¡Pro de 1 mes activado! Disfruta los 700,000+ prompts.',
   'activate.promo.5000c': '¡5,000 monedas añadidas a tu cuenta!',
   'activate.promo.used': 'Este código promocional ya ha sido usado en esta cuenta.',
-  'activate.code.used': 'Este código de activación ya ha sido usado en tu cuenta. Cada código solo puede activarse una vez.',
-  'activate.code.used.other': 'Este código de activación ya ha sido usado y activado. Cada código solo puede usarse una vez.',
-  'activate.limit': 'Esta clave de licencia ha alcanzado su límite de activación. Si ya la activaste en otro dispositivo, desactívala allí primero, o contacta soporte.',
 
   /* ---- Auth Modal ---- */
   'auth.signin.title': 'Iniciar sesión en PromptRunic',

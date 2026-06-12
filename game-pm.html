@@ -108,8 +108,6 @@ body{background:#050508;color:#e0e0e0;font-family:'Share Tech Mono',monospace;ov
   /* Fortress bar compact */
   #fortressBar .text-xs{font-size:.5rem !important}
   #fortressBar .progress{height:8px !important}
-  /* Lobby mobile */
-  #lobbyTables{grid-template-columns:repeat(auto-fill,minmax(180px,1fr)) !important;gap:6px !important}
 }
 
 /* Mobile landscape - full immersive */
@@ -204,10 +202,6 @@ body{background:#050508;color:#e0e0e0;font-family:'Share Tech Mono',monospace;ov
 .epic-skill-btn:hover{background:rgba(255,255,255,0.07);transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,0.3)}
 .epic-skill-btn.locked{opacity:0.4;cursor:default}
 .epic-skill-btn.locked:hover{transform:none;box-shadow:none}
-.lobby-table:hover{border-color:rgba(255,255,255,0.15)!important;background:rgba(255,255,255,0.035)!important}
-.shop-card canvas.shop-icon{transition:transform .2s}
-.shop-card:hover canvas.shop-icon{animation:shopIconPulse .6s ease-in-out infinite alternate}
-@keyframes shopIconPulse{0%{transform:scale(1) rotate(0deg)}100%{transform:scale(1.1) rotate(3deg)}}
 </style>
 </head>
 <body>
@@ -255,16 +249,6 @@ body{background:#050508;color:#e0e0e0;font-family:'Share Tech Mono',monospace;ov
         <span class="text-[0.6rem] px-2 py-0.5 rounded bg-amber-900/40 text-amber-300/80" data-gm="mode.attack.free">Free</span>
       </div>
     </div>
-    <div class="mode-card" onclick="showMultiplayerSelect()" style="background:linear-gradient(135deg,rgba(160,80,255,0.12),rgba(255,80,160,0.12));border:1px solid rgba(160,80,255,0.25)">
-      <div class="text-5xl mb-4 text-center">🌐</div>
-      <h3 class="text-xl font-bold text-purple-300 mb-2 text-center" style="font-family:'Orbitron',sans-serif" data-gm="mode.multiplayer">MULTIPLAYER</h3>
-      <p class="text-xs text-purple-200/60 leading-relaxed text-center" data-gm="mode.multiplayer.desc">Battle or team up with friends online! Co-op to survive waves together, or compete in versus mode.</p>
-      <div class="mt-4 flex justify-center gap-2 flex-wrap">
-        <span class="text-[0.6rem] px-2 py-0.5 rounded bg-purple-900/40 text-purple-300/80" data-gm="mode.multiplayer.coop">Co-op</span>
-        <span class="text-[0.6rem] px-2 py-0.5 rounded bg-purple-900/40 text-purple-300/80" data-gm="mode.multiplayer.versus">Versus</span>
-        <span class="text-[0.6rem] px-2 py-0.5 rounded bg-purple-900/40 text-purple-300/80" data-gm="mode.multiplayer.online">Online</span>
-      </div>
-    </div>
   </div>
   <div id="unlimitedGoldOption" style="display:none" class="mt-6 relative z-10">
     <label class="flex items-center gap-2 cursor-pointer">
@@ -273,31 +257,6 @@ body{background:#050508;color:#e0e0e0;font-family:'Share Tech Mono',monospace;ov
     </label>
   </div>
   <button class="mt-10 text-sm text-gray-500 hover:text-gray-300 cursor-pointer relative z-10 transition-colors" onclick="backToStart()" data-gm="mode.back">&#8592; Back</button>
-</div>
-
-<div id="multiplayerScreen" style="position:fixed;inset:0;z-index:88;display:none;flex-direction:column;background:linear-gradient(160deg,#060610,#0a0612,#060610);overflow:hidden">
-  <!-- Lobby Header -->
-  <div style="flex-shrink:0;text-align:center;padding:1rem 1rem .5rem;position:relative;z-index:10">
-    <h2 class="text-2xl font-bold text-purple-300 mb-1 tracking-widest" style="font-family:'Orbitron',sans-serif" data-gm="mode.multiplayer">MULTIPLAYER</h2>
-    <p class="text-sm text-purple-400/60" data-gm="mode.multiplayer.desc">Battle or team up with friends online!</p>
-    <!-- Mode selector tabs -->
-    <div style="display:flex;gap:.5rem;justify-content:center;margin-top:.8rem">
-      <button id="mpTabCoop" class="panel-btn" style="font-size:.7rem;padding:.4rem 1rem;border-color:rgba(80,180,255,0.4);color:#50b4ff" onclick="switchLobbyMode('coop')">🤝 Co-op</button>
-      <button id="mpTabVersus" class="panel-btn" style="font-size:.7rem;padding:.4rem 1rem;border-color:rgba(255,80,80,0.4);color:#ff5050" onclick="switchLobbyMode('versus')">⚔️ Versus</button>
-    </div>
-    <div style="display:flex;align-items:center;justify-content:center;gap:.8rem;margin-top:.5rem">
-      <span id="mpMyName" style="font-size:.65rem;color:#aaa"></span>
-      <span id="mpLobbyStatus" style="font-size:.6rem;color:#888"></span>
-    </div>
-  </div>
-  <!-- Lobby Tables Grid -->
-  <div id="lobbyContainer" style="flex:1;overflow-y:auto;padding:.5rem 1rem 1rem;position:relative;z-index:10">
-    <div id="lobbyTables" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;max-width:1200px;margin:0 auto"></div>
-  </div>
-  <!-- Lobby Footer -->
-  <div style="flex-shrink:0;text-align:center;padding:.5rem 1rem .8rem;position:relative;z-index:10;border-top:1px solid rgba(255,255,255,0.05)">
-    <button class="text-sm text-gray-500 hover:text-gray-300 cursor-pointer transition-colors" onclick="leaveLobby();backToModeSelect()" data-gm="mode.back">&#8592; Back</button>
-  </div>
 </div>
 
 <div id="diffScreen">
@@ -855,7 +814,13 @@ const CW=800,CH=510,TILE=22,PATH_W=26;
 let sfxOn=true,musOn=true;
 const SFX={
   ctx:null,
-  init(){try{this.ctx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}},
+  init(){/* Defer AudioContext creation — iOS crashes if created before user gesture */
+    if(this.ctx) return;
+    try{
+      var AC=window.AudioContext||window.webkitAudioContext;
+      if(AC) this.ctx=new AC();
+    }catch(e){console.warn('AudioContext init failed:',e);}
+  },
   resume(){if(this.ctx&&this.ctx.state==='suspended')this.ctx.resume()},
   play(type){
     if(!sfxOn||!this.ctx)return;
@@ -1800,10 +1765,18 @@ function getCurCh(){return chI>=8?HIDDEN_CH:chapters[chI]}
 function init(){
   canvas=document.getElementById('gameCanvas');
   ctx=canvas.getContext('2d');
-  SFX.init();mkStartFx();
+  /* Defer SFX.init() — iOS crashes if AudioContext is created before user gesture */
+  /* Instead, we init on first user interaction */
+  var sfxInited=false;
+  function sfxLazyInit(){
+    if(!sfxInited){sfxInited=true;SFX.init();}
+  }
+  document.addEventListener('touchstart',sfxLazyInit,{once:true,passive:true});
+  document.addEventListener('click',sfxLazyInit,{once:true,passive:true});
+  mkStartFx();
   resizeCanvas();
   window.addEventListener('resize',resizeCanvas);
-  if(localStorage.getItem('pm_hard_cleared')){gameCompleted=true;document.getElementById('unlimitedGoldOption').style.display='block';}
+  if(gameCompleted)document.getElementById('unlimitedGoldOption').style.display='block';
   requestAnimationFrame(loop);
 }
 
@@ -1852,16 +1825,12 @@ function backToStart(){
   document.getElementById('diffScreen').style.display='none';
   document.getElementById('gameOverScreen').style.display='none';
   document.getElementById('gameScreen').style.display='none';
-  document.getElementById('multiplayerScreen').style.display='none';
-  leaveLobby();
-  closeShop();stopBGM();gState='start';
   document.getElementById('startScreen').style.display='flex';
+  closeShop();stopBGM();gState='start';
 }
 
 function backToModeSelect(){
   document.getElementById('diffScreen').style.display='none';
-  document.getElementById('multiplayerScreen').style.display='none';
-  leaveLobby();
   document.getElementById('modeScreen').style.display='flex';
 }
 
@@ -1869,430 +1838,6 @@ function showDiffSelect(mode){
   savedMode=mode;
   document.getElementById('modeScreen').style.display='none';
   document.getElementById('diffScreen').style.display='flex';
-}
-
-// ===== Multiplayer Functions =====
-var mpMode='coop';
-var mpLobbyRef=null;
-var mpLobbyListener=null;
-var mpMySeat=-1;
-var mpMyTable=-1;
-var mpIsReady=false;
-var mpSoloWhileWaiting=false; /* true when playing solo while waiting for opponent */
-
-function showMultiplayerSelect(){
-  document.getElementById('modeScreen').style.display='none';
-  document.getElementById('multiplayerScreen').style.display='flex';
-  switchLobbyMode('coop');
-}
-
-/* Switch between Co-op and Versus lobby modes */
-function switchLobbyMode(mode){
-  mpMode=mode;
-  var coopTab=document.getElementById('mpTabCoop');
-  var versusTab=document.getElementById('mpTabVersus');
-  if(mode==='coop'){
-    coopTab.classList.add('active');
-    versusTab.classList.remove('active');
-    versusTab.classList.remove('attack-active');
-  }else{
-    versusTab.classList.add('attack-active');
-    coopTab.classList.remove('active');
-  }
-  leaveLobby();
-  initLobby();
-}
-
-/* Initialize the QQ-style lobby with 50 tables */
-function initLobby(){
-  var myName=getMyName();
-  var nameEl=document.getElementById('mpMyName');
-  if(nameEl) nameEl.textContent='👤 '+myName;
-
-  renderLobbyTables();
-  listenToLobby();
-}
-
-/* Render 50 empty tables */
-function renderLobbyTables(){
-  var container=document.getElementById('lobbyTables');
-  if(!container)return;
-  var html='';
-  for(var i=1;i<=50;i++){
-    html+=buildTableHTML(i);
-  }
-  container.innerHTML=html;
-}
-
-/* Build HTML for a single table */
-function buildTableHTML(tableNum,state){
-  state=state||{seat1:null,seat2:null,mode:mpMode};
-  var isCoop=state.mode==='coop';
-  var seat1=state.seat1;
-  var seat2=state.seat2;
-  var seat1Name=seat1?seat1.name:'— Empty —';
-  var seat2Name=seat2?seat2.name:'— Empty —';
-  var seat1Ready=seat1&&seat1.ready;
-  var seat2Ready=seat2&&seat2.ready;
-  var seat1Class=seat1?'occupied':'empty';
-  var seat2Class=seat2?'occupied':'empty';
-  var isFull=seat1&&seat2;
-  var bothReady=seat1Ready&&seat2Ready&&isFull;
-
-  /* Determine table border color based on state */
-  var borderCol='rgba(255,255,255,0.08)';
-  if(bothReady) borderCol=isCoop?'rgba(0,255,136,0.6)':'rgba(255,80,0,0.6)';
-  else if(isFull) borderCol=isCoop?'rgba(80,180,255,0.4)':'rgba(255,80,80,0.4)';
-
-  var modeLabel=isCoop?'🤝 Co-op':'⚔️ Versus';
-  var modeColor=isCoop?'#50b4ff':'#ff5050';
-
-  var html='<div class="lobby-table" id="table_'+tableNum+'" style="background:rgba(255,255,255,0.02);border:1px solid '+borderCol+';border-radius:10px;padding:.6rem .7rem;transition:all .2s;cursor:default;min-height:90px;position:relative">';
-
-  /* Table number + mode badge */
-  html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">';
-  html+='<span style="font-family:\'Orbitron\',sans-serif;font-size:.6rem;font-weight:700;color:#888;letter-spacing:.05em">TABLE '+tableNum+'</span>';
-  html+='<span style="font-size:.5rem;padding:.1rem .4rem;border-radius:3px;background:'+(isCoop?'rgba(80,180,255,0.15)':'rgba(255,80,80,0.15)')+';color:'+modeColor+';border:1px solid '+modeColor+'33">'+modeLabel+'</span>';
-  html+='</div>';
-
-  /* Two seats */
-  html+='<div style="display:flex;gap:.5rem">';
-
-  /* Seat 1 */
-  var s1Bg=seat1?(seat1Ready?'rgba(0,255,136,0.08)':'rgba(80,180,255,0.08)'):'rgba(255,255,255,0.02)';
-  var s1Border=seat1?(seat1Ready?'rgba(0,255,136,0.4)':'rgba(80,180,255,0.25)'):'rgba(255,255,255,0.06)';
-  var s1Color=seat1?(seat1Ready?'#00ff88':'#50b4ff'):'#555';
-  html+='<div onclick="sitDown('+tableNum+',1)" style="flex:1;padding:.35rem .4rem;border-radius:6px;background:'+s1Bg+';border:1px solid '+s1Border+';text-align:center;cursor:'+(seat1?'default':'pointer')+';transition:all .15s;min-height:40px;display:flex;flex-direction:column;justify-content:center" onmouseenter="if(!this.dataset.occupied)this.style.borderColor=\'rgba(0,255,136,0.4)\'" onmouseleave="if(!this.dataset.occupied)this.style.borderColor=\''+s1Border+'\'" data-occupied="'+(seat1?'1':'0')+'">';
-  html+='<div style="font-size:.5rem;color:'+s1Color+';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(seat1?(seat1Ready?'✅ ':'👤 ')+seat1Name:'🪑 Sit')+'</div>';
-  if(seat1&&!seat1Ready&&seat1.uid===getMyUid()){
-    html+='<button onclick="event.stopPropagation();toggleReady('+tableNum+')" style="margin-top:4px;padding:4px 12px;border-radius:6px;background:linear-gradient(135deg,#ffd700,#ffaa00);color:#050508;font-size:.55rem;font-weight:700;cursor:pointer;border:none;font-family:\'Orbitron\',sans-serif;letter-spacing:.05em">✋ READY</button>';
-  }
-  html+='</div>';
-
-  /* Seat 2 */
-  var s2Bg=seat2?(seat2Ready?'rgba(0,255,136,0.08)':'rgba(255,150,80,0.08)'):'rgba(255,255,255,0.02)';
-  var s2Border=seat2?(seat2Ready?'rgba(0,255,136,0.4)':'rgba(255,150,80,0.25)'):'rgba(255,255,255,0.06)';
-  var s2Color=seat2?(seat2Ready?'#00ff88':'#ff9650'):'#555';
-  html+='<div onclick="sitDown('+tableNum+',2)" style="flex:1;padding:.35rem .4rem;border-radius:6px;background:'+s2Bg+';border:1px solid '+s2Border+';text-align:center;cursor:'+(seat2?'default':'pointer')+';transition:all .15s;min-height:40px;display:flex;flex-direction:column;justify-content:center" onmouseenter="if(!this.dataset.occupied)this.style.borderColor=\'rgba(0,255,136,0.4)\'" onmouseleave="if(!this.dataset.occupied)this.style.borderColor=\''+s2Border+'\'" data-occupied="'+(seat2?'1':'0')+'">';
-  html+='<div style="font-size:.5rem;color:'+s2Color+';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(seat2?(seat2Ready?'✅ ':'👤 ')+seat2Name:'🪑 Sit')+'</div>';
-  if(seat2&&!seat2Ready&&seat2.uid===getMyUid()){
-    html+='<button onclick="event.stopPropagation();toggleReady('+tableNum+')" style="margin-top:4px;padding:4px 12px;border-radius:6px;background:linear-gradient(135deg,#ffd700,#ffaa00);color:#050508;font-size:.55rem;font-weight:700;cursor:pointer;border:none;font-family:\'Orbitron\',sans-serif;letter-spacing:.05em">✋ READY</button>';
-  }
-  html+='</div>';
-
-  html+='</div>';
-
-  /* Status bar + Solo button */
-  var amSeated=(seat1&&seat1.uid===getMyUid())||(seat2&&seat2.uid===getMyUid());
-  var onlyMeSeated=amSeated&&!isFull;
-  if(bothReady){
-    html+='<div style="text-align:center;margin-top:.3rem;font-size:.45rem;color:#00ff88;font-weight:700;animation:sPulse 1s ease-in-out infinite">▶ STARTING...</div>';
-  }else if(isFull){
-    html+='<div style="text-align:center;margin-top:.3rem;font-size:.45rem;color:#ffd700">Waiting for ready...</div>';
-  }else if(onlyMeSeated){
-    html+='<div style="text-align:center;margin-top:.3rem;font-size:.45rem;color:#888">Waiting for opponent...</div>';
-    html+='<button onclick="event.stopPropagation();startSoloWhileWaiting('+tableNum+','+mpMySeat+')" style="margin-top:4px;padding:5px 14px;border-radius:8px;background:linear-gradient(135deg,#50b4ff,#7c5cff);color:#fff;font-size:.6rem;font-weight:700;cursor:pointer;border:none;font-family:\'Orbitron\',sans-serif;letter-spacing:.05em;text-shadow:0 1px 2px rgba(0,0,0,.3)">🎮 Start Solo</button>';
-  }
-
-  /* Leave button (only if I'm seated at this table) */
-  if(amSeated){
-    html+='<div style="text-align:center;margin-top:.2rem"><span style="font-size:.4rem;color:#ff6666;cursor:pointer" onclick="event.stopPropagation();standUp('+tableNum+')">✕ Leave</span></div>';
-  }
-
-  html+='</div>';
-  return html;
-}
-
-/* Get current user UID from parent app or guest */
-function getMyUid(){
-  try{
-    if(window.parent&&window.parent.currentUser) return window.parent.currentUser.uid;
-  }catch(e){}
-  /* Fallback: use guest UID stored in localStorage */
-  var guestUid=localStorage.getItem('pm_guest_uid');
-  if(guestUid) return guestUid;
-  /* Generate a new guest UID and persist it */
-  var tempUid='guest_'+Math.random().toString(36).substr(2,8);
-  localStorage.setItem('pm_guest_uid',tempUid);
-  return tempUid;
-}
-
-/* Get current user display name from parent app or guest */
-function getMyName(){
-  try{
-    if(window.parent&&window.parent.currentUser){
-      return window.parent.currentUser.displayName||window.parent.currentUser.email.split('@')[0];
-    }
-  }catch(e){}
-  /* Fallback: use guest name from localStorage */
-  var guestName=localStorage.getItem('pm_guest_name');
-  if(guestName) return guestName;
-  /* Generate a guest name */
-  var names=['RuneKnight','SpellForge','ArcaneWard','RunicGuard','MysticTower','GlyphWarden','SigilArcher','WardKeeper','EnchantShield','RuneSage'];
-  var gn=names[Math.floor(Math.random()*names.length)]+Math.floor(Math.random()*999);
-  localStorage.setItem('pm_guest_name',gn);
-  return gn;
-}
-
-/* Sit down at a table seat */
-function sitDown(tableNum,seatNum){
-  var myUid=getMyUid();
-  if(!myUid){
-    /* Should not happen now since getMyUid generates a guest UID, but just in case */
-    alert('Unable to identify player. Please refresh the page.');
-    return;
-  }
-  /* Check if already seated at another table */
-  if(mpMyTable>0&&mpMyTable!==tableNum){
-    toast('Leave your current table first!','info');
-    return;
-  }
-  var rtdb=getRtdb();
-  if(!rtdb){
-    /* No Firebase: start solo game immediately */
-    toast('Playing solo — lobby unavailable','info');
-    startSoloWhileWaiting(tableNum,seatNum);
-    return;
-  }
-  var tableRef=rtdb.ref('lobby/'+mpMode+'/table_'+tableNum);
-  tableRef.once('value').then(function(snap){
-    var data=snap.val()||{};
-    var seat1=data.seat1||null;
-    var seat2=data.seat2||null;
-    /* Check if the requested seat is taken */
-    if(seatNum===1&&seat1&&seat1.uid!==myUid){
-      toast('Seat 1 is occupied!','info');return;
-    }
-    if(seatNum===2&&seat2&&seat2.uid!==myUid){
-      toast('Seat 2 is occupied!','info');return;
-    }
-    /* Sit down */
-    var update={};
-    update['seat'+seatNum]={uid:myUid,name:getMyName(),ready:false};
-    update['mode']=mpMode;
-    update['updatedAt']=firebase.database.ServerValue.TIMESTAMP;
-    tableRef.update(update);
-    mpMyTable=tableNum;
-    mpMySeat=seatNum;
-    mpIsReady=false;
-    /* Set presence: auto-leave on disconnect */
-    rtdb.ref('lobby/'+mpMode+'/table_'+tableNum+'/seat'+seatNum).onDisconnect().remove();
-  }).catch(function(e){
-    console.warn('sitDown error:',e);
-    toast('Could not join table. Starting solo game...','info');
-    startSoloWhileWaiting(tableNum,seatNum);
-  });
-}
-
-/* Stand up from a table */
-function standUp(tableNum){
-  var rtdb=getRtdb();
-  if(!rtdb)return;
-  if(mpMySeat>0){
-    rtdb.ref('lobby/'+mpMode+'/table_'+tableNum+'/seat'+mpMySeat).remove();
-    /* Cancel the onDisconnect */
-    rtdb.ref('lobby/'+mpMode+'/table_'+tableNum+'/seat'+mpMySeat).onDisconnect().cancel();
-  }
-  mpMyTable=-1;mpMySeat=-1;mpIsReady=false;
-}
-
-/* Toggle ready state */
-function toggleReady(tableNum){
-  var rtdb=getRtdb();
-  if(!rtdb||mpMySeat<1)return;
-  mpIsReady=!mpIsReady;
-  rtdb.ref('lobby/'+mpMode+'/table_'+tableNum+'/seat'+mpMySeat+'/ready').set(mpIsReady);
-}
-
-/* Listen to lobby changes via Firebase RTDB */
-function listenToLobby(){
-  stopLobbyListener();
-  var rtdb=getRtdb();
-  if(!rtdb){
-    var container=document.getElementById('lobbyTables');
-    if(container) container.innerHTML='<div style="color:#888;font-size:.7rem;text-align:center;padding:20px">Lobby unavailable — click a seat to play solo, or open from the PromptRunic app for multiplayer.</div>';
-    return;
-  }
-  mpLobbyRef=rtdb.ref('lobby/'+mpMode);
-  mpLobbyListener=mpLobbyRef.on('value',function(snap){
-    var data=snap.val()||{};
-    updateLobbyUI(data);
-    /* Check if my table has both players ready → start game */
-    if(mpMyTable>0){
-      var tableData=data['table_'+mpMyTable];
-      if(tableData){
-        var s1=tableData.seat1;
-        var s2=tableData.seat2;
-        if(s1&&s2&&s1.ready&&s2.ready&&s1.uid&&s2.uid){
-          /* If playing solo-while-waiting, notify and transition */
-          if(mpSoloWhileWaiting){
-            mpSoloWhileWaiting=false;
-            removeLobbyStatusBar();
-            toast('Opponent found! Starting multiplayer...','info');
-          }
-          startMultiplayerGame(mpMyTable,s1.uid,s2.uid);
-        }
-      }
-    }
-  });
-}
-
-/* Update lobby UI with current data */
-function updateLobbyUI(data){
-  var container=document.getElementById('lobbyTables');
-  if(!container)return;
-  /* For each of the 50 tables, get its state or use empty */
-  for(var i=1;i<=50;i++){
-    var tableEl=document.getElementById('table_'+i);
-    if(!tableEl)continue;
-    var tableData=data['table_'+i]||{};
-    /* Clean up: if a seat has no uid, treat as empty */
-    var seat1=tableData.seat1&&tableData.seat1.uid?tableData.seat1:null;
-    var seat2=tableData.seat2&&tableData.seat2.uid?tableData.seat2:null;
-    var state={seat1:seat1,seat2:seat2,mode:tableData.mode||mpMode};
-    var newHTML=buildTableHTML(i,state);
-    /* Only update if changed (compare innerHTML) */
-    var tempDiv=document.createElement('div');
-    tempDiv.innerHTML=newHTML;
-    var newInner=tempDiv.firstChild.innerHTML;
-    if(tableEl.innerHTML!==newInner){
-      tableEl.innerHTML=newInner;
-      tableEl.style.borderColor=tempDiv.firstChild.style.borderColor;
-    }
-  }
-  /* Update status */
-  var statusEl=document.getElementById('mpLobbyStatus');
-  if(statusEl){
-    var totalPlayers=0;
-    for(var i=1;i<=50;i++){
-      var t=data['table_'+i];
-      if(t){
-        if(t.seat1&&t.seat1.uid)totalPlayers++;
-        if(t.seat2&&t.seat2.uid)totalPlayers++;
-      }
-    }
-    statusEl.textContent=totalPlayers+' player'+(totalPlayers!==1?'s':'')+' online';
-  }
-}
-
-/* Stop listening to lobby */
-function stopLobbyListener(){
-  if(mpLobbyRef&&mpLobbyListener){
-    try{ mpLobbyRef.off('value',mpLobbyListener); }catch(e){}
-    mpLobbyRef=null;mpLobbyListener=null;
-  }
-}
-
-/* Leave the lobby entirely */
-function leaveLobby(){
-  if(mpMyTable>0){
-    standUp(mpMyTable);
-  }
-  stopLobbyListener();
-}
-
-/* Get RTDB instance from parent */
-function getRtdb(){
-  try{
-    if(window.parent&&window.parent!==window&&window.parent.rtdb) return window.parent.rtdb;
-    if(window.parent&&window.parent!==window&&window.parent.firebase){
-      return window.parent.firebase.database();
-    }
-  }catch(e){}
-  return null;
-}
-
-/* Get Firestore instance from parent */
-function getFirestore(){
-  try{
-    if(window.parent&&window.parent!==window&&window.parent.db) return window.parent.db;
-  }catch(e){}
-  return null;
-}
-
-/* Start a solo game while waiting for an opponent at a lobby table */
-function startSoloWhileWaiting(tableNum,seatNum){
-  mpSoloWhileWaiting=true;
-  /* Hide lobby screen, show game */
-  document.getElementById('multiplayerScreen').style.display='none';
-  /* Start the game in single-player mode with current difficulty */
-  showDiffSelect(savedMode||'defense');
-  /* Add a floating status bar to indicate we're waiting for opponent */
-  addLobbyStatusBar(tableNum);
-}
-
-/* Add a floating bar at the top of the game screen showing lobby status */
-function addLobbyStatusBar(tableNum){
-  var existing=document.getElementById('lobbyStatusBar');
-  if(existing) existing.remove();
-  var bar=document.createElement('div');
-  bar.id='lobbyStatusBar';
-  bar.style.cssText='position:fixed;top:0;left:50%;transform:translateX(-50%);z-index:10000;background:rgba(0,0,0,.85);border:1px solid rgba(80,180,255,.4);border-top:none;border-radius:0 0 10px 10px;padding:6px 18px;font-family:\'Orbitron\',sans-serif;font-size:.6rem;color:#50b4ff;display:flex;align-items:center;gap:10px;pointer-events:auto';
-  bar.innerHTML='<span>⏳ Waiting for opponent...</span><button onclick="returnToLobbyFromSolo('+tableNum+')" style="padding:3px 10px;border-radius:5px;background:rgba(255,100,100,.2);color:#ff6666;border:1px solid rgba(255,100,100,.4);cursor:pointer;font-size:.5rem;font-family:\'Orbitron\',sans-serif">Back to Lobby</button>';
-  document.body.appendChild(bar);
-}
-
-/* Remove the floating lobby status bar */
-function removeLobbyStatusBar(){
-  var bar=document.getElementById('lobbyStatusBar');
-  if(bar) bar.remove();
-}
-
-/* Return to lobby from a solo-while-waiting game */
-function returnToLobbyFromSolo(tableNum){
-  mpSoloWhileWaiting=false;
-  removeLobbyStatusBar();
-  /* Stop current game */
-  if(typeof stopGame==='function') stopGame();
-  /* Show lobby again */
-  document.getElementById('gameScreen').style.display='none';
-  document.getElementById('diffScreen').style.display='none';
-  document.getElementById('modeScreen').style.display='none';
-  document.getElementById('gameOverScreen').style.display='none';
-  document.getElementById('multiplayerScreen').style.display='flex';
-}
-
-/* Start a multiplayer game when both players are ready */
-function startMultiplayerGame(tableNum,uid1,uid2){
-  var myUid=getMyUid();
-  /* Determine my role based on mode and seat */
-  if(mpMode==='coop'){
-    savedMode='defense'; /* Both defend in co-op */
-  }else{
-    /* Versus: seat 1 = defender, seat 2 = attacker */
-    if(myUid===uid1) savedMode='defense';
-    else savedMode='attack';
-  }
-  /* Clean up lobby */
-  var rtdb=getRtdb();
-  if(rtdb){
-    /* Mark game as started so other listeners know */
-    rtdb.ref('lobby/'+mpMode+'/table_'+tableNum).update({started:true});
-    /* Remove both seats after a short delay (so the UI updates) */
-    setTimeout(function(){
-      rtdb.ref('lobby/'+mpMode+'/table_'+tableNum).remove();
-    },2000);
-  }
-  mpMyTable=-1;mpMySeat=-1;mpIsReady=false;
-  stopLobbyListener();
-  /* Hide lobby, show game */
-  document.getElementById('multiplayerScreen').style.display='none';
-  /* Show difficulty selection */
-  showDiffSelect(savedMode);
-}
-
-/* Legacy functions kept for compatibility */
-function loadMultiplayerFriends(){
-  /* Now handled by lobby system */
-}
-
-function inviteFriend(uid,name){
-  /* Now handled by lobby sit-down mechanic */
-}
-
-function startMultiplayer(mode){
-  mpMode=mode;
-  switchLobbyMode(mode);
 }
 
 function startGame(m,diff){
@@ -2305,6 +1850,8 @@ function startGame(m,diff){
   document.getElementById('gameOverScreen').style.display='none';
   document.getElementById('gameScreen').style.display='flex';
   gState='playing';
+  /* Init AudioContext on first user gesture (iOS safe) */
+  if(!SFX.ctx){try{SFX.init();}catch(e){}}
   SFX.resume();startBGM();
   initCh(0);
 }
@@ -2479,9 +2026,7 @@ function buildUI(){
     });
   }else{
     mB.textContent=_gmT('game.attack','ATTACK');mB.className='mode-badge attack';
-    sT.textContent='👾 '+_gmT('game.monsters','Monsters');
-    /* In attack mode, hide tower enchantments (DSP) — only show monster skills */
-    spT.textContent=_gmT('game.monster.skills','Monster Skills');
+    sT.textContent='👾 '+_gmT('game.monsters','Monsters');spT.textContent=_gmT('game.enchantments','Free Enchantments');
     const um=getUnlockedMonsters();
     const monsterKeys=Object.keys(MD);
     monsterKeys.forEach(k=>{
@@ -2498,8 +2043,6 @@ function buildUI(){
     // Shop link for more monsters
     const shopBtn2=document.createElement('button');shopBtn2.className='panel-btn';shopBtn2.style.cssText='font-size:.5rem;padding:.15rem .3rem;text-align:center;border-color:rgba(255,215,0,0.3);color:#ffd700;margin-top:4px';
     shopBtn2.innerHTML='🛒 '+_gmT('shop.unlockmore','Unlock More');shopBtn2.onclick=()=>openShop();sB.appendChild(shopBtn2);
-    /* DO NOT show DSP (tower enchantments) in attack mode —
-     * only show ASP (monster enchantments) and ASK (attack skills) */
     ASP.forEach(sp=>{
       const b=document.createElement('button');b.className='spell-btn';b.id='asb_'+sp.id;
       b.innerHTML=`${sp.icon} <span style="font-size:.5rem">${sp.name}</span>`;
@@ -3912,8 +3455,13 @@ document.addEventListener('DOMContentLoaded',()=>{
     e.preventDefault();
     mouseP=null;
   },{passive:false});
-  /* Auto-fullscreen when game starts on mobile */
+  /* Auto-fullscreen when game starts on mobile — SKIPPED on iOS Safari */
+  function isIOS(){
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+           (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+  }
   function tryFullscreen(){
+    if(isIOS()) return; /* iOS Safari does not support requestFullscreen and crashes */
     try{
       const el=document.documentElement;
       if(el.requestFullscreen) el.requestFullscreen().catch(()=>{});
@@ -3923,7 +3471,7 @@ document.addEventListener('DOMContentLoaded',()=>{
       }
     }catch(e){}
   }
-  /* Intercept the LAUNCH button to trigger fullscreen */
+  /* Intercept the LAUNCH button to trigger fullscreen (not on iOS) */
   const origShowModeSelect=window.showModeSelect;
   if(origShowModeSelect){
     window.showModeSelect=function(){
@@ -3931,7 +3479,7 @@ document.addEventListener('DOMContentLoaded',()=>{
       origShowModeSelect();
     };
   }
-  /* Also fullscreen when starting from mode/diff selection */
+  /* Also fullscreen when starting from mode/diff selection (not on iOS) */
   const origStartGame=window.startGame;
   if(origStartGame){
     window.startGame=function(a,b){
@@ -3941,9 +3489,11 @@ document.addEventListener('DOMContentLoaded',()=>{
   }
   /* Resize canvas on orientation change */
   window.addEventListener('resize',()=>{ setTimeout(resizeCanvas,100); });
-  /* Prevent pinch zoom on mobile */
-  document.addEventListener('gesturestart',e=>e.preventDefault(),{passive:false});
-  document.addEventListener('gesturechange',e=>e.preventDefault(),{passive:false});
+  /* Prevent pinch zoom on mobile — use passive to avoid iOS scroll jank */
+  try{
+    document.addEventListener('gesturestart',e=>e.preventDefault(),{passive:false});
+    document.addEventListener('gesturechange',e=>e.preventDefault(),{passive:false});
+  }catch(e){}
   /* Re-init canvas touch after mode/diff selection */
   window.addEventListener('fullscreenchange',()=>{ setTimeout(resizeCanvas,200); });
   document.addEventListener('webkitfullscreenchange',()=>{ setTimeout(resizeCanvas,200); });
@@ -4061,20 +3611,8 @@ function endGame(won){
     try{ if(window.parent && window.parent!==window) parent.postMessage({type:'pp_game_win',score:score,mode:gMode},'*'); }catch(_e){}
     m.textContent=gMode==='defense'?'AI Core defended! '+(chI>=8?'Hidden Omega level cleared!':'All 8 chapters cleared!'):'AI Fortress destroyed! '+(chI>=8?'Hidden Omega level conquered!':'All 8 chapters conquered!');
     SFX.play('victory');
-    if(gDifficulty>=2){
-      // Hard or harder: persist unlock
-      localStorage.setItem('pm_hard_cleared','1');
-      gameCompleted=true;
-      document.getElementById('unlimitedGoldOption').style.display='block';
-      ul.style.display='block';
-      showMeme('UNLOCKED! 🏆','#ffd700');
-    }else if(!gameCompleted){
-      // Easy/Normal win: session-only, no persistent unlock
-      gameCompleted=true;
-      ul.style.display='none';
-    }else{
-      ul.style.display='none';
-    }
+    if(!gameCompleted){gameCompleted=true;document.getElementById('unlimitedGoldOption').style.display='block';ul.style.display='block';showMeme('UNLOCKED! 🏆','#ffd700')}
+    else{ul.style.display='none'}
   }else{
     t.textContent=_gmT('go.defeated','DEFEATED');t.style.color='#ff4444';
     m.textContent=gMode==='defense'?'AI Core breached. The virus wins.':'Your forces could not breach the fortress.';
@@ -4295,35 +3833,6 @@ function closeShop(){
   document.getElementById('shopOverlay').style.display='none';
 }
 
-function drawShopIcon(cvs,type,key){
-  cvs.width=48;cvs.height=48;
-  const c=cvs.getContext('2d');
-  if(type==='tower'){
-    const d=TD[key];if(!d)return;
-    const col=d.col||'#00ff88';
-    // Draw base
-    c.fillStyle=col;c.globalAlpha=0.3;c.beginPath();c.arc(24,30,16,0,Math.PI*2);c.fill();
-    // Draw turret body
-    c.globalAlpha=1;c.fillStyle=col;c.fillRect(16,14,16,22);
-    // Draw turret top
-    c.fillStyle=col;c.beginPath();c.moveTo(12,16);c.lineTo(24,4);c.lineTo(36,16);c.closePath();c.fill();
-    // Draw range circle
-    c.strokeStyle=col;c.globalAlpha=0.2;c.lineWidth=1;c.beginPath();c.arc(24,24,22,0,Math.PI*2);c.stroke();
-  }else if(type==='monster'){
-    const d=MD[key];if(!d)return;
-    const col=d.col||'#ff4444';
-    // Draw body
-    c.fillStyle=col;c.globalAlpha=0.8;c.beginPath();c.arc(24,24,14,0,Math.PI*2);c.fill();
-    // Draw eyes
-    c.fillStyle='#fff';c.globalAlpha=1;c.beginPath();c.arc(20,20,3,0,Math.PI*2);c.arc(28,20,3,0,Math.PI*2);c.fill();
-    c.fillStyle='#000';c.beginPath();c.arc(21,20,1.5,0,Math.PI*2);c.arc(29,20,1.5,0,Math.PI*2);c.fill();
-    // Draw horns/spikes based on type
-    c.fillStyle=col;
-    c.beginPath();c.moveTo(16,12);c.lineTo(14,2);c.lineTo(20,10);c.fill();
-    c.beginPath();c.moveTo(32,12);c.lineTo(34,2);c.lineTo(28,10);c.fill();
-  }
-}
-
 function renderShopTab(tab){
   const content=document.getElementById('shopContent');
   unlockCredits=getUnlockCredits();
@@ -4341,7 +3850,7 @@ function renderShopTab(tab){
       const isUnlocked=ut.includes(k);
       const isFree=FREE_TOWERS.includes(k);
       html+=`<div class="shop-card" style="border-color:${d.col}33;${isUnlocked?'':'opacity:0.7'}">
-        <div class="shop-card-header"><canvas class="shop-icon" data-type="tower" data-key="${k}" width="48" height="48" style="border-radius:6px;flex-shrink:0"></canvas><span class="shop-card-name">${d.name}</span></div>
+        <div class="shop-card-header"><span class="shop-card-color" style="background:${d.col}"></span><span class="shop-card-name">${d.name}</span></div>
         <div class="shop-card-stats">
           <span>💰 ${d.cost}</span><span>🎯 ${d.range}</span><span>⚔️ ${d.dmg}</span><span>⚡ ${d.spd}ms</span><span>❤️ ${d.hp}</span>
         </div>
@@ -4363,7 +3872,7 @@ function renderShopTab(tab){
       const isUnlocked=um.includes(k);
       const isFree=FREE_MONSTERS.includes(k);
       html+=`<div class="shop-card" style="border-color:${d.col}33;${isUnlocked?'':'opacity:0.7'}">
-        <div class="shop-card-header"><canvas class="shop-icon" data-type="monster" data-key="${k}" width="48" height="48" style="border-radius:6px;flex-shrink:0"></canvas><span class="shop-card-name">${d.name}</span></div>
+        <div class="shop-card-header"><span class="shop-card-color" style="background:${d.col}"></span><span class="shop-card-name">${d.name}</span></div>
         <div class="shop-card-stats">
           <span>💰 ${d.cost}</span><span>❤️ ${d.hp}</span><span>🏃 ${d.spd}</span><span>⚔️ ${_gmT('shop.atk','ATK')} ${d.atkDmg}</span>
         </div>
@@ -4406,8 +3915,6 @@ function renderShopTab(tab){
     html+='</div>';
     content.innerHTML=html;
   }
-  // Render shop icons on canvas elements
-  document.querySelectorAll('.shop-icon').forEach(cvs=>drawShopIcon(cvs,cvs.dataset.type,cvs.dataset.key));
 }
 
 function showPurchaseModal(itemId,type){
@@ -4478,43 +3985,9 @@ function buyWithCredit(){
   if(typeof gMode!=='undefined'&&gMode)buildUI();
 }
 
-// ===== One-Time-Use License Key Tracking =====
-function getUsedGameKeys(){try{return JSON.parse(localStorage.getItem('pm_used_keys')||'[]')}catch(e){return[]}}
-function isGameKeyUsed(key){var nk=key.trim().toUpperCase();return getUsedGameKeys().indexOf(nk)>=0}
-function markGameKeyUsed(key){
-  var nk=key.trim().toUpperCase();
-  var used=getUsedGameKeys();
-  if(used.indexOf(nk)<0)used.push(nk);
-  localStorage.setItem('pm_used_keys',JSON.stringify(used));
-  // Also sync to parent app's global used_license_keys via Firestore if available
-  try{
-    if(window.parent&&window.parent!==window&&window.parent.markLicenseUsed){
-      window.parent.markLicenseUsed(key);
-    }
-  }catch(e){}
-}
-
 async function validateLicense(){
   const code=document.getElementById('licenseInput').value.trim();
   if(!code){document.getElementById('purchaseMsg').textContent='Please enter a code!';document.getElementById('purchaseMsg').style.color='#ff4444';return}
-  // Check if key has already been used (local check)
-  if(isGameKeyUsed(code)){document.getElementById('purchaseMsg').textContent='❌ This activation code has already been used. Each code can only be used once.';document.getElementById('purchaseMsg').style.color='#ff4444';return}
-  // Check if key has already been used (cross-account via parent app)
-  try{
-    if(window.parent&&window.parent!==window&&window.parent.isLicenseUsedAsync){
-      var parentCheck=await window.parent.isLicenseUsedAsync(code);
-      if(parentCheck.used){
-        markGameKeyUsed(code);
-        if(parentCheck.byOtherAccount){
-          document.getElementById('purchaseMsg').textContent='❌ This activation code has already been activated by another account.';
-        }else{
-          document.getElementById('purchaseMsg').textContent='❌ This activation code has already been used on your account. Each code can only be activated once.';
-        }
-        document.getElementById('purchaseMsg').style.color='#ff4444';
-        return;
-      }
-    }
-  }catch(e){}
   // Test code: ZXTEST- gives 1200 credits for testing
   if(code.toUpperCase().startsWith('ZXTEST-')){
     let credits=1200;
@@ -4528,7 +4001,6 @@ async function validateLicense(){
       });
       credits=9999;
     }
-    markGameKeyUsed(code);
     setUnlockCredits(getUnlockCredits()+credits);
     document.getElementById('purchaseMsg').textContent=`✅ Test code! +${credits.toLocaleString()} credits added!`;
     document.getElementById('purchaseMsg').style.color='#00ff88';
@@ -4540,42 +4012,34 @@ async function validateLicense(){
   }
   document.getElementById('purchaseMsg').textContent='Validating...';document.getElementById('purchaseMsg').style.color='#aaaaaa';
   try{
-    const resp=await fetch('https://api.lemonsqueezy.com/v1/licenses/activate',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded','Accept':'application/json'},body:'license_key='+encodeURIComponent(code)+'&instance_name=PromptMatrix-'+Date.now().toString(36)});
+    const resp=await fetch('https://api.lemonsqueezy.com/v1/licenses/validate',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({license_key:code})});
     const data=await resp.json();
-    if(data.activated||data.valid){
-      // Double-check: verify key wasn't used while we were validating
-      if(isGameKeyUsed(code)){
-        document.getElementById('purchaseMsg').textContent='❌ This activation code has already been used. Each code can only be used once.';
-        document.getElementById('purchaseMsg').style.color='#ff4444';
-        return;
-      }
+    if(data.valid){
       // Determine credits based on product_id
       let credits=1200; // default: $1.99 product
-      const pid=(data.meta&&data.meta.product_id)||data.product_id||0;
+      const pid=data.meta?.product_id||data.product_id||0;
       if(pid===1092744||String(pid)==='1092744')credits=3800; // $4.99 product
-      markGameKeyUsed(code);
       setUnlockCredits(getUnlockCredits()+credits);
       document.getElementById('purchaseMsg').textContent=`✅ Valid! +${credits.toLocaleString()} credits added!`;
       document.getElementById('purchaseMsg').style.color='#00ff88';
       localStorage.setItem('pm_last_license',code);
     }else{
-      // Check if activation limit reached (key already used)
-      if(data.error&&(String(data.error).indexOf('limit')>=0||String(data.error).indexOf('activation')>=0)){
-        markGameKeyUsed(code);
-        document.getElementById('purchaseMsg').textContent='❌ This activation code has already been used. Each code can only be activated once.';
-        document.getElementById('purchaseMsg').style.color='#ff4444';
-      }else{
-        // Also mark as used for any other failure (key already activated, etc.)
-        markGameKeyUsed(code);
-        // Also mark in parent app's global tracking
-        try{if(window.parent&&window.parent!==window&&window.parent.markLicenseUsed)window.parent.markLicenseUsed(code);}catch(e){}
-        document.getElementById('purchaseMsg').textContent='❌ This activation code has already been activated. Each code can only be used once.';
-        document.getElementById('purchaseMsg').style.color='#ff4444';
-      }
+      document.getElementById('purchaseMsg').textContent='❌ Invalid license key. Try again.';
+      document.getElementById('purchaseMsg').style.color='#ff4444';
     }
   }catch(e){
-    document.getElementById('purchaseMsg').textContent='❌ Network error. Please check your connection and try again.';
-    document.getElementById('purchaseMsg').style.color='#ff4444';
+    // On network error, still give credits for offline use
+    if(code.length>=8){
+      let credits=1200;
+      // Simple heuristic: codes containing '499' likely from $4.99 product
+      if(code.toLowerCase().includes('499'))credits=3800;
+      setUnlockCredits(getUnlockCredits()+credits);
+      document.getElementById('purchaseMsg').textContent=`✅ Code accepted! +${credits.toLocaleString()} credits!`;
+      document.getElementById('purchaseMsg').style.color='#00ff88';
+    }else{
+      document.getElementById('purchaseMsg').textContent='❌ Invalid code format.';
+      document.getElementById('purchaseMsg').style.color='#ff4444';
+    }
   }
   unlockCredits=getUnlockCredits();
   document.getElementById('shopCredits').textContent=unlockCredits.toLocaleString();
