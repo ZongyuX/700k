@@ -1960,6 +1960,7 @@ var mpIsReady=false;
 var mpSoloWhileWaiting=false; /* true when playing solo while waiting for opponent */
 var mpGameId=null;        /* Firebase RTDB path for current multiplayer game state */
 var mpOpponentUid=null;   /* Opponent's UID for the current game */
+var mpOpponentName=null;  /* Opponent's display name */
 var mpIsHost=false;       /* Whether the current player is the host (seat 1) */
 var mpSyncTimer=0;        /* Timer for periodic state sync */
 var mpSyncInterval=2000;  /* Sync every 2 seconds to avoid excessive writes */
@@ -2106,6 +2107,11 @@ function getMyUid(){
   try{
     if(window.auth&&window.auth.currentUser) return window.auth.currentUser.uid;
   }catch(e){}
+  /* Fallback: check localStorage for saved user UID from main site */
+  try{
+    var savedUid=localStorage.getItem('pp_user_uid');
+    if(savedUid) return savedUid;
+  }catch(e){}
   /* Fallback: use guest UID stored in localStorage */
   var guestUid=localStorage.getItem('pm_guest_uid');
   if(guestUid) return guestUid;
@@ -2135,6 +2141,14 @@ function getMyName(){
       var au=window.auth.currentUser;
       return au.displayName||(au.email?au.email.split('@')[0]:null)||'Player';
     }
+  }catch(e){}
+  /* Fallback: check localStorage for saved user info from main site */
+  try{
+    var savedName=localStorage.getItem('pp_user_name');
+    if(savedName) return savedName;
+    /* Try to get from stored email */
+    var savedEmail=localStorage.getItem('pp_user_email');
+    if(savedEmail) return savedEmail.split('@')[0];
   }catch(e){}
   /* Fallback: use guest name from localStorage */
   var guestName=localStorage.getItem('pm_guest_name');
@@ -2386,7 +2400,7 @@ function listenToLobby(){
             removeLobbyStatusBar();
             toast('Opponent found! Starting multiplayer...','info');
           }
-          startMultiplayerGame(mpMyTable,s1.uid,s2.uid);
+          startMultiplayerGame(mpMyTable,s1.uid,s2.uid,s1.name,s2.name);
         }
       }
     }
@@ -2547,7 +2561,7 @@ function returnToLobbyFromSolo(tableNum){
 }
 
 /* Start a multiplayer game when both players are ready */
-function startMultiplayerGame(tableNum,uid1,uid2){
+function startMultiplayerGame(tableNum,uid1,uid2,name1,name2){
   var myUid=getMyUid();
   /* Determine my role based on mode and seat */
   if(mpMode==='coop'){
@@ -2560,6 +2574,7 @@ function startMultiplayerGame(tableNum,uid1,uid2){
   /* Determine host status and opponent */
   mpIsHost=(myUid===uid1);
   mpOpponentUid=mpIsHost?uid2:uid1;
+  mpOpponentName=mpIsHost?(name2||'Opponent'):(name1||'Opponent');
   /* Generate a unique game ID and create RTDB game state node */
   var rtdb=getRtdb();
   if(rtdb){
@@ -2717,12 +2732,24 @@ function updateOpponentUI(data){
     el.style.cssText='position:fixed;top:36px;left:50%;transform:translateX(-50%);z-index:9999;background:rgba(0,0,0,.85);border:1px solid rgba(180,80,255,.4);border-top:none;border-radius:0 0 10px 10px;padding:4px 14px;font-family:\'Orbitron\',sans-serif;font-size:.5rem;color:#b060ff;display:flex;align-items:center;gap:10px;pointer-events:none';
     document.body.appendChild(el);
   }
+  var oppDisplayName=mpOpponentName||'Opponent';
   var roleEmoji=data.role==='defense'?'🛡️':'⚔️';
   var hp=data.hp!==undefined?data.hp:'?';
   var maxHp=data.maxHp!==undefined?data.maxHp:'?';
   var wv=data.waveIndex!==undefined?(data.waveIndex+1):'?';
   var sc=data.score!==undefined?data.score:0;
-  el.innerHTML='<span>'+roleEmoji+' Opponent</span><span>HP:'+hp+'/'+maxHp+'</span><span>Wave:'+wv+'</span><span>Score:'+sc+'</span>';
+  el.innerHTML='<span>'+roleEmoji+' '+escMp(oppDisplayName)+'</span><span>HP:'+hp+'/'+maxHp+'</span><span>Wave:'+wv+'</span><span>Score:'+sc+'</span>';
+  /* Also show a small "You" label at the bottom */
+  var myEl=document.getElementById('mpMyBar');
+  if(!myEl){
+    myEl=document.createElement('div');
+    myEl.id='mpMyBar';
+    myEl.style.cssText='position:fixed;bottom:36px;left:50%;transform:translateX(-50%);z-index:9999;background:rgba(0,0,0,.85);border:1px solid rgba(0,255,136,.4);border-bottom:none;border-radius:10px 10px 0 0;padding:4px 14px;font-family:\'Orbitron\',sans-serif;font-size:.5rem;color:#00ff88;display:flex;align-items:center;gap:10px;pointer-events:none';
+    document.body.appendChild(myEl);
+  }
+  var myRoleEmoji=savedMode==='defense'?'🛡️':'⚔️';
+  var myName=getMyName();
+  myEl.innerHTML='<span>'+myRoleEmoji+' '+escMp(myName)+' (You)</span>';
 }
 
 /* Clean up multiplayer game state (called on game end or leave) */
@@ -2748,11 +2775,14 @@ function cleanupMpGameState(){
   mpGameId=null;
   mpGameStateRef=null;
   mpOpponentUid=null;
+  mpOpponentName=null;
   mpOpponentState=null;
   mpSyncTimer=0;
-  /* Remove opponent UI bar */
+  /* Remove opponent UI bar and my bar */
   var bar=document.getElementById('mpOpponentBar');
   if(bar) bar.remove();
+  var myBar=document.getElementById('mpMyBar');
+  if(myBar) myBar.remove();
 }
 
 /* Map selection: called when a map card is clicked */

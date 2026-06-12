@@ -2301,7 +2301,7 @@ if(typeof window.PPI18n==='undefined'){
       isZh:function(){return _lang==='zh';},
       isEn:function(){return _lang==='en';},
       isEs:function(){return _lang==='es';},
-      applyLang:function(l){if(l)this.setLang(l);var els=document.querySelectorAll('[data-i18n]');for(var i=0;i<els.length;i++){var el=els[i],k=el.getAttribute('data-i18n');if(!k)continue;var v=this.t(k);if(v&&v!==k){var a=el.getAttribute('data-i18n-attr');if(a==='placeholder')el.placeholder=v;else if(a==='html')el.innerHTML=v;else{var hs=el.querySelector('.btn-hide-sm');if(hs){hs.textContent=' '+v;}else{el.textContent=v;}}}document.documentElement.lang=_lang;},
+      applyLang:function(l){if(l)this.setLang(l);var els=document.querySelectorAll('[data-i18n]');for(var i=0;i<els.length;i++){var el=els[i],k=el.getAttribute('data-i18n');if(!k)continue;var v=this.t(k);if(v&&v!==k){var a=el.getAttribute('data-i18n-attr');if(a==='placeholder')el.placeholder=v;else if(a==='html')el.innerHTML=v;else{var hs=el.querySelector('.btn-hide-sm');if(hs){hs.textContent=' '+v;}else{el.textContent=v;}}}}document.documentElement.lang=_lang;},
       registerDict:function(l,d){_dicts[l]=d;},
       buildSwitcher:function(){var bar=document.querySelector('.hbtns');var hdr=document.querySelector('header');if(!hdr)return;var wrapper=document.createElement('div');wrapper.className='lang-switch-wrapper';wrapper.id='langSwitchWrapper';var btn=document.createElement('button');btn.id='langSwitch';btn.className='lang-switch-btn';btn.title='Switch language / 切换语言 / Cambiar idioma';btn.innerHTML='<span class="lang-icon">'+_iconMap[_lang]+'</span><span class="lang-text">'+_labelMap[_lang]+'</span><span class="lang-arrow">▾</span>';var dd=document.createElement('div');dd.id='langDropdown';dd.className='lang-dropdown';_supported.forEach(function(l){var opt=document.createElement('button');opt.className='lang-option'+(l===_lang?' active':'');opt.setAttribute('data-lang',l);opt.innerHTML='<span class="lang-opt-icon">'+_iconMap[l]+'</span><span class="lang-opt-label">'+_labelMap[l]+'</span>';opt.addEventListener('click',function(e){e.stopPropagation();if(l!==_lang){PPI18n.setLang(l);PPI18n.applyLang(l);btn.innerHTML='<span class="lang-icon">'+_iconMap[l]+'</span><span class="lang-text">'+_labelMap[l]+'</span><span class="lang-arrow">▾</span>';dd.querySelectorAll('.lang-option').forEach(function(o){o.className='lang-option'+(o.getAttribute('data-lang')===l?' active':'');});if(typeof window._ppI18nRefresh==='function')window._ppI18nRefresh();}dd.classList.remove('show');});dd.appendChild(opt);});btn.addEventListener('click',function(e){e.stopPropagation();e.preventDefault();var r=btn.getBoundingClientRect();dd.style.top=(r.bottom+6)+'px';dd.style.left=Math.max(4,Math.min(r.left,window.innerWidth-160))+'px';dd.classList.toggle('show');});document.addEventListener('click',function(){dd.classList.remove('show');});wrapper.appendChild(btn);document.body.appendChild(dd);if(bar&&bar.parentNode===hdr){if(bar.nextSibling)hdr.insertBefore(wrapper,bar.nextSibling);else hdr.appendChild(wrapper);}else{hdr.appendChild(wrapper);}},
       fmtLocal:function(n){return Number(n).toLocaleString(_localeMap[_lang]||'en-US');},
@@ -2680,11 +2680,45 @@ async function handleAuthChange(user){
   evalProState();
   if(currentUser){
     try{ await loadUserDoc(currentUser); }catch(e){ console.warn('loadUserDoc',e); }
+    /* Sync public profile so other users can find this user by search */
+    syncPublicProfile();
+    /* Save user name/email to localStorage for game iframe access */
+    try{
+      var uname=currentUser.displayName||currentUser.email.split('@')[0]||'';
+      if(uname) localStorage.setItem('pp_user_name',uname);
+      if(currentUser.email) localStorage.setItem('pp_user_email',currentUser.email);
+      if(currentUser.uid) localStorage.setItem('pp_user_uid',currentUser.uid);
+    }catch(e){}
+  }else{
+    /* Clear stored user info on sign-out */
+    try{ localStorage.removeItem('pp_user_name'); localStorage.removeItem('pp_user_email'); localStorage.removeItem('pp_user_uid'); }catch(e){}
   }
   refreshAuthUI();
   refreshBadge();
   renderSidebar();
   renderGrid();
+}
+
+/* Sync the current user's profile to the pp_public collection so that
+ * other users can discover them via the Find Friends search.
+ * This writes a minimal public document: name, email, avatar, lvl. */
+function syncPublicProfile(){
+  if(!fbReady||!currentUser) return;
+  var name=currentUser.displayName||currentUser.email.split('@')[0]||'';
+  var email=currentUser.email||'';
+  var avatar=0, lvl=1;
+  if(window.PPGame&&PPGame.exportState){
+    var gs=PPGame.exportState();
+    avatar=gs.avatar||0;
+    lvl=gs.lvl||1;
+  }
+  db.collection('pp_public').doc(currentUser.uid).set({
+    name:name,
+    email:email,
+    avatar:avatar,
+    lvl:lvl,
+    updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+  },{merge:true}).catch(function(e){ console.warn('syncPublicProfile',e); });
 }
 
 function userDocRef(){ return db.collection('users').doc(currentUser.uid); }
@@ -2834,12 +2868,20 @@ function doAuthSubmit(){
     lsSet('pp_optin', document.getElementById('authOptIn').checked?'1':'0');
     auth.createUserWithEmailAndPassword(email,pass).then(function(userCredential){
       var user = userCredential.user;
+      /* Set display name from email prefix if not provided */
+      var displayName = email.split('@')[0];
+      if(!user.displayName && displayName){
+        return user.updateProfile({displayName:displayName}).then(function(){
+          return user.sendEmailVerification();
+        });
+      }
       /* Send email verification */
-      return user.sendEmailVerification().then(function(){
-        done();
-        /* Sign out the user — they must verify email first before logging in */
-        return auth.signOut();
-      }).then(function(){
+      return user.sendEmailVerification();
+    }).then(function(){
+      done();
+      /* Sign out the user — they must verify email first before logging in */
+      return auth.signOut();
+    }).then(function(){
         m.className='msg ok';
         m.textContent='Registration successful! A verification email has been sent to ' + email + '. Please check your inbox and click the verification link before signing in.';
         /* Show resend button and start cooldown */
@@ -2847,7 +2889,6 @@ function doAuthSubmit(){
         if(resendWrap) resendWrap.style.display = 'block';
         document.getElementById('authEmail').value = email;
         if(typeof startResendCountdown === 'function') startResendCountdown(60);
-      });
     }).catch(function(e){ done(); m.className='msg err'; m.textContent=authErrMsg(e); });
   }else{
     /* Step 2: On sign in, check if email is verified */
@@ -3707,7 +3748,9 @@ async function redeemCode(){
   }
   /* verify the license key with Lemon Squeezy */
   try{
+    console.log('[Pro Activation] Validating key with Lemon Squeezy...');
     const res=await PPLemon.validateLicense(key);
+    console.log('[Pro Activation] Validation result:', JSON.stringify(res));
     if(res.ok && res.kind==='pro'){
       /* Lifetime (days===0) → permanent; subscription (days>0) → set expiry */
       if(res.days && res.days > 0){
@@ -3796,9 +3839,13 @@ function unlock(key,m,text){
   setTimeout(()=>document.getElementById('actOverlay').classList.remove('show'),1400);
   toast(PPI18n.t('activate.pro.unlocked'));
 }
-/* Timed unlock: Pro for N days, then reverts to Free */
+/* Timed unlock: Pro for N days, then reverts to Free.
+ * If the user already has Pro time remaining, the new days are ADDED
+ * on top of the existing expiry (stacking), not replaced. */
 function unlockTimed(key,m,days,text){
-  const until=Date.now()+days*86400000;
+  var existingUntil=proUntil();
+  var base=existingUntil>Date.now()?existingUntil:Date.now();
+  const until=base+days*86400000;
   lsSet('pp_pro_code',key);
   lsSet('pp_pro_until',String(until));
   isPro=true; proExpired=false;
@@ -6773,6 +6820,8 @@ function listenForConversations(){
 function setOnlineStatus(){
   if(!fbReady||!currentUser) return;
   db.collection('users').doc(currentUser.uid).set({online:true,lastSeen:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).catch(function(){});
+  /* Also update pp_public for searchability */
+  if(typeof syncPublicProfile==='function') syncPublicProfile();
   /* Set offline on page unload */
   window.addEventListener('beforeunload',function(){
     db.collection('users').doc(currentUser.uid).set({online:false,lastSeen:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).catch(function(){});
@@ -7239,6 +7288,23 @@ saveAccountSettings=async function(){
   await _origSaveAccount();
   cloudSaveBio();
 };
+
+/* ---- Expose friend/chat/search functions to window (for onclick handlers in HTML) ---- */
+window.sendFriendRequestTo = sendFriendRequestTo;
+window.viewSearchUser = viewSearchUser;
+window.showContactProfile = showContactProfile;
+window.searchUsers = searchUsers;
+window.acceptFriendRequest = acceptFriendRequest;
+window.declineFriendRequest = declineFriendRequest;
+window.toggleContactReqSection = toggleContactReqSection;
+window.switchFriendsTab = switchFriendsTab;
+window.toggleFriendsPanel = toggleFriendsPanel;
+window.closeChatWindow = closeChatWindow;
+window.loadSuggestedUsers = loadSuggestedUsers;
+window.loadFriendsList = loadFriendsList;
+window.loadFriendRequests = loadFriendRequests;
+window.loadConversations = loadConversations;
+window.syncPublicProfile = syncPublicProfile;
 
 })();
 </script>
