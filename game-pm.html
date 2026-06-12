@@ -2106,11 +2106,6 @@ function getMyUid(){
   try{
     if(window.auth&&window.auth.currentUser) return window.auth.currentUser.uid;
   }catch(e){}
-  /* Fallback: check localStorage for saved user UID from main site */
-  try{
-    var savedUid=localStorage.getItem('pp_user_uid');
-    if(savedUid) return savedUid;
-  }catch(e){}
   /* Fallback: use guest UID stored in localStorage */
   var guestUid=localStorage.getItem('pm_guest_uid');
   if(guestUid) return guestUid;
@@ -2140,14 +2135,6 @@ function getMyName(){
       var au=window.auth.currentUser;
       return au.displayName||(au.email?au.email.split('@')[0]:null)||'Player';
     }
-  }catch(e){}
-  /* Fallback: check localStorage for saved user info from main site */
-  try{
-    var savedName=localStorage.getItem('pp_user_name');
-    if(savedName) return savedName;
-    /* Try to get from stored email */
-    var savedEmail=localStorage.getItem('pp_user_email');
-    if(savedEmail) return savedEmail.split('@')[0];
   }catch(e){}
   /* Fallback: use guest name from localStorage */
   var guestName=localStorage.getItem('pm_guest_name');
