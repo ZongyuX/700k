@@ -2132,9 +2132,9 @@
   </div>
   <!-- Tab Bar -->
   <div id="friendsTabBar" style="display:flex;border-bottom:1px solid var(--border);background:var(--panel2)">
-    <button class="qq-tab active" data-tab="chats" style="flex:1;padding:10px 0;font-size:13px;font-weight:600;background:none;border:none;color:var(--accent2);cursor:pointer;border-bottom:2px solid var(--accent2);transition:.2s;position:relative">💬 Chats</button>
-    <button class="qq-tab" data-tab="contacts" style="flex:1;padding:10px 0;font-size:13px;font-weight:600;background:none;border:none;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:.2s;position:relative">👥 Contacts<span id="friendReqBadge" style="display:none;position:absolute;top:4px;right:16px;width:16px;height:16px;border-radius:50%;background:#ef4444;color:#fff;font-size:9px;font-weight:700;text-align:center;line-height:16px"></span></button>
-    <button class="qq-tab" data-tab="discover" style="flex:1;padding:10px 0;font-size:13px;font-weight:600;background:none;border:none;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:.2s">🔍 Discover</button>
+    <button class="qq-tab active" data-tab="chats" style="flex:1;padding:10px 0;font-size:13px;font-weight:600;background:none;border:none;color:var(--accent2);cursor:pointer;border-bottom:2px solid var(--accent2);transition:.2s;position:relative">💬 <span data-i18n="friends.chats">Chats</span></button>
+    <button class="qq-tab" data-tab="contacts" style="flex:1;padding:10px 0;font-size:13px;font-weight:600;background:none;border:none;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:.2s;position:relative">👥 <span data-i18n="friends.contacts">Contacts</span><span id="friendReqBadge" style="display:none;position:absolute;top:4px;right:16px;width:16px;height:16px;border-radius:50%;background:#ef4444;color:#fff;font-size:9px;font-weight:700;text-align:center;line-height:16px"></span></button>
+    <button class="qq-tab" data-tab="discover" style="flex:1;padding:10px 0;font-size:13px;font-weight:600;background:none;border:none;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:.2s">🔍 <span data-i18n="friends.discover">Discover</span></button>
   </div>
   <!-- Tab Content: Chats -->
   <div id="tabChats" style="flex:1;overflow-y:auto;padding:0">
@@ -2145,7 +2145,7 @@
     <!-- Friend Requests Section -->
     <div id="contactReqSection" style="border-bottom:1px solid var(--border)">
       <div id="contactReqHeader" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;cursor:pointer" onclick="toggleContactReqSection()">
-        <span style="font-size:12px;font-weight:700;color:var(--gold)">📨 Friend Requests</span>
+        <span style="font-size:12px;font-weight:700;color:var(--gold)">📨 <span data-i18n="friends.requests">Friend Requests</span></span>
         <span id="contactReqCount" style="font-size:11px;color:var(--muted)"></span>
         <span id="contactReqArrow" style="font-size:10px;color:var(--muted);transition:.2s">▼</span>
       </div>
@@ -2153,7 +2153,7 @@
     </div>
     <!-- Pending Sent Section -->
     <div id="contactPendingSection" style="border-bottom:1px solid var(--border);display:none">
-      <div style="padding:8px 14px 4px"><span style="font-size:12px;font-weight:700;color:var(--gold)">⏳ Pending Sent</span></div>
+      <div style="padding:8px 14px 4px"><span style="font-size:12px;font-weight:700;color:var(--gold)">⏳ <span data-i18n="friends.sent">Pending Sent</span></span></div>
       <div id="contactPendingList" style="padding:0 14px 10px"></div>
     </div>
     <!-- Friends List -->
@@ -2187,7 +2187,7 @@
       <div>
         <span id="chatFriendName" style="font-size:14px;font-weight:700">Friend</span>
         <span id="chatFriendStatus" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#555;margin-left:5px;vertical-align:middle"></span>
-        <div id="chatFriendSub" style="font-size:10px;color:var(--muted)">offline</div>
+        <div id="chatFriendSub" style="font-size:10px;color:var(--muted)"></div>
       </div>
     </div>
     <div style="display:flex;gap:4px">
@@ -2687,11 +2687,36 @@ async function handleAuthChange(user){
     if(window.PPGame && PPGame.setUserId){
       PPGame.setUserId(null); // switches to pp_game_guest key
     }
+    /* Force reset game state to zero immediately */
+    if(window.PPGame && PPGame.resetToDefaults){
+      PPGame.resetToDefaults();
+    }
     /* Clear all account-specific keys (pro, trial, keys, promos, pm_*) */
     clearAccountKeys();
     isPro=false; proExpired=false;
     /* Clear friends/chat state */
     if(typeof _chatFriendUid!=='undefined') _chatFriendUid=null;
+    /* Clear friends panel UI */
+    try{
+      var reqList=document.getElementById('contactReqList'); if(reqList) reqList.innerHTML='';
+      var friendsList=document.getElementById('contactFriendsList'); if(friendsList) friendsList.innerHTML='';
+      var convList=document.getElementById('conversationsList'); if(convList) convList.innerHTML='';
+      var pendingList=document.getElementById('contactPendingList'); if(pendingList) pendingList.innerHTML='';
+      var pendingSection=document.getElementById('contactPendingSection'); if(pendingSection) pendingSection.style.display='none';
+      var reqCount=document.getElementById('contactReqCount'); if(reqCount) reqCount.textContent='';
+      var sugContainer=document.getElementById('suggestedUsers'); if(sugContainer) sugContainer.innerHTML='';
+      updateReqBadge(0);
+    }catch(e){}
+    /* Close any open chat window */
+    try{
+      var chatWin=document.getElementById('chatWindow'); if(chatWin) chatWin.style.display='none';
+    }catch(e){}
+    /* Force arcade button coin display to 0 */
+    try{
+      if(window.PPGame && PPGame.refresh) PPGame.refresh();
+      var arcBtn=document.getElementById('ppArcBtn');
+      if(arcBtn) arcBtn.innerHTML='<span class="lv">🪙 0</span>';
+    }catch(e){}
   } else {
     /* ---- LOGGING IN ---- */
     /* Before clearing anything, save the current guest game state as a backup
@@ -2715,6 +2740,8 @@ async function handleAuthChange(user){
     if(window.PPGame && PPGame.setUserId){
       PPGame.setUserId(user.uid);
     }
+    /* Force immediate UI refresh of coins/level display */
+    if(window.PPGame && PPGame.refresh) PPGame.refresh();
   }
   /* Re-evaluate Pro state — Pro only works for logged-in users */
   evalProState();
@@ -5679,8 +5706,8 @@ async function searchUsers(){
       /* Check if demo user already has a sent request */
       var alreadySent=isDemo&&_demoSentHas(u.uid);
       var btnHtml=alreadySent?
-        '<button id="'+btnId+'" style="background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.3);color:var(--accent2);padding:4px 10px;border-radius:6px;font-size:11px;cursor:default" disabled>Sent</button>':
-        '<button id="'+btnId+'" onclick="event.stopPropagation();sendFriendRequestTo(\''+u.uid+'\',\''+esc(name).replace(/'/g,"\\'")+'\',\''+btnId+'\')" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer">+ Add</button>';
+        '<button id="'+btnId+'" style="background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.3);color:var(--accent2);padding:4px 10px;border-radius:6px;font-size:11px;cursor:default" disabled>'+PPI18n.t('friends.sent')+'</button>':
+        '<button id="'+btnId+'" onclick="event.stopPropagation();sendFriendRequestTo(\''+u.uid+'\',\''+esc(name).replace(/'/g,"\\'")+'\',\''+btnId+'\')" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer">+ '+PPI18n.t('friends.add')+'</button>';
       html+='<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;border:1px solid var(--border);margin-bottom:6px;background:var(--panel2);transition:background .15s" onmouseenter="this.style.background=\'rgba(124,92,255,.08)\'" onmouseleave="this.style.background=\'var(--panel2)\'">'+
         '<div style="width:36px;height:36px;border-radius:10px;overflow:hidden;border:1px solid var(--border);cursor:pointer;transition:transform .15s" onclick="viewSearchUser(\''+u.uid+'\',\''+esc(name).replace(/'/g,"\\'")+'\')" onmouseenter="this.style.transform=\'scale(1.12)\'" onmouseleave="this.style.transform=\'scale(1)\'">'+svg+'</div>'+
         '<div style="flex:1;min-width:0;cursor:pointer" onclick="viewSearchUser(\''+u.uid+'\',\''+esc(name).replace(/'/g,"\\'")+'\')"><div style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(name)+'</div>'+
@@ -5704,8 +5731,8 @@ function loadSuggestedUsers(){
       var alreadySent=_demoSentHas(u._uid);
       var btnId='sugBtn_'+u._uid.replace(/[^a-zA-Z0-9]/g,'_');
       var btnHtml=alreadySent?
-        '<button id="'+btnId+'" style="background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.3);color:var(--accent2);padding:4px 10px;border-radius:6px;font-size:11px;cursor:default" disabled>Sent</button>':
-        '<button id="'+btnId+'" onclick="sendFriendRequestTo(\''+u._uid+'\',\''+esc(u.name).replace(/'/g,"\\'")+'\',\''+btnId+'\')" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer">+ Add</button>';
+        '<button id="'+btnId+'" style="background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.3);color:var(--accent2);padding:4px 10px;border-radius:6px;font-size:11px;cursor:default" disabled>'+PPI18n.t('friends.sent')+'</button>':
+        '<button id="'+btnId+'" onclick="sendFriendRequestTo(\''+u._uid+'\',\''+esc(u.name).replace(/'/g,"\\'")+'\',\''+btnId+'\')" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer">+ '+PPI18n.t('friends.add')+'</button>';
       html+='<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)">'+
         '<div style="width:34px;height:34px;border-radius:10px;overflow:hidden;border:1px solid var(--border)">'+svg+'</div>'+
         '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(u.name)+'</div>'+
@@ -5715,7 +5742,7 @@ function loadSuggestedUsers(){
     });
     container.innerHTML=html;
   }else{
-    container.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:10px">No suggestions yet</div>';
+    container.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:10px">'+PPI18n.t('friends.no.suggestions')+'</div>';
   }
 }
 
@@ -5773,8 +5800,8 @@ function viewSearchUser(uid,name){
     var bio=fakeBios[idx%fakeBios.length];
     var demoAlreadySent=_demoSentHas(uid);
     var profileBtnHtml=demoAlreadySent?
-      '<button id="profileAddBtn" style="margin-top:12px;background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.3);color:var(--accent2);padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:default" disabled>Sent</button>':
-      '<button id="profileAddBtn" onclick="sendFriendRequestTo(\''+uid+'\',\''+esc(dName).replace(/'/g,"\\'")+'\',\'profileAddBtn\');document.getElementById(\'searchUserProfile\').classList.remove(\'show\')" style="margin-top:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">+ Add Friend</button>';
+      '<button id="profileAddBtn" style="margin-top:12px;background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.3);color:var(--accent2);padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:default" disabled>'+PPI18n.t('friends.sent')+'</button>':
+      '<button id="profileAddBtn" onclick="sendFriendRequestTo(\''+uid+'\',\''+esc(dName).replace(/'/g,"\\'")+'\',\'profileAddBtn\');document.getElementById(\'searchUserProfile\').classList.remove(\'show\')" style="margin-top:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">+ '+PPI18n.t('friends.add')+'</button>';
     content.innerHTML='<div style="text-align:center">'+
       '<div style="width:80px;height:80px;border-radius:16px;overflow:hidden;border:1px solid var(--border);margin:0 auto 8px">'+svg+'</div>'+
       '<div style="font-size:16px;font-weight:800">'+esc(dName)+'</div>'+
@@ -5800,10 +5827,12 @@ function viewSearchUser(uid,name){
     overlay.classList.add('show');
     return;
   }
-  db.collection('users').doc(uid).get().then(async function(doc){
-    /* Helper: check friend status for the current user vs this uid */
+  /* --- Async profile loader: try pp_public first (most reliable), then users doc --- */
+  (async function(){
+    /* Check friend status for the current user vs this uid */
     var friendStatus='none';
     if(fbReady&&currentUser){
+      /* Check own friends list */
       try{
         var friendDoc=await db.collection('friends').doc(currentUser.uid).collection('list').doc(uid).get();
         if(friendDoc.exists){
@@ -5813,7 +5842,7 @@ function viewSearchUser(uid,name){
           else if(fs==='pending_received') friendStatus='received';
         }
       }catch(e){}
-      /* Also check notifications for a pending request FROM this user */
+      /* Check notifications for a pending request FROM this user */
       if(friendStatus==='none'){
         try{
           var notifCheck=await db.collection('notifications').doc(currentUser.uid).collection('items')
@@ -5824,94 +5853,85 @@ function viewSearchUser(uid,name){
           if(!notifCheck.empty) friendStatus='received';
         }catch(e){}
       }
+      /* Also check friend_requests collection for a pending request FROM this user */
+      if(friendStatus==='none'){
+        try{
+          var frCheck=await db.collection('friend_requests')
+            .where('from','==',uid)
+            .where('to','==',currentUser.uid)
+            .where('status','==','pending')
+            .get();
+          if(!frCheck.empty) friendStatus='received';
+        }catch(e){}
+      }
     }
     function profileBtnHtml(btnUid,btnName){
-      if(friendStatus==='accepted') return '<button id="profileAddBtn" style="margin-top:12px;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);color:#7ee2a4;padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:default" disabled>Already Friends</button>';
-      if(friendStatus==='sent') return '<button id="profileAddBtn" style="margin-top:12px;background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.3);color:var(--accent2);padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:default" disabled>Sent</button>';
-      if(friendStatus==='received') return '<button id="profileAddBtn" style="margin-top:12px;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);color:#7ee2a4;padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:default" disabled>Request Received</button>';
-      return '<button id="profileAddBtn" onclick="sendFriendRequestTo(\''+btnUid+'\',\''+esc(btnName).replace(/'/g,"\\'")+'\',\'profileAddBtn\');document.getElementById(\'searchUserProfile\').classList.remove(\'show\')" style="margin-top:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">+ Add Friend</button>';
+      if(friendStatus==='accepted') return '<button id="profileAddBtn" style="margin-top:12px;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);color:#7ee2a4;padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:default" disabled>'+PPI18n.t('friends.already.friends')+'</button>';
+      if(friendStatus==='sent') return '<button id="profileAddBtn" style="margin-top:12px;background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.3);color:var(--accent2);padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:default" disabled>'+PPI18n.t('friends.sent')+'</button>';
+      if(friendStatus==='received') return '<button id="profileAddBtn" style="margin-top:12px;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);color:#7ee2a4;padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:default" disabled>'+PPI18n.t('friends.request.received')+'</button>';
+      return '<button id="profileAddBtn" onclick="sendFriendRequestTo(\''+btnUid+'\',\''+esc(btnName).replace(/'/g,"\\'")+'\',\'profileAddBtn\');document.getElementById(\'searchUserProfile\').classList.remove(\'show\')" style="margin-top:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">+ '+PPI18n.t('friends.add')+'</button>';
     }
-    if(!doc.exists){
-      /* User doc doesn't exist — try pp_public as fallback */
-      db.collection('pp_public').doc(uid).get().then(function(pubDoc){
-        var pd=pubDoc.data()||{};
-        var bio=pd.bio||'';
-        var displayName=pd.name||name||'User';
-        var email=pd.email||'';
-        var avatar=pd.avatar||0;
-        var svg=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(avatar):'';
-        content.innerHTML='<div style="text-align:center">'+
-          '<div style="width:80px;height:80px;border-radius:16px;overflow:hidden;border:1px solid var(--border);margin:0 auto 8px">'+svg+'</div>'+
-          '<div style="font-size:16px;font-weight:800">'+esc(displayName)+'</div>'+
-          '<div style="font-size:12px;color:var(--muted)">'+esc(email)+'</div>'+
-          (bio?'<div style="margin-top:8px;font-size:13px;color:var(--text);font-style:italic;padding:8px;border-top:1px solid var(--border)">"'+esc(bio)+'"</div>':'')+
-          profileBtnHtml(uid,displayName)+
-        '</div>';
-        overlay.classList.add('show');
-      }).catch(function(e2){
-        console.warn('view user pp_public fallback',e2);
-        /* Last resort: show minimal profile */
-        content.innerHTML='<div style="text-align:center">'+
-          '<div style="font-size:16px;font-weight:800">'+esc(name)+'</div>'+
-          profileBtnHtml(uid,name)+
-        '</div>';
-        overlay.classList.add('show');
-      });
+    /* Step 1: Try pp_public first (most reliable, publicly readable) */
+    var pubData=null;
+    try{
+      var pubSnap=await db.collection('pp_public').doc(uid).get();
+      if(pubSnap.exists) pubData=pubSnap.data()||{};
+    }catch(e){ console.warn('viewSearchUser pp_public read failed',e); }
+
+    /* Step 2: Try users doc for game stats */
+    var userData=null;
+    try{
+      var userSnap=await db.collection('users').doc(uid).get();
+      if(userSnap.exists) userData=userSnap.data()||{};
+    }catch(e){ console.warn('viewSearchUser users doc read failed',e); }
+
+    /* Step 3: Merge data — pp_public for basic info, users doc for game stats */
+    if(!pubData&&!userData){
+      /* Both failed — show minimal profile with just the name */
+      content.innerHTML='<div style="text-align:center">'+
+        '<div style="font-size:16px;font-weight:800">'+esc(name)+'</div>'+
+        profileBtnHtml(uid,name)+
+      '</div>';
+      overlay.classList.add('show');
       return;
     }
-    var d=doc.data()||{};
-    var bio=d.bio||'';
-    var displayName=d.displayName||name||'User';
-    var email=d.email||'';
+    var bio=(userData&&userData.bio)||(pubData&&pubData.bio)||'';
+    var displayName=(pubData&&pubData.name)||(userData&&userData.displayName)||name||'User';
+    var email=(pubData&&pubData.email)||(userData&&userData.email)||'';
     var avatar=0;
-    var lvl=1, xp=0, coins=0, bestStreak=0;
-    try{
-      if(d.game&&d.game.avatar) avatar=d.game.avatar;
-      if(d.game&&d.game.lvl) lvl=d.game.lvl;
-      if(d.game&&d.game.xp) xp=d.game.xp;
-      if(d.game&&d.game.coins) coins=d.game.coins;
-      if(d.game&&d.game.best) bestStreak=d.game.best;
-    }catch(e){}
+    var lvl=1, coins=0, bestStreak=0;
+    /* Game stats from users doc (more detailed) */
+    if(userData){
+      try{
+        if(userData.game&&userData.game.avatar) avatar=userData.game.avatar;
+        if(userData.game&&userData.game.lvl) lvl=userData.game.lvl;
+        if(userData.game&&userData.game.coins) coins=userData.game.coins;
+        if(userData.game&&userData.game.best) bestStreak=userData.game.best;
+      }catch(e){}
+    }
+    /* Avatar from pp_public if users doc didn't have it */
+    if(avatar===0&&pubData&&pubData.avatar) avatar=pubData.avatar;
     var svg=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(avatar):'';
     var rankInfo=(window.PPGame&&PPGame.rankOf)?PPGame.rankOf(lvl):{name:'Bronze',color:'#cd7f32'};
     var titleInfo=(window.PPGame&&PPGame.levelTitle)?PPGame.levelTitle(lvl):'Newcomer';
-    content.innerHTML='<div style="text-align:center">'+
-      '<div style="width:80px;height:80px;border-radius:16px;overflow:hidden;border:1px solid var(--border);margin:0 auto 8px">'+svg+'</div>'+
-      '<div style="font-size:16px;font-weight:800">'+esc(displayName)+'</div>'+
-      '<div style="font-size:11px;color:var(--muted)">'+esc(titleInfo)+' <span style="border:1px solid '+rankInfo.color+';color:'+rankInfo.color+';padding:1px 6px;border-radius:10px;font-size:10px">'+esc(rankInfo.name)+'</span></div>'+
-      '<div style="font-size:12px;color:var(--muted)">'+esc(email)+'</div>'+
+    var statsHtml=(lvl>1||coins>0||bestStreak>0)?
       '<div style="display:flex;gap:8px;justify-content:center;margin-top:8px">'+
         '<div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:4px 10px;text-align:center"><div style="font-size:12px;font-weight:700">Lv '+lvl+'</div><div style="font-size:9px;color:var(--muted)">Level</div></div>'+
         '<div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:4px 10px;text-align:center"><div style="font-size:12px;font-weight:700">🪙 '+coins+'</div><div style="font-size:9px;color:var(--muted)">Coins</div></div>'+
         '<div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:4px 10px;text-align:center"><div style="font-size:12px;font-weight:700">🔥 '+bestStreak+'</div><div style="font-size:9px;color:var(--muted)">Streak</div></div>'+
-      '</div>'+
+      '</div>':'';
+    var rankHtml=(lvl>1)?'<div style="font-size:11px;color:var(--muted)">'+esc(titleInfo)+' <span style="border:1px solid '+rankInfo.color+';color:'+rankInfo.color+';padding:1px 6px;border-radius:10px;font-size:10px">'+esc(rankInfo.name)+'</span></div>':'';
+    content.innerHTML='<div style="text-align:center">'+
+      '<div style="width:80px;height:80px;border-radius:16px;overflow:hidden;border:1px solid var(--border);margin:0 auto 8px">'+svg+'</div>'+
+      '<div style="font-size:16px;font-weight:800">'+esc(displayName)+'</div>'+
+      rankHtml+
+      (email?'<div style="font-size:12px;color:var(--muted)">'+esc(email)+'</div>':'')+
+      statsHtml+
       (bio?'<div style="margin-top:8px;font-size:13px;color:var(--text);font-style:italic;padding:8px;border-top:1px solid var(--border)">"'+esc(bio)+'"</div>':'')+
       profileBtnHtml(uid,displayName)+
     '</div>';
     overlay.classList.add('show');
-  }).catch(function(e){
-    console.warn('view user',e);
-    /* Instead of just showing "Could not load profile", try pp_public as fallback */
-    db.collection('pp_public').doc(uid).get().then(function(pubDoc){
-      var pd=pubDoc.data()||{};
-      var pName=pd.name||name||'User';
-      var pEmail=pd.email||'';
-      var pAvatar=pd.avatar||0;
-      var pBio=pd.bio||'';
-      var svg=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(pAvatar):'';
-      content.innerHTML='<div style="text-align:center">'+
-        '<div style="width:80px;height:80px;border-radius:16px;overflow:hidden;border:1px solid var(--border);margin:0 auto 8px">'+svg+'</div>'+
-        '<div style="font-size:16px;font-weight:800">'+esc(pName)+'</div>'+
-        '<div style="font-size:12px;color:var(--muted)">'+esc(pEmail)+'</div>'+
-        (pBio?'<div style="margin-top:8px;font-size:13px;color:var(--text);font-style:italic;padding:8px;border-top:1px solid var(--border)">"'+esc(pBio)+'"</div>':'')+
-        profileBtnHtml(uid,pName)+
-      '</div>';
-      overlay.classList.add('show');
-    }).catch(function(e2){
-      console.warn('view user pp_public fallback also failed',e2);
-      toast('Could not load profile','info');
-    });
-  });
+  })();
 }
 
 /* ---- Demo user friend request local storage ---- */
@@ -5928,10 +5948,10 @@ function _setBtnSent(btnId,isProfileBtn){
   var btn=document.getElementById(btnId);
   if(btn){
     if(isProfileBtn){
-      btn.textContent='Sent';
+      btn.textContent=PPI18n.t('friends.sent');
       btn.style.cssText='margin-top:12px;background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.3);color:var(--accent2);padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:default';
     }else{
-      btn.textContent='Sent';
+      btn.textContent=PPI18n.t('friends.sent');
       btn.style.cssText='background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.3);color:var(--accent2);padding:4px 10px;border-radius:6px;font-size:11px;cursor:default';
     }
     btn.disabled=true;
@@ -5952,7 +5972,7 @@ function _setBtnSent(btnId,isProfileBtn){
 function _revertBtnAdd(btnId){
   var btn=document.getElementById(btnId);
   if(btn){
-    btn.textContent='+ Add';
+    btn.textContent='+ '+PPI18n.t('friends.add');
     btn.style.cssText='background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer';
     btn.disabled=false;
   }
@@ -5960,15 +5980,15 @@ function _revertBtnAdd(btnId){
 
 /* ---- Send friend request ---- */
 async function sendFriendRequestTo(uid,name,btnId){
-  if(!fbReady||!currentUser){toast('Please sign in first','info');return;}
-  if(uid===currentUser.uid){toast('Cannot add yourself','info');return;}
+  if(!fbReady||!currentUser){toast(PPI18n.t('friends.signin'),'info');return;}
+  if(uid===currentUser.uid){toast(PPI18n.t('friends.cannot.add.self'),'info');return;}
   /* Demo/fake user: save locally only, no Firestore write needed */
   if(uid.indexOf('demo_')===0){
-    if(_demoSentHas(uid)){toast('Request already sent','info');return;}
+    if(_demoSentHas(uid)){toast(PPI18n.t('friends.request.already.sent'),'info');return;}
     _demoSentSave(uid,name);
     /* Update ALL buttons to "Sent" state immediately */
     _setBtnSent(btnId,btnId==='profileAddBtn');
-    toast('Friend request sent to '+name);
+    toast(PPI18n.t('friends.request.sent')+' '+name);
     loadFriendsList();
     return;
   }
@@ -5979,8 +5999,8 @@ async function sendFriendRequestTo(uid,name,btnId){
     var existing=await db.collection('friends').doc(currentUser.uid).collection('list').doc(uid).get();
     if(existing.exists){
       var st=existing.data().status;
-      if(st==='pending_sent'||st==='pending_received'){toast('Request already sent','info');return;}
-      if(st==='accepted'){toast('Already friends','info');return;}
+      if(st==='pending_sent'||st==='pending_received'){toast(PPI18n.t('friends.request.already.sent'),'info');return;}
+      if(st==='accepted'){toast(PPI18n.t('friends.already.friends.short'),'info');return;}
     }
 
     /* Check if there's already a pending request in the global collection */
@@ -5990,7 +6010,7 @@ async function sendFriendRequestTo(uid,name,btnId){
       .where('status','==','pending')
       .get();
     if(!existingReq.empty){
-      toast('Request already sent','info');
+      toast(PPI18n.t('friends.request.already.sent'),'info');
       return;
     }
 
@@ -6001,7 +6021,7 @@ async function sendFriendRequestTo(uid,name,btnId){
       .where('status','==','pending')
       .get();
     if(!reverseReq.empty){
-      toast('This user already sent you a request — check your incoming requests!','info');
+      toast(PPI18n.t('friends.reverse.request'),'info');
       return;
     }
 
@@ -6067,12 +6087,12 @@ async function sendFriendRequestTo(uid,name,btnId){
       console.warn('Could not write to other user friends list (expected — they will use notifications collection):', otherWriteErr);
     }
 
-    toast('Friend request sent to '+name);
-    loadFriendsList();
-    loadFriendRequests();
+    toast(PPI18n.t('friends.request.sent')+' '+name);
+    /* Delay before refreshing lists so Firestore has time to propagate the write */
+    setTimeout(function(){ loadFriendsList(); loadFriendRequests(); }, 500);
   }catch(e){
     console.warn('send friend req',e);
-    toast('Error sending request','info');
+    toast(PPI18n.t('friends.send.error'),'info');
     /* Revert button on error */
     _revertBtnAdd(btnId);
   }
@@ -6136,6 +6156,44 @@ async function loadFriendRequests(){
       console.warn('notifications query failed',notifErr);
     }
 
+    /* Method 4: Broader friend_requests fallback — if Method 1 failed due to
+     * composite index issues, try a simpler query with just the 'to' field
+     * and filter client-side, or scan all friend_requests for our UID. */
+    if(!items.length){
+      try{
+        /* Try simple single-field query first */
+        var broadSnap=await db.collection('friend_requests')
+          .where('to','==',currentUser.uid)
+          .get();
+        broadSnap.forEach(function(doc){
+          var d=doc.data();
+          if(d.status==='pending'){
+            var alreadyExists=items.some(function(it){return it.uid===d.from;});
+            if(!alreadyExists){
+              items.push({uid:d.from,name:d.fromName||'User',addedAt:d.createdAt||null,requestDocId:doc.id});
+            }
+          }
+        });
+      }catch(broadErr){
+        console.warn('broad friend_requests query also failed',broadErr);
+        /* Last resort: try reading ALL friend_requests and filter client-side */
+        try{
+          var allReqSnap=await db.collection('friend_requests').limit(500).get();
+          allReqSnap.forEach(function(doc){
+            var d=doc.data();
+            if(d.to===currentUser.uid&&d.status==='pending'){
+              var alreadyExists=items.some(function(it){return it.uid===d.from;});
+              if(!alreadyExists){
+                items.push({uid:d.from,name:d.fromName||'User',addedAt:d.createdAt||null,requestDocId:doc.id});
+              }
+            }
+          });
+        }catch(allErr){
+          console.warn('all friend_requests scan also failed',allErr);
+        }
+      }
+    }
+
     /* Sort client-side by addedAt descending */
     items.sort(function(a,b){
       var ta=a.addedAt?((a.addedAt.toDate?a.addedAt.toDate():a.addedAt).getTime()):0;
@@ -6145,21 +6203,21 @@ async function loadFriendRequests(){
     updateReqBadge(items.length);
     if(countEl) countEl.textContent=items.length?'('+items.length+')':'';
     if(!items.length){
-      list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:10px">No pending requests</div>';
+      list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:10px">'+PPI18n.t('friends.no.requests')+'</div>';
       return;
     }
     var html='';
     items.forEach(function(item){
       html+='<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;border:1px solid var(--border);margin-bottom:4px;background:var(--panel2)">'+
         '<div style="flex:1;font-size:13px;font-weight:600">'+esc(item.name)+'</div>'+
-        '<button onclick="acceptFriendRequest(\''+item.uid+'\',\''+esc(item.name).replace(/'/g,"\\'")+'\',\''+(item.requestDocId||'')+'\')" style="background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);color:#7ee2a4;padding:5px 12px;border-radius:8px;font-size:11px;cursor:pointer;font-weight:600">Accept</button>'+
-        '<button onclick="declineFriendRequest(\''+item.uid+'\',\''+(item.requestDocId||'')+'\')" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:#ef4444;padding:5px 12px;border-radius:8px;font-size:11px;cursor:pointer;font-weight:600">Decline</button>'+
+        '<button onclick="acceptFriendRequest(\''+item.uid+'\',\''+esc(item.name).replace(/'/g,"\\'")+'\',\''+(item.requestDocId||'')+'\')" style="background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);color:#7ee2a4;padding:5px 12px;border-radius:8px;font-size:11px;cursor:pointer;font-weight:600">'+PPI18n.t('friends.accept')+'</button>'+
+        '<button onclick="declineFriendRequest(\''+item.uid+'\',\''+(item.requestDocId||'')+'\')" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:#ef4444;padding:5px 12px;border-radius:8px;font-size:11px;cursor:pointer;font-weight:600">'+PPI18n.t('friends.decline')+'</button>'+
       '</div>';
     });
     list.innerHTML=html;
   }catch(e){
     console.warn('load req',e);
-    list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:10px">Could not load requests</div>';
+    list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:10px">'+PPI18n.t('friends.load.error')+'</div>';
   }
 }
 
@@ -6222,12 +6280,12 @@ async function acceptFriendRequest(uid,name,requestDocId){
       });
     }catch(e){}
 
-    toast(name+' is now your friend!');
+    toast(name+' '+PPI18n.t('friends.now.friend'));
     loadFriendRequests();
     loadFriendsList();
   }catch(e){
     console.warn('accept friend',e);
-    toast('Error accepting request','info');
+    toast(PPI18n.t('friends.accept.error'),'info');
   }
 }
 
@@ -6286,7 +6344,7 @@ async function cancelFriendRequest(uid,name){
     var m=_demoSentMap();
     delete m[uid];
     localStorage.setItem('pp_demo_sent',JSON.stringify(m));
-    toast('Friend request to '+(name||'user')+' withdrawn');
+    toast(PPI18n.t('friends.withdrawn'));
     loadFriendsList();
     return;
   }
@@ -6320,12 +6378,12 @@ async function cancelFriendRequest(uid,name){
     try{
       await db.collection('friends').doc(uid).collection('list').doc(currentUser.uid).delete();
     }catch(e){}
-    toast('Friend request to '+(name||'user')+' withdrawn');
+    toast(PPI18n.t('friends.withdrawn'));
     loadFriendsList();
     loadFriendRequests();
   }catch(e){
     console.warn('cancel friend req',e);
-    toast('Error cancelling request','info');
+    toast(PPI18n.t('friends.send.error'),'info');
   }
 }
 window.cancelFriendRequest = cancelFriendRequest;
@@ -6334,7 +6392,7 @@ window.cancelFriendRequest = cancelFriendRequest;
 async function loadFriendsList(){
   var list=document.getElementById('contactFriendsList');
   if(!fbReady||!currentUser){
-    list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">Sign in to see friends</div>';
+    list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">'+PPI18n.t('friends.signin')+'</div>';
     return;
   }
   list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">Loading...</div>';
@@ -6403,11 +6461,11 @@ async function loadFriendsList(){
       pending.forEach(function(f){
         var fSvg=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(f.avatar||0):'';
         var isDemo=f.demo||false;
-        var cancelBtn='<button onclick="cancelFriendRequest(\''+f.uid+'\',\''+esc(f.name).replace(/'/g,"\\'")+'\')" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:#ef4444;padding:2px 8px;border-radius:6px;font-size:10px;cursor:pointer;font-weight:600;margin-left:4px">Withdraw</button>';
+        var cancelBtn='<button onclick="cancelFriendRequest(\''+f.uid+'\',\''+esc(f.name).replace(/'/g,"\\'")+'\')" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:#ef4444;padding:2px 8px;border-radius:6px;font-size:10px;cursor:pointer;font-weight:600;margin-left:4px">'+PPI18n.t('friends.withdraw')+'</button>';
         ph+='<div style="display:flex;align-items:center;gap:8px;padding:6px 4px;border-radius:8px;opacity:.6">'+
           '<div style="width:28px;height:28px;border-radius:8px;overflow:hidden;border:1px solid var(--border)">'+fSvg+'</div>'+
           '<span style="font-size:13px;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(f.name)+'</span>'+
-          '<span style="font-size:10px;color:var(--gold);font-style:italic">Sent</span>'+
+          '<span style="font-size:10px;color:var(--gold);font-style:italic">'+PPI18n.t('friends.sent')+'</span>'+
           cancelBtn+
         '</div>';
       });
@@ -6438,22 +6496,22 @@ async function loadFriendsList(){
     }
     var html='';
     if(online.length){
-      html+='<div style="font-size:11px;color:var(--accent2);font-weight:700;padding:10px 14px 4px">🟢 ONLINE ('+online.length+')</div>';
+      html+='<div style="font-size:11px;color:var(--accent2);font-weight:700;padding:10px 14px 4px">🟢 '+PPI18n.t('friends.online').toUpperCase()+' ('+online.length+')</div>';
       online.forEach(function(f){html+=friendRow(f);});
     }
     if(offline.length){
-      html+='<div style="font-size:11px;color:var(--muted);font-weight:700;padding:10px 14px 4px">⚫ OFFLINE ('+offline.length+')</div>';
+      html+='<div style="font-size:11px;color:var(--muted);font-weight:700;padding:10px 14px 4px">⚫ '+PPI18n.t('friends.offline').toUpperCase()+' ('+offline.length+')</div>';
       offline.forEach(function(f){html+=friendRow(f);});
     }
     if(!online.length&&!offline.length&&!pending.length){
-      list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:30px 14px">No friends yet.<br>Go to Discover tab to find and add friends!</div>';
+      list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:30px 14px">'+PPI18n.t('friends.no.friends')+'<br>'+PPI18n.t('friends.no.friends.hint')+'</div>';
     }else{
       list.innerHTML=html;
     }
   }catch(e){
     console.warn('load friends',e);
     /* Graceful fallback — don't show scary error */
-    list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:30px 14px">Could not load friends list.<br>Please try again later.</div>';
+    list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:30px 14px">'+PPI18n.t('friends.load.error.list')+'</div>';
   }
 }
 
@@ -6462,22 +6520,26 @@ async function loadConversations(){
   var list=document.getElementById('conversationsList');
   if(!list) return;
   if(!fbReady||!currentUser||!rtdb){
-    list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:30px">Sign in to see chats</div>';
+    list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:30px">'+PPI18n.t('friends.signin.chats')+'</div>';
     return;
   }
   list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">Loading...</div>';
   try{
-    var convRef=rtdb.ref('user_conversations/'+currentUser.uid).orderByChild('lastMessageTime');
+    /* NOTE: Removed orderByChild('lastMessageTime') — RTDB requires an index
+     * for ordered queries, which may not exist. Instead we sort client-side. */
+    var convRef=rtdb.ref('user_conversations/'+currentUser.uid);
     convRef.once('value',function(snap){
       var convs=[];
       snap.forEach(function(child){
         var c=child.val();
         if(c.friendId&&c.friendName) convs.push(c);
       });
-      /* Reverse to show most recent first */
-      convs.reverse();
+      /* Sort client-side by lastMessageTime descending (most recent first) */
+      convs.sort(function(a,b){
+        return (b.lastMessageTime||0)-(a.lastMessageTime||0);
+      });
       if(!convs.length){
-        list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:30px 14px">No conversations yet.<br>Start a chat from Contacts!</div>';
+        list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:30px 14px">'+PPI18n.t('friends.no.conversations')+'<br>'+PPI18n.t('friends.no.conversations.hint')+'</div>';
         return;
       }
       var html='';
@@ -6509,11 +6571,13 @@ async function loadConversations(){
       list.innerHTML=html;
     },function(e){
       console.warn('load convs',e);
-      list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">Could not load conversations</div>';
+      /* Show "No conversations yet" instead of scary error — most likely
+       * there simply aren't any conversations yet. */
+      list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:30px 14px">'+PPI18n.t('friends.no.conversations')+'<br>'+PPI18n.t('friends.no.conversations.hint')+'</div>';
     });
   }catch(e){
     console.warn('load convs',e);
-    list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">Could not load conversations</div>';
+    list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:30px 14px">'+PPI18n.t('friends.no.conversations')+'</div>';
   }
 }
 
@@ -6532,7 +6596,7 @@ function friendRow(f){
 window.openChatWith=function(fUid,fName,fAvatar){
   _chatFriendUid=fUid;
   document.getElementById('chatFriendName').textContent=fName;
-  document.getElementById('chatFriendSub').textContent='Chat';
+  document.getElementById('chatFriendSub').textContent=PPI18n.t('friends.chat');
   /* Set avatar */
   var avEl=document.getElementById('chatFriendAvatar');
   var svg=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(fAvatar||0):'';
@@ -6540,7 +6604,7 @@ window.openChatWith=function(fUid,fName,fAvatar){
   document.getElementById('chatWindow').style.cssText='display:block!important;position:fixed;bottom:20px;right:380px;width:360px;max-width:90vw;background:var(--panel);border:1px solid var(--border);border-radius:16px;z-index:10001;box-shadow:0 8px 32px rgba(0,0,0,.5);overflow:hidden;resize:both;min-width:280px;min-height:340px';
   document.getElementById('chatMessages').style.display='flex';
   document.getElementById('chatInputRow').style.display='flex';
-  document.getElementById('chatMessages').innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">Loading messages...</div>';
+  document.getElementById('chatMessages').innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">'+PPI18n.t('friends.loading.messages')+'</div>';
   /* Listen for messages in Realtime Database */
   if(_chatUnsubscribe) _chatUnsubscribe();
   var chatId=getChatRoomId(currentUser.uid,fUid);
@@ -6560,7 +6624,7 @@ window.openChatWith=function(fUid,fName,fAvatar){
       '</div>';
     });
     var el=document.getElementById('chatMessages');
-    el.innerHTML=html||'<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">No messages yet. Say hi!</div>';
+    el.innerHTML=html||'<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">'+PPI18n.t('friends.no.messages')+'</div>';
     el.scrollTop=el.scrollHeight;
   },function(e){console.warn('chat listen',e);});
   /* Mark messages as read */
@@ -6687,10 +6751,14 @@ document.querySelectorAll('#friendsTabBar .qq-tab').forEach(function(tab){
 document.getElementById('unreadIndicator').addEventListener('click',function(){
   /* Open the conversation with unread messages */
   if(!rtdb||!currentUser) return;
-  rtdb.ref('user_conversations/'+currentUser.uid).orderByChild('lastMessageTime').limitToLast(1).once('value',function(snap){
-    snap.forEach(function(child){
-      var conv=child.val();
-      if(conv.unreadCount>0) openChatWith(conv.friendId,conv.friendName,0);
+  rtdb.ref('user_conversations/'+currentUser.uid).limitToLast(20).once('value',function(snap){
+    /* Sort client-side to find the most recent unread conversation */
+    var convs=[];
+    snap.forEach(function(child){ convs.push(child.val()); });
+    convs.sort(function(a,b){ return (b.lastMessageTime||0)-(a.lastMessageTime||0); });
+    for(var i=0;i<convs.length;i++){
+      if(convs[i].unreadCount>0){ openChatWith(convs[i].friendId,convs[i].friendName,0); break; }
+    }
     });
   });
 });
