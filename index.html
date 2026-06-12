@@ -1559,7 +1559,7 @@
     <a href="#guide" data-i18n="header.guide">Beginner Guide</a>
     <button class="pp-chip" id="communityBtn" data-i18n="header.community" title="Leaderboards & Mood Wall">🏆<span class="btn-hide-sm"> Community</span></button>
     <button class="hbtn-game" id="gameBtn" data-i18n="header.game">🎮<span class="btn-hide-sm"> Game</span></button>
-    <button class="pp-chip" id="friendsBtn" title="Friends & Chat">👥<span class="btn-hide-sm"> Friends</span></button>
+    <button class="pp-chip" id="friendsBtn" title="Friends & Chat" onclick="if(typeof toggleFriendsPanel==='function')toggleFriendsPanel()">👥<span class="btn-hide-sm"> Friends</span></button>
     <span class="badge" id="planBadge">FREE</span>
     <button class="hbtn-user" id="authBtn" data-i18n="header.signin">👤<span class="btn-hide-sm"> Sign in</span></button>
     <a href="#pro" class="hbtn-gold" data-i18n="header.getpro">Get Pro</a>
@@ -3171,18 +3171,24 @@ function planLabel(){
 function openAccount(){
   if(!currentUser){ if(typeof openAuth==='function') openAuth(); return; }
   hideOverlays();
-  const methodNames={'password':PPI18n.t('method.password'),'google.com':PPI18n.t('method.google.com'),'facebook.com':'Facebook','github.com':PPI18n.t('method.github.com')};
-  const pm=(currentUser.providerData&&currentUser.providerData[0]&&currentUser.providerData[0].providerId)||'password';
-  document.getElementById('accEmail').textContent=currentUser.email||'(no email)';
-  document.getElementById('accMethod').textContent=methodNames[pm]||pm;
-  document.getElementById('accPlan').textContent=planLabel();
-  document.getElementById('accFavs').textContent=PPI18n.t('account.saved.count').replace('{n}',favorites.length);
-  document.getElementById('setName').value=currentUser.displayName||'';
-  document.getElementById('setBio').value=userBio||'';
-  document.getElementById('setPass').value='';
-  document.getElementById('pwField').style.display=(pm==='password')?'block':'none';
-  document.getElementById('accMsg').className='msg';
-  document.getElementById('accountOverlay').classList.add('show');
+  // Open the profile panel from fun.js (avatar selection + stats)
+  if(window.PPGame && PPGame.openProfile){
+    PPGame.openProfile();
+  } else {
+    // Fallback to old account overlay if PPGame not loaded
+    const methodNames={'password':PPI18n.t('method.password'),'google.com':PPI18n.t('method.google.com'),'facebook.com':'Facebook','github.com':PPI18n.t('method.github.com')};
+    const pm=(currentUser.providerData&&currentUser.providerData[0]&&currentUser.providerData[0].providerId)||'password';
+    document.getElementById('accEmail').textContent=currentUser.email||'(no email)';
+    document.getElementById('accMethod').textContent=methodNames[pm]||pm;
+    document.getElementById('accPlan').textContent=planLabel();
+    document.getElementById('accFavs').textContent=PPI18n.t('account.saved.count').replace('{n}',favorites.length);
+    document.getElementById('setName').value=currentUser.displayName||'';
+    document.getElementById('setBio').value=userBio||'';
+    document.getElementById('setPass').value='';
+    document.getElementById('pwField').style.display=(pm==='password')?'block':'none';
+    document.getElementById('accMsg').className='msg';
+    document.getElementById('accountOverlay').classList.add('show');
+  }
 }
 function saveAccountSettings(){
   if(!fbReady || !currentUser) return;
@@ -6858,7 +6864,14 @@ window.openChatWith=function(fUid,fName,fAvatar){
   /* Listen for messages in Realtime Database */
   if(_chatUnsubscribe) _chatUnsubscribe();
   var chatId=getChatRoomId(currentUser.uid,fUid);
-  if(!rtdb){console.warn('RTDB not initialized');return;}
+  if(!rtdb){
+    /* Try to re-initialize RTDB */
+    try{ if(typeof firebase!=='undefined'&&firebase.database) rtdb=firebase.database(); }catch(e){}
+    if(!rtdb){
+      document.getElementById('chatMessages').innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">Chat unavailable — Realtime Database not initialized.<br><button onclick="window.openChatWith(\''+fUid+'\',\''+esc(fName).replace(/'/g,"\\'")+'\','+(fAvatar||0)+')" style="margin-top:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer">Retry</button></div>';
+      return;
+    }
+  }
   var msgRef=rtdb.ref('chat_rooms/'+chatId+'/messages').orderByChild('timestamp').limitToLast(100);
   _chatUnsubscribe=msgRef.on('value',function(snap){
     var html='';
@@ -6876,7 +6889,11 @@ window.openChatWith=function(fUid,fName,fAvatar){
     var el=document.getElementById('chatMessages');
     el.innerHTML=html||'<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">'+PPI18n.t('friends.no.messages')+'</div>';
     el.scrollTop=el.scrollHeight;
-  },function(e){console.warn('chat listen',e);});
+  },function(e){
+    console.warn('chat listen',e);
+    var el=document.getElementById('chatMessages');
+    if(el) el.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">Could not load messages. <button onclick="window.openChatWith(\''+fUid+'\',\''+esc(fName).replace(/'/g,"\\'")+'\','+(fAvatar||0)+')" style="margin-top:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:6px 14px;border-radius:8px;font-size:12px;cursor:pointer">Retry</button></div>';
+  });
   /* Mark messages as read */
   rtdb.ref('user_conversations/'+currentUser.uid+'/'+chatId).update({unreadCount:0}).catch(function(){});
   /* Also refresh conversations list if on chats tab */
@@ -6885,7 +6902,12 @@ window.openChatWith=function(fUid,fName,fAvatar){
 
 /* ---- Send chat message (RTDB) ---- */
 window.sendChatMessage=async function(){
-  if(!fbReady||!currentUser||!_chatFriendUid||!rtdb) return;
+  if(!fbReady||!currentUser){toast(PPI18n.t('friends.signin'),'info');return;}
+  if(!_chatFriendUid){toast('No chat selected','info');return;}
+  if(!rtdb){
+    try{ if(typeof firebase!=='undefined'&&firebase.database) rtdb=firebase.database(); }catch(e){}
+    if(!rtdb){toast('Chat unavailable — Realtime Database not initialized','info');return;}
+  }
   var input=document.getElementById('chatInput');
   var text=input.value.trim();
   if(!text) return;
@@ -7011,7 +7033,6 @@ document.getElementById('unreadIndicator').addEventListener('click',function(){
     }
     });
   });
-});
 document.getElementById('friendsBtn').addEventListener('click',toggleFriendsPanel);
 document.getElementById('friendsPanelClose').addEventListener('click',function(){
   var p=document.getElementById('friendsPanel');
@@ -7244,6 +7265,21 @@ window.loadFriendRequests = loadFriendRequests;
 window.loadConversations = loadConversations;
 window.syncPublicProfile = syncPublicProfile;
 window.openAccount = openAccount;
+window.openAccountSettings = function(){
+  if(!currentUser) return;
+  var methodNames={'password':PPI18n.t('method.password'),'google.com':PPI18n.t('method.google.com'),'facebook.com':'Facebook','github.com':PPI18n.t('method.github.com')};
+  var pm=(currentUser.providerData&&currentUser.providerData[0]&&currentUser.providerData[0].providerId)||'password';
+  document.getElementById('accEmail').textContent=currentUser.email||'(no email)';
+  document.getElementById('accMethod').textContent=methodNames[pm]||pm;
+  document.getElementById('accPlan').textContent=planLabel();
+  document.getElementById('accFavs').textContent=PPI18n.t('account.saved.count').replace('{n}',favorites.length);
+  document.getElementById('setName').value=currentUser.displayName||'';
+  document.getElementById('setBio').value=userBio||'';
+  document.getElementById('setPass').value='';
+  document.getElementById('pwField').style.display=(pm==='password')?'block':'none';
+  document.getElementById('accMsg').className='msg';
+  document.getElementById('accountOverlay').classList.add('show');
+};
 window.openAuth = openAuth;
 
 })();
