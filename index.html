@@ -3698,21 +3698,27 @@ function openActivate(){
   document.getElementById('actOverlay').classList.add('show');
 }
 async function redeemCode(){
-  const key=document.getElementById('codeInput').value.trim();
-  const m=document.getElementById('actMsg');
-  if(!key){ m.className='msg err'; m.textContent=PPI18n.t('activate.entercode'); return; }
+  var key = document.getElementById('codeInput').value.trim();
+  var m = document.getElementById('actMsg');
+  if(!key){
+    m.className = 'msg err';
+    m.textContent = 'Please enter your activation code.';
+    return;
+  }
 
-  /* Soft login check: Pro codes require login for cloud sync.
-   * Coins & credits can work offline (local storage).
-   * We no longer hard-block — instead we warn and let the user proceed.
-   * If the code turns out to be Pro and the user isn't logged in,
-   * we'll prompt them to log in before granting Pro. */
-  var needLogin = !currentUser;
+  /* Require user to be logged in */
+  if(!currentUser){
+    m.className = 'msg err';
+    m.textContent = 'Please sign in first to activate Pro.';
+    return;
+  }
 
-  m.className='msg'; m.textContent=PPI18n.t('activate.checking'); m.style.display='block';
+  m.className = 'msg';
+  m.textContent = 'Checking activation code...';
+  m.style.display = 'block';
 
   /* ---- Promo codes (advertising / marketing) ---- */
-  const promoKey = key.toUpperCase();
+  var promoKey = key.toUpperCase();
 
   /* ZXTEST- : test mode — permanent Pro unlock */
   if(promoKey.indexOf('ZXTEST-')===0){
@@ -3746,25 +3752,29 @@ async function redeemCode(){
   }
 
   if(!window.PPLemon || !PPLemon.validateLicense){
-    m.className='msg err';
-    m.textContent=PPI18n.t('activate.notready');
+    m.className = 'msg err';
+    m.textContent = PPI18n.t('activate.notready');
     return;
   }
-  /* verify the license key with Lemon Squeezy */
+
+  /* ===== Key: Check if activation code has already been used ===== */
+  var alreadyUsed = await isLicenseUsed(key);
+  if(alreadyUsed){
+    m.className = 'msg err';
+    m.textContent = 'This activation code has already been used. Each code can only be used once.';
+    return;
+  }
+
+  /* Verify the license key with Lemon Squeezy */
   try{
     console.log('[Activation] Validating key with Lemon Squeezy...');
-    const res=await PPLemon.validateLicense(key);
+    var res = await PPLemon.validateLicense(key);
     console.log('[Activation] Validation result:', JSON.stringify(res));
 
     /* ========== COINS ========== */
     if(res.ok && res.kind==='coins'){
-      /* Check if already used on this account */
-      if(isLicenseUsed(key)){
-        m.className='msg err';
-        m.textContent='This coin code has already been used on your account. Each code can only be activated once.';
-        return;
-      }
-      markLicenseUsed(key);
+      /* Mark as used — ensure only one activation */
+      await markLicenseUsed(key);
       var coinAmount = res.coins || 1200;
       if(window.PPGame && PPGame.addCoins){
         PPGame.addCoins(coinAmount);
@@ -3773,41 +3783,26 @@ async function redeemCode(){
         var cur = parseInt(lsGet('pp_coins')||'0',10);
         lsSet('pp_coins', String(cur + coinAmount));
       }
-      m.className='msg ok';
-      m.textContent='Successfully added ' + coinAmount + ' coins!';
-      toast('+' + coinAmount + ' coins!', 'info');
-      setTimeout(()=>document.getElementById('actOverlay').classList.remove('show'), 2000);
+      m.className = 'msg ok';
+      m.textContent = 'Successfully added ' + coinAmount + ' coins!';
+      if(typeof toast === 'function') toast('+' + coinAmount + ' coins!', 'info');
+      setTimeout(function(){ document.getElementById('actOverlay').classList.remove('show'); }, 2000);
       return;
     }
 
     /* ========== PRO ========== */
     if(res.ok && res.kind==='pro'){
-      /* Pro requires login for cloud sync — if not logged in, prompt */
-      if(needLogin){
-        m.className='msg err';
-        m.textContent='Pro activation requires a signed-in account. Please sign in first, then re-enter your code.';
-        /* Auto-open login dialog */
-        setTimeout(function(){
-          var authBtn = document.getElementById('authBtn');
-          if(authBtn) authBtn.click();
-        }, 800);
-        return;
-      }
-      markLicenseUsed(key);
+      /* Mark as used — ensure only one activation */
+      await markLicenseUsed(key);
       if(res.days && res.days > 0){
-        return unlockTimed(key,m,res.days,PPI18n.t('activate.unlocked.sub').replace('{d}',res.days));
+        return unlockTimed(key, m, res.days, 'Pro activated! ' + res.days + ' days access.');
       }
-      return unlock(key,m,PPI18n.t('activate.unlocked'));
+      return unlock(key, m, 'Pro activated! Lifetime access unlocked.');
     }
 
     /* ========== CREDITS ========== */
     if(res.ok && res.kind==='credits'){
-      if(isLicenseUsed(key)){
-        m.className='msg err';
-        m.textContent='This credit code has already been used on your account.';
-        return;
-      }
-      markLicenseUsed(key);
+      await markLicenseUsed(key);
       var creditAmount = res.credits || 1200;
       /* Try to add via game iframe if available */
       try{
@@ -3818,36 +3813,27 @@ async function redeemCode(){
           }
         }
       }catch(e){}
-      /* Also store locally as fallback (game-pm.html reads this) */
+      /* Also store locally as fallback */
       var curCreds = parseInt(lsGet('pm_unlock_credits')||'0',10);
       lsSet('pm_unlock_credits', String(curCreds + creditAmount));
-      m.className='msg ok';
-      m.textContent='Successfully added ' + creditAmount + ' game credits!';
-      toast('+' + creditAmount + ' credits!', 'info');
-      setTimeout(()=>document.getElementById('actOverlay').classList.remove('show'), 2000);
+      m.className = 'msg ok';
+      m.textContent = 'Successfully added ' + creditAmount + ' game credits!';
+      if(typeof toast === 'function') toast('+' + creditAmount + ' credits!', 'info');
+      setTimeout(function(){ document.getElementById('actOverlay').classList.remove('show'); }, 2000);
       return;
     }
 
     /* ========== UNKNOWN KIND ========== */
     if(res.ok && res.kind==='unknown'){
-      /* Valid key but can't determine type — try Pro first, then coins */
-      if(isLicenseUsed(key)){
-        m.className='msg err';
-        m.textContent='This code has already been used on your account.';
-        return;
+      await markLicenseUsed(key);
+      if(!isPro){
+        return unlockTimed(key,m,30,'Pro activated! (30 days) — code type could not be determined, granted Pro as fallback.');
       }
-      /* If not logged in, can't grant Pro safely — give coins instead */
-      if(needLogin){
-        markLicenseUsed(key);
-        if(window.PPGame && PPGame.addCoins) PPGame.addCoins(1200);
-        m.className='msg ok';
-        m.textContent='Code activated! +1200 coins added (could not determine code type).';
-        setTimeout(()=>document.getElementById('actOverlay').classList.remove('show'), 2000);
-        return;
-      }
-      /* Logged in — treat as Pro (30-day fallback) */
-      markLicenseUsed(key);
-      return unlockTimed(key,m,30,'Pro activated! (30 days) — code type could not be determined, granted Pro as fallback.');
+      if(window.PPGame && PPGame.addCoins) PPGame.addCoins(1200);
+      m.className='msg ok';
+      m.textContent='Code activated! +1200 coins added (could not determine code type, Pro already active).';
+      setTimeout(()=>document.getElementById('actOverlay').classList.remove('show'), 2000);
+      return;
     }
 
     /* ========== OK but unrecognized ========== */
@@ -3862,73 +3848,62 @@ async function redeemCode(){
       return;
     }
 
-    /* ========== ERROR: activation_limit_reached ========== */
-    if(res.error==='activation_limit_reached'){
-      /* The key IS valid but maxed out on activations.
-       * Determine the kind from the response (res may have kind/days/coins
-       * already set by classifyProduct in tryActivate). */
-      if(res.kind==='coins'){
-        if(isLicenseUsed(key)){
-          m.className='msg err';
-          m.textContent='This coin code has already been used on your account. Check your coin balance.';
-        }else{
-          markLicenseUsed(key);
-          var limitCoins = res.coins || 1200;
-          if(window.PPGame && PPGame.addCoins) PPGame.addCoins(limitCoins);
-          m.className='msg ok';
-          m.textContent='+' + limitCoins + ' coins added! (code was previously activated on another device)';
-          setTimeout(()=>document.getElementById('actOverlay').classList.remove('show'), 2000);
-        }
-        return;
-      }
-      if(res.kind==='credits'){
-        if(isLicenseUsed(key)){
-          m.className='msg err';
-          m.textContent='This credit code has already been used on your account.';
-        }else{
-          markLicenseUsed(key);
-          var limitCredits = res.credits || 1200;
-          var curLC = parseInt(lsGet('pm_unlock_credits')||'0',10);
-          lsSet('pm_unlock_credits', String(curLC + limitCredits));
-          m.className='msg ok';
-          m.textContent='+' + limitCredits + ' credits added! (code was previously activated on another device)';
-          setTimeout(()=>document.getElementById('actOverlay').classList.remove('show'), 2000);
-        }
-        return;
-      }
-      /* Pro or unknown kind — treat as Pro */
-      if(!isPro){
-        return unlockTimed(key,m,30,'Pro activated! (30 days) — your license key is valid but has reached its device activation limit.');
-      }else{
-        m.className='msg ok'; m.textContent='Your Pro access is already active. This code has reached its device activation limit but your Pro status is unaffected.';
-        return;
-      }
-    }
-
     /* ========== Generic invalid ========== */
-    m.className='msg err'; m.textContent='Invalid activation code. Please check the code in your Lemon Squeezy receipt email and try again.';
+    m.className = 'msg err';
+    m.textContent = 'Invalid activation code. Please check the code in your Lemon Squeezy receipt email and try again.';
   }catch(e){
     console.error('[Activation] Error:', e);
-    m.className='msg err'; m.textContent=PPI18n.t('activate.network');
+    m.className = 'msg err';
+    m.textContent = PPI18n.t('activate.network');
   }
 }
 
-/* ---- License key usage tracking (per account / per browser) ---- */
-function isLicenseUsed(code){
-  var usedList=[];
-  try{ usedList=JSON.parse(lsGet('pp_license_used')||'[]'); }catch(e){ usedList=[]; }
-  return usedList.indexOf(code)>=0;
-}
-function markLicenseUsed(code){
-  var usedList=[];
-  try{ usedList=JSON.parse(lsGet('pp_license_used')||'[]'); }catch(e){ usedList=[]; }
-  if(usedList.indexOf(code)<0) usedList.push(code);
-  lsSet('pp_license_used',JSON.stringify(usedList));
-  /* Also sync to cloud if logged in */
-  if(currentUser){
+/* ---- License key usage tracking (cross-account, cross-device) ---- */
+/* Check if activation code has already been used (localStorage + Firestore global collection) */
+async function isLicenseUsed(key){
+  var normalizedKey = key.trim().toUpperCase();
+
+  /* 1. Check localStorage (current browser) */
+  var usedKeys = [];
+  try{ usedKeys = JSON.parse(localStorage.getItem('pp_used_keys') || '[]'); }catch(e){ usedKeys = []; }
+  if(usedKeys.indexOf(normalizedKey) >= 0) return true;
+
+  /* 2. Check Firestore global collection (cross-account) */
+  if(fbReady && db){
     try{
-      userDocRef().set({licenseUsed:firebase.firestore.FieldValue.arrayUnion(code),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
-    }catch(e){}
+      var doc = await db.collection('used_license_keys').doc(normalizedKey).get();
+      if(doc.exists) return true;
+    }catch(e){
+      console.warn('check used key error:', e);
+    }
+  }
+
+  return false;
+}
+
+/* Mark activation code as used (localStorage + Firestore global collection) */
+async function markLicenseUsed(key){
+  var normalizedKey = key.trim().toUpperCase();
+
+  /* 1. Write to localStorage */
+  var usedKeys = [];
+  try{ usedKeys = JSON.parse(localStorage.getItem('pp_used_keys') || '[]'); }catch(e){ usedKeys = []; }
+  if(usedKeys.indexOf(normalizedKey) < 0){
+    usedKeys.push(normalizedKey);
+    localStorage.setItem('pp_used_keys', JSON.stringify(usedKeys));
+  }
+
+  /* 2. Write to Firestore global collection (cross-account anti-reuse) */
+  if(fbReady && db && currentUser){
+    try{
+      await db.collection('used_license_keys').doc(normalizedKey).set({
+        key: normalizedKey,
+        usedBy: currentUser.uid,
+        usedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }catch(e){
+      console.warn('mark used key error:', e);
+    }
   }
 }
 
@@ -3962,29 +3937,36 @@ function promoAlreadyUsed(m,code){
 }
 
 function unlock(key,m,text){
-  lsSet('pp_pro_code',key); lsDel('pp_pro_until');   /* permanent — no expiry */
-  isPro=true; proExpired=false;
-  cloudSavePro();
-  m.className='msg ok'; m.textContent=text;
-  refreshBadge(); renderGrid();
-  setTimeout(()=>document.getElementById('actOverlay').classList.remove('show'),1400);
-  toast(PPI18n.t('activate.pro.unlocked'));
+  lsSet('pp_pro_code', key);
+  lsDel('pp_pro_until');   /* permanent — no expiry */
+  isPro = true;
+  proExpired = false;
+  if(typeof cloudSavePro === 'function') cloudSavePro();
+  m.className = 'msg ok';
+  m.textContent = text;
+  if(typeof refreshBadge === 'function') refreshBadge();
+  if(typeof renderGrid === 'function') renderGrid();
+  setTimeout(function(){ document.getElementById('actOverlay').classList.remove('show'); }, 2000);
+  if(typeof toast === 'function') toast('Pro activated!', 'info');
 }
 /* Timed unlock: Pro for N days, then reverts to Free.
  * If the user already has Pro time remaining, the new days are ADDED
  * on top of the existing expiry (stacking), not replaced. */
 function unlockTimed(key,m,days,text){
-  var existingUntil=proUntil();
-  var base=existingUntil>Date.now()?existingUntil:Date.now();
-  const until=base+days*86400000;
-  lsSet('pp_pro_code',key);
-  lsSet('pp_pro_until',String(until));
-  isPro=true; proExpired=false;
-  cloudSavePro();
-  m.className='msg ok'; m.textContent=text;
-  refreshBadge(); renderGrid();
-  setTimeout(()=>document.getElementById('actOverlay').classList.remove('show'),1400);
-  toast(PPI18n.t('activate.pro.unlocked'));
+  var existingUntil = proUntil();
+  var base = existingUntil > Date.now() ? existingUntil : Date.now();
+  var until = base + days * 86400000;
+  lsSet('pp_pro_code', key);
+  lsSet('pp_pro_until', String(until));
+  isPro = true;
+  proExpired = false;
+  if(typeof cloudSavePro === 'function') cloudSavePro();
+  m.className = 'msg ok';
+  m.textContent = text;
+  if(typeof refreshBadge === 'function') refreshBadge();
+  if(typeof renderGrid === 'function') renderGrid();
+  setTimeout(function(){ document.getElementById('actOverlay').classList.remove('show'); }, 2000);
+  if(typeof toast === 'function') toast('Pro activated for ' + days + ' days!', 'info');
 }
 function startTrial(){
   /* Free trial removed — redirect to Pro plans */
@@ -6514,8 +6496,7 @@ async function loadConversations(){
   }
   list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">Loading...</div>';
   try{
-    /* NOTE: Removed orderByChild('lastMessageTime') — RTDB requires an index
-     * for ordered queries, which may not exist. Instead we sort client-side. */
+    /* First try user_conversations (preferred — has unread counts) */
     var convRef=rtdb.ref('user_conversations/'+currentUser.uid);
     convRef.once('value',function(snap){
       var convs=[];
@@ -6523,51 +6504,135 @@ async function loadConversations(){
         var c=child.val();
         if(c.friendId&&c.friendName) convs.push(c);
       });
+      /* If user_conversations is empty (possibly due to permission issues),
+       * fall back to reading from chat_rooms where I'm a participant */
+      if(!convs.length){
+        rtdb.ref('chat_rooms').once('value',function(roomsSnap){
+          roomsSnap.forEach(function(roomChild){
+            var roomData=roomChild.val();
+            var info=roomData.info||{};
+            var participants=info.participants||[];
+            if(participants.indexOf(currentUser.uid)>=0 && info.lastMessage){
+              var friendUid='';
+              var friendName='';
+              var pNames=info.participantNames||{};
+              for(var i=0;i<participants.length;i++){
+                if(participants[i]!==currentUser.uid){
+                  friendUid=participants[i];
+                  friendName=pNames[friendUid]||'User';
+                  break;
+                }
+              }
+              if(friendUid){
+                convs.push({
+                  friendId:friendUid,
+                  friendName:friendName,
+                  lastMessage:info.lastMessage,
+                  lastMessageTime:info.lastMessageTime,
+                  unreadCount:0
+                });
+              }
+            }
+          });
+          renderConversationsList(convs);
+        },function(){
+          renderConversationsList([]);
+        });
+        return;
+      }
       /* Sort client-side by lastMessageTime descending (most recent first) */
       convs.sort(function(a,b){
         return (b.lastMessageTime||0)-(a.lastMessageTime||0);
       });
-      if(!convs.length){
-        list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:30px 14px">'+PPI18n.t('friends.no.conversations')+'<br>'+PPI18n.t('friends.no.conversations.hint')+'</div>';
-        return;
-      }
-      var html='';
-      convs.forEach(function(c){
-        var unread=(c.unreadCount&&c.unreadCount>0)?c.unreadCount:0;
-        var badge=unread?'<div style="min-width:18px;height:18px;border-radius:9px;background:#ef4444;color:#fff;font-size:10px;font-weight:700;text-align:center;line-height:18px;padding:0 4px;flex-shrink:0">'+unread+'</div>':'';
-        var lastMsg=c.lastMessage||'';
-        if(lastMsg.length>30) lastMsg=lastMsg.substring(0,30)+'...';
-        var ts=c.lastMessageTime?new Date(c.lastMessageTime):null;
-        var timeStr=ts?ts.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'';
-        var dateStr='';
-        if(ts){
-          var today=new Date();
-          if(ts.toDateString()===today.toDateString()) dateStr=timeStr;
-          else dateStr=ts.toLocaleDateString([],{month:'short',day:'numeric'});
-        }
-        html+='<div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;transition:background .15s" onmouseenter="this.style.background=\'rgba(124,92,255,.08)\'" onmouseleave="this.style.background=\'transparent\'" onclick="openChatWith(\''+c.friendId+'\',\''+esc(c.friendName).replace(/'/g,"\\'")+'\',0)">'+
-          '<div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,rgba(124,92,255,.2),rgba(34,211,238,.1));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">💬</div>'+
-          '<div style="flex:1;min-width:0">'+
-            '<div style="display:flex;justify-content:space-between;align-items:center">'+
-              '<span style="font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(c.friendName)+'</span>'+
-              '<span style="font-size:10px;color:var(--muted);flex-shrink:0;margin-left:8px">'+dateStr+'</span>'+
-            '</div>'+
-            '<div style="font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px">'+esc(lastMsg)+'</div>'+
-          '</div>'+
-          badge+
-        '</div>';
-      });
-      list.innerHTML=html;
+      renderConversationsList(convs);
     },function(e){
-      console.warn('load convs',e);
-      /* Show "No conversations yet" instead of scary error — most likely
-       * there simply aren't any conversations yet. */
-      list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:30px 14px">'+PPI18n.t('friends.no.conversations')+'<br>'+PPI18n.t('friends.no.conversations.hint')+'</div>';
+      /* Permission denied — fall back to chat_rooms */
+      rtdb.ref('chat_rooms').once('value',function(roomsSnap){
+        var convs=[];
+        roomsSnap.forEach(function(roomChild){
+          var roomData=roomChild.val();
+          var info=roomData.info||{};
+          var participants=info.participants||[];
+          if(participants.indexOf(currentUser.uid)>=0 && info.lastMessage){
+            var friendUid='';
+            var friendName='';
+            var pNames=info.participantNames||{};
+            for(var i=0;i<participants.length;i++){
+              if(participants[i]!==currentUser.uid){
+                friendUid=participants[i];
+                friendName=pNames[friendUid]||'User';
+                break;
+              }
+            }
+            if(friendUid){
+              convs.push({
+                friendId:friendUid,
+                friendName:friendName,
+                lastMessage:info.lastMessage,
+                lastMessageTime:info.lastMessageTime,
+                unreadCount:0
+              });
+            }
+          }
+        });
+        convs.sort(function(a,b){ return (b.lastMessageTime||0)-(a.lastMessageTime||0); });
+        renderConversationsList(convs);
+      },function(){
+        list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:30px 14px">'+PPI18n.t('friends.no.conversations')+'<br>'+PPI18n.t('friends.no.conversations.hint')+'</div>';
+      });
     });
   }catch(e){
     console.warn('load convs',e);
     list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:30px 14px">'+PPI18n.t('friends.no.conversations')+'</div>';
   }
+}
+
+/* Render the conversations list HTML */
+function renderConversationsList(convs){
+  var list=document.getElementById('conversationsList');
+  if(!list) return;
+  if(!convs.length){
+    list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:30px 14px">'+PPI18n.t('friends.no.conversations')+'<br>'+PPI18n.t('friends.no.conversations.hint')+'</div>';
+    return;
+  }
+  convs.sort(function(a,b){ return (b.lastMessageTime||0)-(a.lastMessageTime||0); });
+  var html='';
+  convs.forEach(function(c){
+    var unread=(c.unreadCount&&c.unreadCount>0)?c.unreadCount:0;
+    var badge=unread?'<div style="min-width:18px;height:18px;border-radius:9px;background:#ef4444;color:#fff;font-size:10px;font-weight:700;text-align:center;line-height:18px;padding:0 4px;flex-shrink:0">'+unread+'</div>':'';
+    var lastMsg=c.lastMessage||'';
+    if(lastMsg.length>30) lastMsg=lastMsg.substring(0,30)+'...';
+    var ts=c.lastMessageTime?new Date(c.lastMessageTime):null;
+    var dateStr='';
+    if(ts){
+      var today=new Date();
+      if(ts.toDateString()===today.toDateString()) dateStr=ts.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+      else dateStr=ts.toLocaleDateString([],{month:'short',day:'numeric'});
+    }
+    /* Try to show friend's avatar */
+    var avatarSvg='';
+    try{
+      if(window.PPGame&&PPGame.avatarSVG){
+        var av=c.friendAvatar||0;
+        avatarSvg='<div style="width:40px;height:40px;border-radius:12px;overflow:hidden;border:1px solid var(--border);flex-shrink:0">'+PPGame.avatarSVG(av)+'</div>';
+      }
+    }catch(e){}
+    if(!avatarSvg){
+      avatarSvg='<div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,rgba(124,92,255,.2),rgba(34,211,238,.1));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">'+(c.friendName?c.friendName.charAt(0).toUpperCase():'💬')+'</div>';
+    }
+    html+='<div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;transition:background .15s" onmouseenter="this.style.background=\'rgba(124,92,255,.08)\'" onmouseleave="this.style.background=\'transparent\'" onclick="openChatWith(\''+c.friendId+'\',\''+esc(c.friendName).replace(/'/g,"\\'")+'\',0)">'+
+      avatarSvg+
+      '<div style="flex:1;min-width:0">'+
+        '<div style="display:flex;justify-content:space-between;align-items:center">'+
+          '<span style="font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(c.friendName)+'</span>'+
+          '<span style="font-size:10px;color:var(--muted);flex-shrink:0;margin-left:8px">'+dateStr+'</span>'+
+        '</div>'+
+        '<div style="font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px">'+esc(lastMsg)+'</div>'+
+      '</div>'+
+      badge+
+    '</div>';
+  });
+  list.innerHTML=html;
 }
 
 /* Show contact profile with "Send Message" button (Contacts tab) */
@@ -6780,75 +6845,90 @@ window.sendChatMessage=async function(){
   input.value='';
   var chatId=getChatRoomId(currentUser.uid,_chatFriendUid);
   var ts=Date.now();
+  var myName=currentUser.displayName||currentUser.email.split('@')[0];
+  var friendName=document.getElementById('chatFriendName').textContent;
+  var msgSent=false;
   /* Try RTDB first */
   if(rtdb){
     try{
       var msgRef=rtdb.ref('chat_rooms/'+chatId+'/messages').push();
-      var myName=currentUser.displayName||currentUser.email.split('@')[0];
       await msgRef.set({senderId:currentUser.uid,senderName:myName,text:text,timestamp:ts});
-      /* Update chat room info */
-      await rtdb.ref('chat_rooms/'+chatId+'/info').set({
+      msgSent=true;
+      /* Update chat room info (this path works — no permission issues) */
+      rtdb.ref('chat_rooms/'+chatId+'/info').set({
         participants:[currentUser.uid,_chatFriendUid],
+        participantNames:{},
         lastMessage:text,
         lastMessageTime:ts,
         lastMessageSender:currentUser.uid
-      });
-      /* Update my conversation index */
-      await rtdb.ref('user_conversations/'+currentUser.uid+'/'+chatId).set({
+      }).catch(function(){});
+      /* Set participant names for avatar lookup */
+      var infoNames={};
+      infoNames[currentUser.uid]=myName;
+      infoNames[_chatFriendUid]=friendName;
+      rtdb.ref('chat_rooms/'+chatId+'/info/participantNames').set(infoNames).catch(function(){});
+      /* Try to update user_conversations — may fail due to permissions,
+       * but that's OK because we also read conversations from chat_rooms/info */
+      rtdb.ref('user_conversations/'+currentUser.uid+'/'+chatId).set({
         friendId:_chatFriendUid,
-        friendName:document.getElementById('chatFriendName').textContent,
+        friendName:friendName,
         lastMessage:text,
         lastMessageTime:ts,
         unreadCount:0
-      });
-      /* Update friend's conversation index */
-      await rtdb.ref('user_conversations/'+_chatFriendUid+'/'+chatId).update({
+      }).catch(function(){});
+      rtdb.ref('user_conversations/'+_chatFriendUid+'/'+chatId).update({
         friendId:currentUser.uid,
         friendName:myName,
         lastMessage:text,
         lastMessageTime:ts
-      });
-      /* Increment friend's unread count */
+      }).catch(function(){});
       rtdb.ref('user_conversations/'+_chatFriendUid+'/'+chatId+'/unreadCount').transaction(function(current){
         return (current||0)+1;
       }).catch(function(){});
-      return;
-    }catch(e){console.warn('RTDB send msg failed, trying Firestore',e);}
+    }catch(e){console.warn('RTDB send msg partial fail:',e);}
   }
-  /* Firestore fallback for sending messages */
-  if(!db){toast('Chat unavailable','info');return;}
-  try{
-    var myName=currentUser.displayName||currentUser.email.split('@')[0];
-    await db.collection('chat_messages').doc(chatId).collection('messages').add({
-      senderId:currentUser.uid,
-      senderName:myName,
-      text:text,
-      timestamp:ts
-    });
-    /* Also update conversation indexes in Firestore so loadConversations can find them */
-    await db.collection('chat_conversations').doc(currentUser.uid).collection('list').doc(chatId).set({
-      friendId:_chatFriendUid,
-      friendName:document.getElementById('chatFriendName').textContent,
-      lastMessage:text,
-      lastMessageTime:ts,
-      unreadCount:0
-    },{merge:true});
-    await db.collection('chat_conversations').doc(_chatFriendUid).collection('list').doc(chatId).set({
-      friendId:currentUser.uid,
-      friendName:myName,
-      lastMessage:text,
-      lastMessageTime:ts
-    },{merge:true});
-  }catch(e){
-    console.warn('Firestore send msg failed',e);
+  /* Firestore fallback if RTDB message didn't go through */
+  if(!msgSent && db){
+    try{
+      await db.collection('chat_messages').doc(chatId).collection('messages').add({
+        senderId:currentUser.uid,
+        senderName:myName,
+        text:text,
+        timestamp:ts
+      });
+      msgSent=true;
+      await db.collection('chat_conversations').doc(currentUser.uid).collection('list').doc(chatId).set({
+        friendId:_chatFriendUid,
+        friendName:friendName,
+        lastMessage:text,
+        lastMessageTime:ts,
+        unreadCount:0
+      },{merge:true}).catch(function(){});
+      await db.collection('chat_conversations').doc(_chatFriendUid).collection('list').doc(chatId).set({
+        friendId:currentUser.uid,
+        friendName:myName,
+        lastMessage:text,
+        lastMessageTime:ts
+      },{merge:true}).catch(function(){});
+    }catch(e){
+      console.warn('Firestore send msg failed',e);
+    }
+  }
+  /* Only show error if the message actually failed to send */
+  if(!msgSent){
     toast('Could not send message. Please try again.','info');
   }
 };
 
 /* ---- Listen for conversations (unread count, new message notifications) ---- */
 function listenForConversations(){
-  if(!fbReady||!currentUser||!rtdb) return;
+  if(!fbReady||!currentUser) return;
+  if(!rtdb){
+    try{ if(typeof firebase!=='undefined'&&firebase.database) rtdb=firebase.database(); }catch(e){}
+    if(!rtdb) return;
+  }
   if(_convUnsubscribe) _convUnsubscribe();
+  /* Try user_conversations first, fall back to chat_rooms */
   var convRef=rtdb.ref('user_conversations/'+currentUser.uid);
   _convUnsubscribe=convRef.on('value',function(snap){
     _totalUnread=0;
@@ -6856,41 +6936,76 @@ function listenForConversations(){
       var conv=child.val();
       if(conv.unreadCount&&conv.unreadCount>0) _totalUnread+=conv.unreadCount;
     });
-    /* Update unread indicator */
-    var ind=document.getElementById('unreadIndicator');
-    if(_totalUnread>0){
-      ind.style.display='block';
-      ind.textContent=_totalUnread+' unread message'+(_totalUnread>1?'s':'');
-      /* Flash browser tab title */
-      if(document.hidden) document.title='('+_totalUnread+') '+_origTitle;
-    }else{
-      ind.style.display='none';
-      document.title=_origTitle;
-    }
-    /* Update friends button badge */
-    var btn=document.getElementById('friendsBtn');
-    if(btn){
-      var existingBadge=btn.querySelector('.unread-dot');
-      if(_totalUnread>0){
-        if(!existingBadge){
-          var dot=document.createElement('span');
-          dot.className='unread-dot';
-          dot.style.cssText='position:absolute;top:-2px;right:-2px;width:16px;height:16px;border-radius:50%;background:#ef4444;color:#fff;font-size:9px;font-weight:700;text-align:center;line-height:16px';
-          dot.textContent=_totalUnread;
-          btn.style.position='relative';
-          btn.appendChild(dot);
-        }else{
-          existingBadge.textContent=_totalUnread;
+    /* Also check friend_requests for pending count */
+    updateUnreadBadge();
+  },function(e){
+    /* Permission denied on user_conversations — listen to chat_rooms instead */
+    console.warn('conv listen fallback to chat_rooms',e);
+    try{ rtdb.ref('chat_rooms').on('value',function(roomsSnap){
+      _totalUnread=0;
+      /* Count unread from chat_rooms info */
+      roomsSnap.forEach(function(roomChild){
+        var roomData=roomChild.val();
+        var info=roomData.info||{};
+        var participants=info.participants||[];
+        if(participants.indexOf(currentUser.uid)>=0 && info.lastMessageSender!==currentUser.uid){
+          /* There's a message not from us — count as potentially unread */
         }
-      }else if(existingBadge){
-        existingBadge.remove();
+      });
+      updateUnreadBadge();
+    });}catch(e2){console.warn('chat_rooms listen fail',e2);}
+  });
+  /* Also listen for friend requests */
+  if(!_friendReqUnsubscribe){
+    loadFriendRequests();
+  }
+}
+
+/* Update the unread badge on the friends button */
+function updateUnreadBadge(){
+  /* Also add friend request count */
+  var reqCount=0;
+  try{
+    var reqBadge=document.getElementById('friendReqBadge');
+    if(reqBadge && reqBadge.style.display!=='none' && reqBadge.textContent){
+      reqCount=parseInt(reqBadge.textContent,10)||0;
+    }
+  }catch(e){}
+  var totalCount=_totalUnread+reqCount;
+  /* Update unread indicator bar */
+  var ind=document.getElementById('unreadIndicator');
+  if(totalCount>0){
+    ind.style.display='block';
+    ind.textContent=totalCount+' unread item'+(totalCount>1?'s':'');
+    if(document.hidden) document.title='('+totalCount+') '+_origTitle;
+  }else{
+    ind.style.display='none';
+    document.title=_origTitle;
+  }
+  /* Update friends button badge */
+  var btn=document.getElementById('friendsBtn');
+  if(btn){
+    var existingBadge=btn.querySelector('.unread-dot');
+    if(totalCount>0){
+      if(!existingBadge){
+        var dot=document.createElement('span');
+        dot.className='unread-dot';
+        dot.style.cssText='position:absolute;top:-2px;right:-2px;min-width:16px;height:16px;border-radius:50%;background:#ef4444;color:#fff;font-size:9px;font-weight:700;text-align:center;line-height:16px;padding:0 3px';
+        dot.textContent=totalCount;
+        btn.style.position='relative';
+        btn.appendChild(dot);
+      }else{
+        existingBadge.textContent=totalCount;
       }
+    }else if(existingBadge){
+      existingBadge.remove();
     }
-    /* Refresh conversations list if on chats tab */
-    if(_currentFriendsTab==='chats'&&document.getElementById('friendsPanel').style.display==='flex'){
-      loadConversations();
-    }
-  },function(e){console.warn('conv listen',e);});
+  }
+  /* Refresh conversations list if on chats tab */
+  if(_currentFriendsTab==='chats'){
+    var fp=document.getElementById('friendsPanel');
+    if(fp && fp.style.display==='flex') loadConversations();
+  }
 }
 
 /* ---- Set online status ---- */

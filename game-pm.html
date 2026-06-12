@@ -2636,12 +2636,24 @@ function startMultiplayerGame(tableNum,uid1,uid2,name1,name2){
   closeTableRoom();
   /* Remove lobby status bar if present */
   removeLobbyStatusBar();
-  /* Hide all screens, then show map selection */
+  /* Hide all screens and start the game directly (skip map/difficulty selection in multiplayer) */
   document.getElementById('multiplayerScreen').style.display='none';
   document.getElementById('gameScreen').style.display='none';
   document.getElementById('diffScreen').style.display='none';
   document.getElementById('gameOverScreen').style.display='none';
-  document.getElementById('mapSelectScreen').style.display='flex';
+  document.getElementById('mapSelectScreen').style.display='none';
+  document.getElementById('modeScreen').style.display='none';
+  /* Auto-start the multiplayer game */
+  gDifficulty=1; /* Normal difficulty for multiplayer */
+  unlimitedGold=false;
+  gMode=savedMode;
+  chI=0;score=0;
+  document.getElementById('gameScreen').style.display='flex';
+  gState='playing';
+  SFX.resume();startBGM();
+  initCh(0);
+  /* Show opponent info bar */
+  updateOpponentUI();
 }
 
 /* ====== GAME STATE SYNC (Step 5 & 6) ====== */

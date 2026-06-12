@@ -68,18 +68,15 @@ var PLAN_DURATION_DAYS = {
  * Any valid license key whose product_id is NOT in PRO_PRODUCT_IDS
  * and IS in COIN_PRODUCT_MAP is a coin pack. */
 var COIN_PRODUCT_MAP = {
-  /* Coin Pack S — 1200 coins (product_id from Lemon Squeezy) */
-  /* Coin Pack M — 4000 coins */
-  /* Coin Pack L — 12000 coins */
-  /* IMPORTANT: Fill in the real product_id values from your Lemon Squeezy dashboard.
-   * Until filled, coin packs will be detected by process of elimination
-   * (not Pro = coin pack) with a default of 1200 coins. */
+  1134214: 1200,   /* Coin Pack S — 1,200 coins */
+  1134226: 4000,   /* Coin Pack M — 4,000 coins */
+  1134230: 12000   /* Coin Pack L — 12,000 coins */
 };
 
 /* Game Credit product IDs — map each credit-pack PRODUCT ID to the number of credits.
  * These are separate from coins and are used in the arcade/game system. */
 var CREDIT_PRODUCT_MAP = {
-  /* Credit packs — fill in from Lemon Squeezy dashboard */
+  1092744: 3800   /* Game Credits — $4.99 product */
 };
 
 /* Lemon Squeezy's public license-key endpoints (no API key needed). */
@@ -152,17 +149,39 @@ function classifyProduct(productId){
  * Only fall back to activate if validate fails and we need product_id info.
  */
 function validateLicense(key){
-  /* Strategy: Go straight to the ACTIVATE endpoint (same approach as the
-   * game's working credit redeem code in game-pm.html). The validate
-   * endpoint returns valid:false for previously activated keys even if
-   * the key is valid, and often doesn't include product_id in the
-   * response. The activate endpoint either activates the key (returning
-   * full info including product_id) or returns activation_limit_reached
-   * (meaning the key IS valid, just maxed out on activations — we can
-   * still extract product_id from the response).
-   *
-   * This matches the working pattern in game-pm.html lines 5073-5106. */
-  return tryActivate(key);
+  /* Use the VALIDATE endpoint (read-only, no side effects).
+   * Checks the key with Lemon Squeezy, then classifies the product. */
+  return fetch(VALIDATE_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Accept': 'application/json'
+    },
+    body: 'license_key=' + encodeURIComponent(key)
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    console.log('[LemonSqueezy] validate response:', d);
+
+    if(!d || d.valid !== true) return { ok: false };
+
+    var meta = d.meta || {};
+    var licenseKey = d.license_key || {};
+    var status = licenseKey.status || '';
+
+    if(status === 'expired' || status === 'inactive' || status === 'disabled') {
+      return { ok: false };
+    }
+
+    var productId = licenseKey.product_id || meta.product_id || 0;
+
+    if(productId){
+      return classifyProduct(productId);
+    }
+
+    return { ok: true, kind: 'unknown' };
+  })
+  .catch(function(){ return { ok: false, error: 'network' }; });
 }
 
 /* Try the ACTIVATE endpoint — consumes an activation slot but returns full info */

@@ -1805,10 +1805,9 @@ async function redeemCoinCode(){
       }
       _markCodeUsed(code);
       var coinAmount = res.coins || 1200;
-      /* If the amount is the default 1200 (from process-of-elimination fallback),
-       * show a coin amount selector so the user can pick the right pack size.
-       * This happens when COIN_PRODUCT_MAP isn't filled in with real product IDs. */
-      if(coinAmount === 1200 && res.productId && !COIN_PRODUCT_MAP_HAS(res.productId)){
+      /* Only show coin pack selector if we truly can't determine the amount
+       * (product_id not in COIN_PRODUCT_MAP and amount is default fallback). */
+      if(res.productId && !COIN_PRODUCT_MAP_HAS(res.productId) && coinAmount === 1200){
         showCoinPackSelector(code, m);
         return;
       }
