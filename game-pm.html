@@ -2133,7 +2133,7 @@ function sitDown(tableNum,seatNum){
     startSoloWhileWaiting(tableNum,seatNum);
     return;
   }
-  var tableRef=rtdb.ref('lobby/'+mpMode+'/table_'+tableNum);
+  var tableRef=rtdb.ref('lobby/'+mpMode+'/tables/'+tableNum);
   tableRef.once('value').then(function(snap){
     var data=snap.val()||{};
     var seat1=data.seat1||null;
@@ -2157,7 +2157,7 @@ function sitDown(tableNum,seatNum){
     mpMySeat=seatNum;
     mpIsReady=false;
     /* Set presence: auto-leave on disconnect */
-    rtdb.ref('lobby/'+mpMode+'/table_'+tableNum+'/seat'+seatNum).onDisconnect().remove();
+    rtdb.ref('lobby/'+mpMode+'/tables/'+tableNum+'/seat'+seatNum).onDisconnect().remove();
   }).catch(function(e){
     console.warn('sitDown error:',e);
     toast('Could not join table. Starting solo game...','info');
@@ -2170,9 +2170,9 @@ function standUp(tableNum){
   var rtdb=getRtdb();
   if(!rtdb)return;
   if(mpMySeat>0){
-    rtdb.ref('lobby/'+mpMode+'/table_'+tableNum+'/seat'+mpMySeat).remove();
+    rtdb.ref('lobby/'+mpMode+'/tables/'+tableNum+'/seat'+mpMySeat).remove();
     /* Cancel the onDisconnect */
-    rtdb.ref('lobby/'+mpMode+'/table_'+tableNum+'/seat'+mpMySeat).onDisconnect().cancel();
+    rtdb.ref('lobby/'+mpMode+'/tables/'+tableNum+'/seat'+mpMySeat).onDisconnect().cancel();
   }
   mpMyTable=-1;mpMySeat=-1;mpIsReady=false;
 }
@@ -2182,7 +2182,7 @@ function toggleReady(tableNum){
   var rtdb=getRtdb();
   if(!rtdb||mpMySeat<1)return;
   mpIsReady=!mpIsReady;
-  rtdb.ref('lobby/'+mpMode+'/table_'+tableNum+'/seat'+mpMySeat+'/ready').set(mpIsReady);
+  rtdb.ref('lobby/'+mpMode+'/tables/'+tableNum+'/seat'+mpMySeat+'/ready').set(mpIsReady);
 }
 
 /* Listen to lobby changes via Firebase RTDB */
@@ -2406,10 +2406,10 @@ function startMultiplayerGame(tableNum,uid1,uid2){
       console.warn('[MP] Failed to init game state:',e);
     });
     /* Mark lobby game as started so other listeners know */
-    rtdb.ref('lobby/'+mpMode+'/table_'+tableNum).update({started:true,gameId:mpGameId});
+    rtdb.ref('lobby/'+mpMode+'/tables/'+tableNum).update({started:true,gameId:mpGameId});
     /* Remove both seats after a short delay (so the UI updates) */
     setTimeout(function(){
-      rtdb.ref('lobby/'+mpMode+'/table_'+tableNum).remove();
+      rtdb.ref('lobby/'+mpMode+'/tables/'+tableNum).remove();
     },2000);
   }
   mpMyTable=-1;mpMySeat=-1;mpIsReady=false;
