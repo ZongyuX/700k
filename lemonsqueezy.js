@@ -20,10 +20,6 @@
 
 /* =====================================================================
  * STEP 1 — OWNER: paste your Lemon Squeezy CHECKOUT LINKS.
- * In your Lemon Squeezy dashboard, open each Product -> "Share" and copy
- * the checkout URL. It looks like:
- *   https://YOURSTORE.lemonsqueezy.com/buy/xxxxxxxx-xxxx-xxxx-xxxx-...
- * Until BUY_PRO is filled in, the site shows a friendly "coming soon".
  * ===================================================================== */
 
 /* ---- Membership plans ---- */
@@ -53,21 +49,11 @@ var BUY_COINS = [
 ];
 
 /* =====================================================================
- * STEP 2 — OWNER: so the site knows what a redeemed license key unlocks.
- * Every Lemon Squeezy product/variant has a numeric ID (visible in the
- * dashboard URL, and in the API). Fill these in:
- *   - PRO_PRODUCT_IDS : the Product IDs that grant Pro access.
- *   - COIN_VARIANTS  : map each coin-pack VARIANT ID to the coins it grants.
- * If PRO_PRODUCT_IDS is empty, any valid non-coin key unlocks Pro.
+ * STEP 2 — Product ID mappings
  * ===================================================================== */
 var PRO_PRODUCT_IDS = [1134081, 1130711, 1130720, 1130724, 1130727, 1073472];
 
-/* Map each subscription product ID to its duration in days.
- * When a license key is validated, the Lemon Squeezy API tells us the
- * product_id — we look up the duration here and set an expiry date so
- * that "1 month" really expires after 30 days, "3 months" after 90, etc.
- * Lifetime (1073472) is permanent — no expiry.
- */
+/* Map each subscription product ID to its duration in days. */
 var PLAN_DURATION_DAYS = {
   1134081: 3,     /* 3 Days   */
   1130711: 30,    /* 1 Month  */
@@ -77,21 +63,28 @@ var PLAN_DURATION_DAYS = {
   1073472: 0      /* Lifetime — 0 means permanent */
 };
 
-/* Coin pack product IDs — these products grant coins when activated.
- * The number of coins is determined by the product ID. */
-var COIN_PRODUCT_IDS = {
-  /* Coin Pack S — 1200 coins */
-  /* The product ID for coin packs needs to be filled from Lemon Squeezy dashboard.
-   * For now, we match by checking: if a valid license key's product_id is NOT in
-   * PRO_PRODUCT_IDS, it's treated as a coin pack. */
+/* Coin pack product IDs — map each coin-pack PRODUCT ID to the number of coins.
+ * These are the product_id values from Lemon Squeezy dashboard.
+ * Any valid license key whose product_id is NOT in PRO_PRODUCT_IDS
+ * and IS in COIN_PRODUCT_MAP is a coin pack. */
+var COIN_PRODUCT_MAP = {
+  /* Coin Pack S — 1200 coins (product_id from Lemon Squeezy) */
+  /* Coin Pack M — 4000 coins */
+  /* Coin Pack L — 12000 coins */
+  /* IMPORTANT: Fill in the real product_id values from your Lemon Squeezy dashboard.
+   * Until filled, coin packs will be detected by process of elimination
+   * (not Pro = coin pack) with a default of 1200 coins. */
 };
 
-var COIN_VARIANTS = {
-  /* replace with real variant IDs from your Lemon Squeezy dashboard */
+/* Game Credit product IDs — map each credit-pack PRODUCT ID to the number of credits.
+ * These are separate from coins and are used in the arcade/game system. */
+var CREDIT_PRODUCT_MAP = {
+  /* Credit packs — fill in from Lemon Squeezy dashboard */
 };
 
-/* Lemon Squeezy's public license-key endpoint (no API key needed). */
+/* Lemon Squeezy's public license-key endpoints (no API key needed). */
 var VALIDATE_URL = 'https://api.lemonsqueezy.com/v1/licenses/validate';
+var ACTIVATE_URL = 'https://api.lemonsqueezy.com/v1/licenses/activate';
 
 /* --------------------------------------------------------------- helpers */
 function openUrl(u){
@@ -104,18 +97,119 @@ function openUrl(u){
 }
 function configured(){ return !!BUY_PRO; }
 
+/* Determine the kind and details from a product_id */
+function classifyProduct(productId){
+  /* Check Pro first */
+  if(PRO_PRODUCT_IDS.indexOf(productId) >= 0){
+    var days = PLAN_DURATION_DAYS[productId];
+    if(typeof days === 'undefined') days = 0;
+    return { kind:'pro', days: days };
+  }
+  /* Check coin packs */
+  if(COIN_PRODUCT_MAP[productId]){
+    return { kind:'coins', coins: COIN_PRODUCT_MAP[productId] };
+  }
+  /* Check credit packs */
+  if(CREDIT_PRODUCT_MAP[productId]){
+    return { kind:'credits', credits: CREDIT_PRODUCT_MAP[productId] };
+  }
+  /* If product_id is NOT in Pro list and we have Pro IDs defined,
+   * it must be a coin pack by process of elimination.
+   * Default coin amounts: try to infer from checkout URL order. */
+  if(PRO_PRODUCT_IDS.length > 0){
+    /* Default: not Pro = coin pack. Use 1200 as fallback.
+     * The user should fill in COIN_PRODUCT_MAP for accurate amounts. */
+    return { kind:'coins', coins: 1200 };
+  }
+  /* PRO_PRODUCT_IDS not set — treat any valid key as Pro */
+  return { kind:'pro', days: 0 };
+}
+
 /* Verify a license key. Resolves to one of:
- *   { ok:true,  kind:'pro', days:N }   N=0 means lifetime; N>0 = subscription days
+ *   { ok:true,  kind:'pro', days:N }     N=0 means lifetime; N>0 = subscription days
  *   { ok:true,  kind:'coins', coins:N }
+ *   { ok:true,  kind:'credits', credits:N }
  *   { ok:true,  kind:'unknown' }
- *   { ok:false }                       (invalid / not found / expired / inactive)
- *   { ok:false, error:'network' }      (could not reach server)
+ *   { ok:false, error:'invalid' }        (invalid / not found / expired)
+ *   { ok:false, error:'network' }        (could not reach server)
+ *
+ * Strategy: ALWAYS try validate first (read-only, no side effects).
+ * Only fall back to activate if validate fails and we need product_id info.
  */
 function validateLicense(key){
-  /* Use the "activate" endpoint which also increments the activation count.
-   * This is needed because LemonSqueezy license keys have a limited number
-   * of activations. Using just "validate" may fail after the first activation. */
-  var ACTIVATE_URL = 'https://api.lemonsqueezy.com/v1/licenses/activate';
+  /* Step 1: Try the VALIDATE endpoint first (read-only, no activation count consumed) */
+  return fetch(VALIDATE_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Accept': 'application/json'
+    },
+    body: 'license_key=' + encodeURIComponent(key)
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    /* Check if validate returned a valid license */
+    if(d && d.valid === true){
+      var meta = d.meta || {};
+      var licenseKey = d.license_key || {};
+      var status = licenseKey.status || d.status || '';
+      /* Reject expired / inactive / disabled */
+      if(status === 'expired' || status === 'inactive' || status === 'disabled'){
+        return { ok:false, error:'invalid' };
+      }
+      /* Get product_id from validate response */
+      var productId = licenseKey.product_id || meta.product_id || 0;
+      if(productId){
+        return classifyProduct(productId);
+      }
+      /* If no product_id from validate, try activate to get more details */
+      return tryActivate(key);
+    }
+
+    /* Validate didn't return valid=true. This is normal for keys that have
+     * already been activated — Lemon Squeezy validate returns valid:false
+     * for previously activated keys even if the key is still valid. */
+    if(d && d.license_key){
+      var lk = d.license_key;
+      var st = lk.status || '';
+      if(st === 'expired' || st === 'disabled'){
+        return { ok:false, error:'invalid' };
+      }
+      /* IMPORTANT: If the key is active (status='active'), the key is VALID.
+       * We should classify it using the product_id from the license_key object
+       * WITHOUT calling tryActivate (which would consume an activation slot
+       * and fail with activation_limit_reached for single-activation keys). */
+      if(st === 'active'){
+        var pid = lk.product_id || 0;
+        if(pid){
+          return classifyProduct(pid);
+        }
+        /* Active key but no product_id — still valid, classify as unknown */
+        return { ok:true, kind:'unknown' };
+      }
+      /* If status is 'inactive' the key hasn't been fully activated yet.
+       * Only then try the activate endpoint (which will consume a slot). */
+      if(st === 'inactive'){
+        return tryActivate(key);
+      }
+      /* If we have a product_id from the license_key object, use it */
+      if(lk.product_id){
+        return classifyProduct(lk.product_id);
+      }
+    }
+
+    /* Last resort: Try the ACTIVATE endpoint as fallback
+     * (this consumes an activation slot but returns full product info) */
+    return tryActivate(key);
+  })
+  .catch(function(e){
+    console.warn('validateLicense network error:', e);
+    return { ok:false, error:'network' };
+  });
+}
+
+/* Try the ACTIVATE endpoint — consumes an activation slot but returns full info */
+function tryActivate(key){
   return fetch(ACTIVATE_URL, {
     method: 'POST',
     headers: {
@@ -126,82 +220,51 @@ function validateLicense(key){
   })
   .then(function(r){ return r.json(); })
   .then(function(d){
-    if(!d || d.activated !== true) {
-      /* Check if activation limit was reached — the key is valid but maxed out.
-       * In this case, the license IS valid, it just can't be activated on more devices. */
-      if(d && d.error === 'activation_limit_reached'){
-        /* Key is valid but hit activation limit — still treat as valid since the user purchased it */
-        var meta = d.meta || {};
-        var licenseKey = d.license_key || {};
-        var productId = licenseKey.product_id || meta.product_id || 0;
-        var status = licenseKey.status || '';
-        if(status === 'expired' || status === 'disabled') return { ok:false };
-        /* Determine what this key unlocks */
-        if(PRO_PRODUCT_IDS.length && PRO_PRODUCT_IDS.indexOf(productId) >= 0){
-          var days = PLAN_DURATION_DAYS[productId];
-          if(typeof days === 'undefined') days = 0;
-          return { ok:true, kind:'pro', days: days };
-        }
-        var coins = COIN_VARIANTS[meta.variant_id];
-        if(coins) return { ok:true, kind:'coins', coins:coins };
-        /* If not Pro, treat as coins with default amount */
-        return { ok:true, kind:'coins', coins:1200 };
+    /* Successful activation */
+    if(d && d.activated === true){
+      var meta = d.meta || {};
+      var status = d.license_key && d.license_key.status || d.status || '';
+      if(status === 'expired' || status === 'inactive' || status === 'disabled'){
+        return { ok:false, error:'invalid' };
       }
-      /* Try validate as fallback */
-      return fetch(VALIDATE_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Accept': 'application/json'
-        },
-        body: 'license_key=' + encodeURIComponent(key)
-      }).then(function(r2){ return r2.json(); }).then(function(d2){
-        if(!d2 || d2.valid !== true) return { ok:false, error: d2 && d2.error || 'invalid' };
-        var meta2 = d2.meta || {};
-        var status2 = d2.license_key && d2.license_key.status || d2.status || '';
-        if(status2 === 'expired' || status2 === 'inactive' || status2 === 'disabled') return { ok:false };
-        var productId2 = (d2.license_key && d2.license_key.product_id) || meta2.product_id || 0;
-        if(PRO_PRODUCT_IDS.length && PRO_PRODUCT_IDS.indexOf(productId2) >= 0){
-          var days2 = PLAN_DURATION_DAYS[productId2];
-          if(typeof days2 === 'undefined') days2 = 0;
-          return { ok:true, kind:'pro', days: days2 };
-        }
-        var coins2 = COIN_VARIANTS[meta2.variant_id];
-        if(coins2) return { ok:true, kind:'coins', coins:coins2 };
-        return { ok:true, kind:'coins', coins:1200 };
-      });
+      var productId = meta.product_id || (d.license_key && d.license_key.product_id) || 0;
+      if(productId){
+        return classifyProduct(productId);
+      }
+      /* No product_id — can't determine type */
+      return { ok:true, kind:'unknown' };
     }
-    var meta = d.meta || {};
-    var status = d.license_key && d.license_key.status || d.status || '';
-    /* Reject expired / inactive licenses */
-    if(status === 'expired' || status === 'inactive' || status === 'disabled') return { ok:false };
-    /* coin pack? — first check variant ID, then product ID mapping */
-    var coins = COIN_VARIANTS[meta.variant_id];
-    if(coins) return { ok:true, kind:'coins', coins:coins };
-    /* Pro? — check against known Pro product IDs */
-    if(PRO_PRODUCT_IDS.length){
-      if(PRO_PRODUCT_IDS.indexOf(meta.product_id) >= 0){
-        var days = PLAN_DURATION_DAYS[meta.product_id];
-        if(typeof days === 'undefined') days = 0;
-        return { ok:true, kind:'pro', days: days };
+
+    /* Activation limit reached — key is valid but maxed out on activations.
+     * This is actually a SUCCESS case — the user already purchased and
+     * activated the key before. We should still honor it. */
+    if(d && d.error === 'activation_limit_reached'){
+      var meta2 = d.meta || {};
+      var licenseKey = d.license_key || {};
+      var productId2 = licenseKey.product_id || meta2.product_id || 0;
+      var status2 = licenseKey.status || '';
+      if(status2 === 'expired' || status2 === 'disabled'){
+        return { ok:false, error:'invalid' };
       }
-      /* Valid license but NOT a Pro product — treat as coin pack.
-       * Default coin amounts by product ID pattern or 1200 as fallback. */
-      var defaultCoins = 1200;
-      /* Try to determine coins from the product — check if there's a store_products mapping */
-      var coinProductMap = {
-        /* Add your coin pack product IDs here from Lemon Squeezy dashboard.
-         * Key = product_id, Value = number of coins */
-      };
-      if(coinProductMap[meta.product_id]){
-        defaultCoins = coinProductMap[meta.product_id];
+      if(productId2){
+        return classifyProduct(productId2);
       }
-      return { ok:true, kind:'coins', coins:defaultCoins };
+      /* Can't determine product but the key is valid */
+      return { ok:true, kind:'unknown' };
     }
-    /* PRO_PRODUCT_IDS not set — treat any valid non-coin key as Pro */
-    return { ok:true, kind:'pro', days: 0 };
+
+    /* Other activation errors — key might be invalid */
+    if(d && d.error){
+      /* Key not found or other error */
+      return { ok:false, error: d.error };
+    }
+
+    return { ok:false, error:'invalid' };
   })
-  .catch(function(){ return { ok:false, error:'network' }; });
+  .catch(function(e){
+    console.warn('tryActivate network error:', e);
+    return { ok:false, error:'network' };
+  });
 }
 
 /* --------------------------------------------------------------- public */

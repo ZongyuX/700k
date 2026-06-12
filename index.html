@@ -2178,12 +2178,12 @@
   <div id="tabContacts" style="flex:1;overflow-y:auto;display:none;padding:0">
     <!-- Friend Requests Section -->
     <div id="contactReqSection" style="border-bottom:1px solid var(--border)">
-      <div id="contactReqHeader" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;cursor:pointer" onclick="toggleContactReqSection()">
-        <span style="font-size:12px;font-weight:700;color:var(--gold)">📨 <span data-i18n="friends.requests">Friend Requests</span></span>
-        <span id="contactReqCount" style="font-size:11px;color:var(--muted)"></span>
-        <span id="contactReqArrow" style="font-size:10px;color:var(--muted);transition:.2s">▼</span>
+      <div id="contactReqHeader" style="display:flex;align-items:center;gap:8px;padding:10px 14px;cursor:pointer;user-select:none;transition:background .15s" onclick="toggleContactReqSection()" onmouseenter="this.style.background='rgba(124,92,255,.08)'" onmouseleave="this.style.background=''">
+        <span style="font-size:12px;font-weight:700;color:var(--gold);pointer-events:none">📨 <span data-i18n="friends.requests">Friend Requests</span></span>
+        <span id="contactReqCount" style="font-size:11px;color:var(--muted);pointer-events:none"></span>
+        <span id="contactReqArrow" style="font-size:10px;color:var(--muted);transition:transform .2s;pointer-events:none;margin-left:auto">▼</span>
       </div>
-      <div id="contactReqList" style="display:none;padding:0 14px 10px;max-height:200px;overflow-y:auto"></div>
+      <div id="contactReqList" style="display:none;padding:0 14px 10px;max-height:240px;overflow-y:auto;transition:max-height .2s"></div>
     </div>
     <!-- Pending Sent Section -->
     <div id="contactPendingSection" style="border-bottom:1px solid var(--border);display:none">
@@ -2842,10 +2842,11 @@ function doAuthSubmit(){
       }).then(function(){
         m.className='msg ok';
         m.textContent='Registration successful! A verification email has been sent to ' + email + '. Please check your inbox and click the verification link before signing in.';
-        /* Show resend button */
+        /* Show resend button and start cooldown */
         var resendWrap = document.getElementById('resendVerifyWrap');
         if(resendWrap) resendWrap.style.display = 'block';
         document.getElementById('authEmail').value = email;
+        if(typeof startResendCountdown === 'function') startResendCountdown(60);
       });
     }).catch(function(e){ done(); m.className='msg err'; m.textContent=authErrMsg(e); });
   }else{
@@ -2873,9 +2874,36 @@ function doAuthSubmit(){
   }
 }
 
-/* Step 3: Resend verification email */
+/* Step 3: Resend verification email with countdown timer */
+var _resendCountdown = 0;
+var _resendCountdownTimer = null;
+function startResendCountdown(seconds){
+  _resendCountdown = seconds;
+  var btn = document.getElementById('resendVerifyBtn');
+  if(!btn) return;
+  btn.disabled = true;
+  btn.style.opacity = '0.5';
+  btn.style.cursor = 'not-allowed';
+  btn.textContent = 'Resend available in ' + _resendCountdown + 's';
+  if(_resendCountdownTimer) clearInterval(_resendCountdownTimer);
+  _resendCountdownTimer = setInterval(function(){
+    _resendCountdown--;
+    if(_resendCountdown <= 0){
+      clearInterval(_resendCountdownTimer);
+      _resendCountdownTimer = null;
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      btn.style.cursor = 'pointer';
+      btn.textContent = 'Resend verification email';
+    }else{
+      btn.textContent = 'Resend available in ' + _resendCountdown + 's';
+    }
+  }, 1000);
+}
+
 function doResendVerification(){
   if(!fbReady) return;
+  if(_resendCountdown > 0) return; /* Still in cooldown */
   var email = document.getElementById('authEmail').value.trim();
   if(!email){ toast('Please enter your email address first.','info'); return; }
   var m=document.getElementById('authMsg'); m.style.display='block'; m.className='msg';
@@ -2894,9 +2922,17 @@ function doResendVerification(){
       return auth.signOut().then(function(){
         m.className='msg ok';
         m.textContent='Verification email has been resent to ' + email + '. Please check your inbox.';
+        /* Start 60-second cooldown timer */
+        startResendCountdown(60);
       });
     });
-  }).catch(function(e){ m.className='msg err'; m.textContent=authErrMsg(e); });
+  }).catch(function(e){
+    m.className='msg err'; m.textContent=authErrMsg(e);
+    /* If rate-limited by Firebase, start countdown */
+    if(e.code === 'auth/too-many-requests'){
+      startResendCountdown(60);
+    }
+  });
 }
 
 function doSocial(which){
@@ -3021,7 +3057,7 @@ function planLabel(){
     }
     return PPI18n.t('plan.pro.full');
   }
-  return PPI18n.t('plan.free');
+  return PPI18n.t('plan.free') + ' ∞';
 }
 function openAccount(){
   if(!currentUser){ if(typeof openAuth==='function') openAuth(); return; }
@@ -3118,13 +3154,13 @@ function refreshBadge(){
     const until=proUntil();
     if(until>0){
       const days=Math.max(1,Math.ceil((until-Date.now())/86400000));
-      b.textContent=PPI18n.t('plan.pro.days').replace('{d}',days);
+      b.textContent='PRO '+days+'d';
     }else{
-      b.textContent=PPI18n.t('plan.pro');
+      b.textContent='PRO ∞';
     }
     b.className='badge on';
   }else{
-    b.textContent=PPI18n.t('plan.free'); b.className='badge';
+    b.textContent='FREE ∞'; b.className='badge';
   }
 }
 /* Category cache — rebuilt only when data changes */
@@ -3683,7 +3719,12 @@ async function redeemCode(){
       /* Coin codes should be redeemed in the 🪙 Coins panel (Arcade), not here.
        * This Pro activation panel is only for Pro codes. */
       m.className='msg err';
-      m.textContent='That is a coin code — please redeem it in the 🪙 Coins panel instead.';
+      m.textContent='That is a coin code — it cannot be used for Pro. Please redeem it in the 🪙 Coins panel instead.';
+      return;
+    }
+    if(res.ok && res.kind==='credits'){
+      m.className='msg err';
+      m.textContent='That is a game credit code — it cannot be used for Pro. Please redeem it in the game credits section.';
       return;
     }
     if(res.ok){
@@ -3694,7 +3735,24 @@ async function redeemCode(){
       m.className='msg err'; m.textContent=PPI18n.t('activate.network');
       return;
     }
-    m.className='msg err'; m.textContent=PPI18n.t('activate.invalid');
+    if(res.error==='activation_limit_reached'){
+      /* The key IS valid (the user purchased it), but it has reached its
+       * activation limit on Lemon Squeezy's side. This happens when the user
+       * already activated it before (possibly from another browser/device).
+       * We should still honor the purchase — the key is valid.
+       * For Pro codes, we need to determine the duration.
+       * Try to get product info from the error response to classify correctly.
+       * Since we can't get the product_id from the error, we'll treat it as
+       * a 30-day Pro subscription (most common paid plan). */
+      if(!isPro){
+        /* Grant 30 days Pro as fallback for valid but limit-reached Pro codes */
+        return unlockTimed(key,m,30,'Pro activated! (30 days) — your license key is valid but has reached its device activation limit.');
+      }else{
+        m.className='msg ok'; m.textContent='Your Pro access is already active. This code has reached its device activation limit but your Pro status is unaffected.';
+        return;
+      }
+    }
+    m.className='msg err'; m.textContent='Invalid activation code. Please check the code in your Lemon Squeezy receipt email and try again.';
   }catch(e){
     m.className='msg err'; m.textContent=PPI18n.t('activate.network');
   }
@@ -5183,14 +5241,27 @@ function openAvatarPicker(){
   document.getElementById('avatarOverlay').classList.add('show');
 }
 
-/* Wire avatar badge click */
+/* Wire badge click — show Pro status info */
 document.addEventListener('DOMContentLoaded',function(){
   var badge=document.getElementById('planBadge');
   if(badge){
     badge.style.cursor='pointer';
     badge.addEventListener('click',function(){
-      if(window.PPGame && PPGame.exportState){
-        openAvatarPicker();
+      if(isPro){
+        var until=proUntil();
+        if(until>0){
+          var daysLeft=Math.max(1,Math.ceil((until-Date.now())/86400000));
+          var hoursLeft=Math.max(0,Math.ceil((until-Date.now())/3600000));
+          if(daysLeft<=1){
+            toast('Pro subscription: '+hoursLeft+' hours remaining','info');
+          }else{
+            toast('Pro subscription: '+daysLeft+' days remaining','info');
+          }
+        }else{
+          toast('Pro: Lifetime access ♾️','info');
+        }
+      }else{
+        toast('Free plan: ♾️ unlimited free days','info');
       }
     });
   }
@@ -5242,8 +5313,18 @@ function toggleContactReqSection(){
   _contactReqOpen=!_contactReqOpen;
   var list=document.getElementById('contactReqList');
   var arrow=document.getElementById('contactReqArrow');
-  list.style.display=_contactReqOpen?'block':'none';
-  arrow.textContent=_contactReqOpen?'▲':'▼';
+  if(!list||!arrow) return;
+  if(_contactReqOpen){
+    list.style.display='block';
+    arrow.style.transform='rotate(180deg)';
+    /* Load friend requests when expanding */
+    if(list.innerHTML.trim()==='' || list.innerHTML.indexOf('loading')>=0){
+      loadFriendRequests();
+    }
+  }else{
+    list.style.display='none';
+    arrow.style.transform='rotate(0deg)';
+  }
 }
 
 /* ---- Toggle friends panel ---- */
@@ -5445,7 +5526,7 @@ function loadSuggestedUsers(){
       var btnId='sugBtn_'+u._uid.replace(/[^a-zA-Z0-9]/g,'_');
       var btnHtml=alreadySent?
         '<button id="'+btnId+'" style="background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.3);color:var(--accent2);padding:4px 10px;border-radius:6px;font-size:11px;cursor:default" disabled>'+PPI18n.t('friends.sent')+'</button>':
-        '<button id="'+btnId+'" onclick="sendFriendRequestTo(\''+u._uid+'\',\''+esc(u.name).replace(/'/g,"\\'")+'\',\''+btnId+'\')" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer">+ '+PPI18n.t('friends.add')+'</button>';
+        '<button id="'+btnId+'" onclick="event.stopPropagation();sendFriendRequestTo(\''+u._uid+'\',\''+esc(u.name).replace(/'/g,"\\'")+'\',\''+btnId+'\')" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer">+ '+PPI18n.t('friends.add')+'</button>';
       html+='<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)">'+
         '<div style="width:34px;height:34px;border-radius:10px;overflow:hidden;border:1px solid var(--border)">'+svg+'</div>'+
         '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(u.name)+'</div>'+

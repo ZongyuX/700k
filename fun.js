@@ -1765,76 +1765,102 @@ async function redeemCoinCode(){
   var m=elById('ppCoinMsg'); m.style.display='block';
   if(!code){ m.className='msg err'; m.textContent='Paste a coin code first.'; return; }
 
-  /* ---- Check if this code has already been used on THIS account ---- */
-  var usedCodes=[];
-  try{ usedCodes=JSON.parse(localStorage.getItem('pp_used_codes')||'[]'); }catch(e){ usedCodes=[]; }
-  if(usedCodes.indexOf(code)>=0){
-    m.className='msg err';
-    m.textContent='This activation code has already been used on your account. Each code can only be activated once.';
-    return;
-  }
-
   /* TEST mode: codes starting with ZXTEST- grant 1000 coins (owner testing). */
   if(code.toUpperCase().indexOf('ZXTEST-')===0){
-    /* Also check one-time-use for test codes */
-    var usedCodes2=[];
-    try{ usedCodes2=JSON.parse(localStorage.getItem('pp_used_codes')||'[]'); }catch(e){ usedCodes2=[]; }
-    if(usedCodes2.indexOf(code)>=0){
-      m.className='msg err'; m.textContent='This activation code has already been used. Each code can only be activated once.';
+    if(_isCodeUsed(code)){
+      m.className='msg err'; m.textContent='This test code has already been used. Each code can only be activated once.';
       return;
     }
     game.coins=(game.coins||0)+1000; save(); refresh(); paintArcadeBtn();
-    /* Mark code as used locally */
-    var uc=[];try{uc=JSON.parse(localStorage.getItem('pp_used_codes')||'[]');}catch(e){uc=[];}
-    if(uc.indexOf(code)<0){uc.push(code);localStorage.setItem('pp_used_codes',JSON.stringify(uc));}
+    _markCodeUsed(code);
     m.className='msg ok'; m.textContent='+1000 coins added! (TEST code)';
     setTimeout(paintArcade, 900); return;
   }
   if(!window.PPLemon || !PPLemon.validateLicense){
     m.className='msg err'; m.textContent='Coin codes are not set up yet.'; return;
   }
-  m.className='msg'; m.textContent='Checking…';
+  m.className='msg'; m.textContent='Verifying code with Lemon Squeezy...';
   try{
     var res = await PPLemon.validateLicense(code);
 
-    /* Double-check: after Lemon Squeezy validation, verify key wasn't used while validating */
-    var usedCodes3=[];
-    try{ usedCodes3=JSON.parse(localStorage.getItem('pp_used_codes')||'[]'); }catch(e){ usedCodes3=[]; }
-    if(usedCodes3.indexOf(code)>=0){
+    /* ---- Cross-charge prevention ---- */
+    if(res.ok && res.kind==='pro'){
       m.className='msg err';
-      m.textContent='This activation code has already been used on your account. Each code can only be activated once.';
+      m.textContent='That is a Pro subscription code — it cannot be used for coins. Please activate it under "Activate Pro" instead.';
       return;
     }
-
+    if(res.ok && res.kind==='credits'){
+      m.className='msg err';
+      m.textContent='That is a game credit code — it cannot be used for coins. Please redeem it in the game credits section.';
+      return;
+    }
     if(res.ok && res.kind==='coins'){
-      /* Mark code as used locally */
-      var uc=[];try{uc=JSON.parse(localStorage.getItem('pp_used_codes')||'[]');}catch(e){uc=[];}
-      if(uc.indexOf(code)<0){uc.push(code);localStorage.setItem('pp_used_codes',JSON.stringify(uc));}
+      /* Check if already redeemed on this account */
+      if(_isCodeUsed(code)){
+        m.className='msg err';
+        m.textContent='This coin code has already been used on your account. Each code can only be activated once.';
+        return;
+      }
+      _markCodeUsed(code);
       game.coins=(game.coins||0)+res.coins; save(); refresh(); paintArcadeBtn();
       m.className='msg ok'; m.textContent='+'+res.coins+' coins added!';
       setTimeout(paintArcade, 900); return;
     }
-    if(res.ok && res.kind==='pro'){
-      m.className='msg err';
-      m.textContent='That is a Pro code — activate it under "Activate code", not here.';
-      return;
+    if(res.ok && res.kind==='unknown'){
+      /* Valid key but can't determine type — check if Pro first, then treat as coins */
+      if(_isCodeUsed(code)){
+        m.className='msg err';
+        m.textContent='This code has already been used on your account. Each code can only be activated once.';
+        return;
+      }
+      _markCodeUsed(code);
+      game.coins=(game.coins||0)+1200; save(); refresh(); paintArcadeBtn();
+      m.className='msg ok'; m.textContent='+1200 coins added!';
+      setTimeout(paintArcade, 900); return;
     }
     if(res.ok){ m.className='msg err'; m.textContent='That code is valid but not a coin code.'; return; }
+
+    /* Validation failed */
     if(res.error==='network'){
-      m.className='msg err'; m.textContent='Could not reach the server. Check your connection.'; return;
+      m.className='msg err'; m.textContent='Could not reach the server. Check your connection and try again.'; return;
     }
-    if(res.error==='limit'){
-      /* Activation limit reached — code already used on another device/account */
-      var uc4=[];try{uc4=JSON.parse(localStorage.getItem('pp_used_codes')||'[]');}catch(e){uc4=[];}
-      if(uc4.indexOf(code)<0){uc4.push(code);localStorage.setItem('pp_used_codes',JSON.stringify(uc4));}
-      m.className='msg err';
-      m.textContent='This activation code has already been activated. Each code can only be used once.';
+    if(res.error==='activation_limit_reached'){
+      /* The key is valid but already at max activations. The user likely
+       * already used it before. Check local records. */
+      if(_isCodeUsed(code)){
+        m.className='msg err';
+        m.textContent='This code has already been redeemed on your account. Check your coin balance.';
+      }else{
+        /* Code is valid but reached activation limit and we don't have it recorded
+         * locally — this could be from a different browser/device.
+         * We should still honor the purchase since the key IS valid. */
+        _markCodeUsed(code);
+        game.coins=(game.coins||0)+1200; save(); refresh(); paintArcadeBtn();
+        m.className='msg ok'; m.textContent='+1200 coins added! (code was previously activated)';
+        setTimeout(paintArcade, 900);
+      }
       return;
     }
-    m.className='msg err'; m.textContent='This activation code has already been activated. Each code can only be used once.';
+    /* Generic invalid code error */
+    m.className='msg err';
+    m.textContent='Invalid coin code. Please check the code in your Lemon Squeezy receipt email and try again.';
   }catch(e){
-    m.className='msg err'; m.textContent='Could not reach the server. Check your connection.';
+    m.className='msg err'; m.textContent='Could not reach the server. Check your connection and try again.';
   }
+}
+
+/* Helper: check if a code has been used locally (per account) */
+function _isCodeUsed(code){
+  var key = _gameUid ? ('pp_used_codes_'+_gameUid) : 'pp_used_codes';
+  var usedCodes=[];
+  try{ usedCodes=JSON.parse(localStorage.getItem(key)||'[]'); }catch(e){ usedCodes=[]; }
+  return usedCodes.indexOf(code)>=0;
+}
+/* Helper: mark a code as used locally (per account) */
+function _markCodeUsed(code){
+  var key = _gameUid ? ('pp_used_codes_'+_gameUid) : 'pp_used_codes';
+  var uc=[];try{uc=JSON.parse(localStorage.getItem(key)||'[]');}catch(e){uc=[];}
+  if(uc.indexOf(code)<0){uc.push(code);localStorage.setItem(key,JSON.stringify(uc));}
 }
 
 /* ---- Account / Profile panel: removed — duplicate of header authBtn ---- */

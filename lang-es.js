@@ -103,7 +103,7 @@ var ES = {
 
   /* ---- Friends ---- */
   'friends.title': 'Amigos',
-  'friends.add': '+ Agregar',
+  'friends.add': 'Agregar',
   'friends.email.placeholder': 'Correo del amigo',
   'friends.sendrequest': 'Enviar solicitud',
   'friends.chat.placeholder': 'Escribe un mensaje...',
