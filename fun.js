@@ -134,8 +134,26 @@ var DEF = { xp:0, lvl:1, streak:0, best:0, lastDay:'', dDay:'', sDay:'', sN:0,
             coins:0, avatar:0, tDay:'', tToday:0, duelDay:'', duelN:0,
             ach:[], cnt:{ open:0, copy:0, send:0, search:0, fav:0, daily:0, mood:0, tmin:0 } };
 var game = clone(DEF);
+
+/* UID-aware game storage: each account gets its own localStorage key.
+ * Logged in  -> pp_game_{uid}
+ * Guest      -> pp_game_guest
+ * This prevents data bleeding between accounts on the same browser. */
+var _gameUid = null; // null = guest mode
+function _gameKey(){ return _gameUid ? ('pp_game_'+_gameUid) : 'pp_game_guest'; }
+
+/* Migrate legacy pp_game key: if pp_game_guest doesn't exist yet but the
+ * old pp_game key does, copy its data to pp_game_guest (guest mode storage)
+ * and remove the old key so accounts don't bleed into each other. */
 try{
-  var saved = JSON.parse(lg('pp_game')||'{}');
+  if(!lg('pp_game_guest') && lg('pp_game')){
+    ls('pp_game_guest', lg('pp_game'));
+    try{ localStorage.removeItem('pp_game'); }catch(e){}
+  }
+}catch(e){}
+
+try{
+  var saved = JSON.parse(lg(_gameKey())||'{}');
   game = mergeGame(game, saved);
 }catch(e){}
 
@@ -169,7 +187,7 @@ function mergeGame(a,b){
 }
 function save(){
   game.lvl = levelFromXp(game.xp);
-  ls('pp_game', JSON.stringify(game));
+  ls(_gameKey(), JSON.stringify(game));
   if(typeof window.ppGameChanged==='function'){ try{ window.ppGameChanged(); }catch(e){} }
 }
 
@@ -242,6 +260,7 @@ var ACH = [];
   ];
   sp.forEach(function(a){ ACH.push({id:a[0],ic:a[1],nm:a[2],ds:a[3],nmZh:a[4],dsZh:a[5],t:a[6]}); });
 })();
+window._ACH = ACH;
 function getAchNm(a){ return isZh()?(a.nmZh||a.nm):a.nm; }
 function getAchDs(a){ return isZh()?(a.dsZh||a.ds):a.ds; }
 
@@ -1308,7 +1327,27 @@ window.PPGame = {
   award: award,
   exportState: function(){ return clone(game); },
   importState: function(obj){ game = mergeGame(game, obj||{}); save(); refresh(); },
+  /* Switch the game storage to a specific user (or guest if uid is null).
+   * Reloads game state from the appropriate localStorage key. */
+  setUserId: function(uid){
+    _gameUid = uid || null;
+    game = clone(DEF);
+    try{
+      var saved = JSON.parse(lg(_gameKey())||'{}');
+      game = mergeGame(game, saved);
+    }catch(e){}
+    save(); refresh();
+  },
+  /* Get the current game localStorage key (for external use) */
+  getGameKey: function(){ return _gameKey(); },
+  /* Reset game state to defaults (used on logout/account switch) */
+  resetToDefaults: function(){
+    game = clone(DEF);
+    save(); refresh();
+  },
   openPanel: openPanel,
+  openProfile: function(){ openProfile(); },
+  paintProfile: function(){ paintProfile(); },
   refresh: refresh,
   dailyId: dailyId,
   avatarSVG: function(i){ return avatarSVG(i); },
@@ -1387,7 +1426,7 @@ function thankYou(){
 }
 function fbMailto(txt,email){
   try{
-    location.href='mailto:zongyufred@gmail.com?subject='+encodeURIComponent('PromptRunic feedback')
+    location.href='mailto:zongxie22@gmail.com?subject='+encodeURIComponent('PromptRunic feedback')
       +'&body='+encodeURIComponent(txt+(email?('\n\nFrom: '+email):''));
   }catch(e){}
 }
@@ -1538,21 +1577,42 @@ function startTimer(){
 var arcBtn, arcPanel;
 function buildArcadeBtn(){
   var bar=D.querySelector('.hbtns'); if(!bar) return;
+  /* Remove any existing arcade button first */
+  var existing=bar.querySelector('.arcade-btn');
+  if(existing) existing.remove();
   arcBtn=D.createElement('button');
-  arcBtn.className='pp-chip';
+  arcBtn.className='pp-chip arcade-btn';
   arcBtn.title='Arcade — coins, avatars & battles';
-  arcBtn.addEventListener('click', openArcade);
-  bar.insertBefore(arcBtn, bar.firstChild);
+  arcBtn.style.cursor='pointer';
+  arcBtn.addEventListener('click',function(e){
+    e.stopPropagation();
+    openArcade();
+  });
+  /* Insert after the game button for better visibility, or before authBtn */
+  var gameBtn=bar.querySelector('#gameBtn');
+  var authBtn=bar.querySelector('#authBtn');
+  if(gameBtn && gameBtn.nextSibling){
+    bar.insertBefore(arcBtn, gameBtn.nextSibling);
+  }else if(authBtn){
+    bar.insertBefore(arcBtn, authBtn);
+  }else{
+    bar.appendChild(arcBtn);
+  }
   paintArcadeBtn();
 }
-function paintArcadeBtn(){ if(arcBtn) arcBtn.innerHTML='<span class="lv">🪙 '+(game.coins||0)+'</span>'; }
+function paintArcadeBtn(){ 
+  if(arcBtn) arcBtn.innerHTML='<span class="lv">🪙 '+(game.coins||0)+'</span>'; 
+  /* Also update the header coin button if it exists */
+  var coinBtnCount=D.getElementById('coinBtnCount');
+  if(coinBtnCount) coinBtnCount.textContent=game.coins||0;
+}
 
 /* ---- arcade panel ---- */
 function openArcade(){
   if(!arcPanel){
     arcPanel=D.createElement('div');
     arcPanel.className='overlay'; arcPanel.id='ppArcade';
-    arcPanel.innerHTML='<div class="modal sm"><button class="x" id="ppArcX">&times;</button>'
+    arcPanel.innerHTML='<div class="modal sm"><button class="x" id="ppArcX" data-close>&times;</button>'
       +'<h2>Arcade</h2><div class="desc">Earn coins by levelling up, staying active and winning battles. Spend them on avatars.</div>'
       +'<div id="ppArcBody"></div></div>';
     D.body.appendChild(arcPanel);
@@ -1564,7 +1624,8 @@ function openArcade(){
 }
 function paintArcade(){
   var b=elById('ppArcBody'); if(!b) return;
-  var h='<div class="arc-top"><div class="arc-av">'+avatarSVG(game.avatar||0)+'</div>'
+  var av=game.avatar||0;
+  var h='<div class="arc-top"><div class="arc-av">'+avatarSVG(av)+'</div>'
     +'<div style="flex:1"><div class="arc-stat"><b>🪙 '+(game.coins||0)+'</b> <span>coins</span></div>'
     +'<div style="font-size:11px;color:var(--muted);margin-top:2px">Win duels and level up to earn coins. Change your avatar in Account.</div></div></div>';
 
@@ -1591,6 +1652,18 @@ function paintArcade(){
     +'<div class="msg" id="ppCoinMsg"></div>'
     +'<div class="note">Coins are a cosmetic currency for avatars and duels. They cannot be cashed out.</div>';
 
+  h+='<div class="arc-sec">🎭 CHOOSE YOUR AVATAR — 200 to collect</div>';
+  h+='<div class="avgrid">';
+  for(var i=0;i<200;i++){
+    var st=avatarStatus(i), cls='avcell'+(i===av?' on':'')+(st.locked?' lk':'');
+    var tag=st.type==='pro'?'<span class="tag2 pro">PRO</span>'
+          :st.type==='lvl'?'<span class="tag2 lvl">L'+st.req+'</span>'
+          :st.type==='coin'?'<span class="tag2 coin">'+st.req+'</span>':'';
+    h+='<div class="'+cls+'" data-av="'+i+'">'+avatarSVG(i)+(st.locked?tag:'')+'</div>';
+  }
+  h+='</div>';
+  h+='<div style="font-size:10.5px;color:var(--muted);margin-top:4px">15 free · 35 Pro · 75 level-locked · 75 buy with coins. Tap one to equip or unlock.</div>';
+
   b.innerHTML=h;
   elById('ppBattle').addEventListener('click', startBattle);
   Array.prototype.forEach.call(b.querySelectorAll('[data-pack]'),function(c){
@@ -1601,6 +1674,9 @@ function paintArcade(){
     });
   });
   elById('ppRedeemCoin').addEventListener('click', redeemCoinCode);
+  Array.prototype.forEach.call(b.querySelectorAll('[data-av]'),function(c){
+    c.addEventListener('click',function(){ tapAvatar(parseInt(c.getAttribute('data-av'))); paintArcade(); paintArcadeBtn(); });
+  });
 }
 function tapAvatar(i){
   var st=avatarStatus(i);
@@ -1696,13 +1772,37 @@ var COIN_PACKS=[
   { coins:4000, price:'$6.99'  },
   { coins:12000, price:'$14.99' }
 ];
-function redeemCoinCode(){
+async function redeemCoinCode(){
   var code=(elById('ppCoinCode').value||'').trim();
   var m=elById('ppCoinMsg'); m.style.display='block';
   if(!code){ m.className='msg err'; m.textContent='Paste a coin code first.'; return; }
+
+  /* ---- Check if this code has already been used (one-time-use enforcement) ---- */
+  if(window.isLicenseUsedAsync){
+    try{
+      var usedResult = await isLicenseUsedAsync(code);
+      if(usedResult.used){
+        m.className='msg err';
+        if(usedResult.byOtherAccount){
+          m.textContent='This activation code has already been activated by another account.';
+        }else{
+          m.textContent='This activation code has already been used on your account. Each code can only be activated once.';
+        }
+        return;
+      }
+    }catch(e){}
+  }
+
   /* TEST mode: codes starting with ZXTEST- grant 1000 coins (owner testing). */
   if(code.toUpperCase().indexOf('ZXTEST-')===0){
+    /* Also check one-time-use for test codes */
+    if(window.isLicenseUsed && isLicenseUsed(code)){
+      m.className='msg err'; m.textContent='This activation code has already been used. Each code can only be activated once.';
+      return;
+    }
     game.coins=(game.coins||0)+1000; save(); refresh(); paintArcadeBtn();
+    if(window.markLicenseUsedAsync) await markLicenseUsedAsync(code);
+    else if(window.markLicenseUsed) markLicenseUsed(code);
     m.className='msg ok'; m.textContent='+1000 coins added! (TEST code)';
     setTimeout(paintArcade, 900); return;
   }
@@ -1710,8 +1810,27 @@ function redeemCoinCode(){
     m.className='msg err'; m.textContent='Coin codes are not set up yet.'; return;
   }
   m.className='msg'; m.textContent='Checking…';
-  PPLemon.validateLicense(code).then(function(res){
+  try{
+    var res = await PPLemon.validateLicense(code);
+
+    /* Double-check: after Lemon Squeezy validation, verify key wasn't used while validating */
+    if(window.isLicenseUsedAsync){
+      var secondCheck = await isLicenseUsedAsync(code);
+      if(secondCheck.used){
+        m.className='msg err';
+        if(secondCheck.byOtherAccount){
+          m.textContent='This activation code has already been activated by another account.';
+        }else{
+          m.textContent='This activation code has already been used on your account. Each code can only be activated once.';
+        }
+        return;
+      }
+    }
+
     if(res.ok && res.kind==='coins'){
+      /* Mark the key as used BEFORE adding coins to prevent reuse */
+      if(window.markLicenseUsedAsync) await markLicenseUsedAsync(code);
+      else if(window.markLicenseUsed) markLicenseUsed(code);
       game.coins=(game.coins||0)+res.coins; save(); refresh(); paintArcadeBtn();
       m.className='msg ok'; m.textContent='+'+res.coins+' coins added!';
       setTimeout(paintArcade, 900); return;
@@ -1725,28 +1844,31 @@ function redeemCoinCode(){
     if(res.error==='network'){
       m.className='msg err'; m.textContent='Could not reach the server. Check your connection.'; return;
     }
-    m.className='msg err'; m.textContent='Invalid coin code. Check your Lemon Squeezy receipt email.';
-  }).catch(function(){
+    if(res.error==='limit'){
+      /* Activation limit reached — code already used on another device/account */
+      if(window.markLicenseUsedAsync) await markLicenseUsedAsync(code);
+      else if(window.markLicenseUsed) markLicenseUsed(code);
+      m.className='msg err';
+      m.textContent='This activation code has already been activated. Each code can only be used once.';
+      return;
+    }
+    m.className='msg err'; m.textContent='This activation code has already been activated. Each code can only be used once.';
+  }catch(e){
     m.className='msg err'; m.textContent='Could not reach the server. Check your connection.';
-  });
+  }
 }
 
-/* ---- Account / Profile panel: avatar + stats + avatar picker ---- */
+/* ---- Account / Profile panel: removed — duplicate of header authBtn ---- */
 var profBtn, profPanel;
 function buildProfileBtn(){
-  var bar=D.querySelector('.hbtns'); if(!bar) return;
-  profBtn=D.createElement('button');
-  profBtn.className='pp-chip';
-  profBtn.title='Account settings & your profile';
-  profBtn.innerHTML='<span class="lv">👤 Account</span>';
-  profBtn.addEventListener('click', openProfile);
-  bar.insertBefore(profBtn, bar.firstChild);
+  /* Removed: the Account button is now handled by the header authBtn.
+   * openProfile() is kept for backward compatibility but no button is created. */
 }
 function openProfile(){
   if(!profPanel){
     profPanel=D.createElement('div');
     profPanel.className='overlay'; profPanel.id='ppProfile';
-    profPanel.innerHTML='<div class="modal sm"><button class="x" id="ppProfX">&times;</button>'
+    profPanel.innerHTML='<div class="modal sm"><button class="x" id="ppProfX" data-close>&times;</button>'
       +'<h2>Account &amp; Profile</h2>'
       +'<div class="desc">Your avatar, level and stats — this is the profile other members can view.</div>'
       +'<div id="ppProfBody"></div></div>';
@@ -1783,10 +1905,13 @@ function paintProfile(){
   }
   h+='</div>';
   h+='<div style="font-size:10.5px;color:var(--muted);margin-top:4px">15 free · 35 Pro · 75 level-locked · 75 buy with coins. Tap one to equip or unlock.</div>';
+  h+='<div style="margin-top:14px;text-align:center"><button id="ppProfSettings" style="background:var(--panel2);border:1px solid var(--border);color:var(--text);padding:9px 20px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;transition:.15s">⚙️ Account Settings</button></div>';
   b.innerHTML=h;
   Array.prototype.forEach.call(b.querySelectorAll('[data-av]'),function(c){
     c.addEventListener('click',function(){ tapAvatar(parseInt(c.getAttribute('data-av'))); });
   });
+  var settingsBtn=elById('ppProfSettings');
+  if(settingsBtn) settingsBtn.addEventListener('click',function(){ profPanel.classList.remove('show'); if(typeof window.openAccountSettings==='function') window.openAccountSettings(); });
 }
 
 function arcadeBoot(){ buildArcadeBtn(); buildProfileBtn(); startTimer(); }

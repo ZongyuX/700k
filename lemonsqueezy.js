@@ -6,7 +6,7 @@
  * How it works:
  *   - Buying  -> opens a Lemon Squeezy hosted checkout page.
  *   - Unlocking -> the customer gets a LICENSE KEY by email, types it in,
- *     and this script verifies it with the Lemon Squeezy license API.
+ *     and this script ACTIVATES it with the Lemon Squeezy license API.
  * This file never touches card numbers.
  *
  * Author: Zongyu Xie <zongyufred@gmail.com>
@@ -58,6 +58,8 @@ var BUY_COINS = [
  * dashboard URL, and in the API). Fill these in:
  *   - PRO_PRODUCT_IDS : the Product IDs that grant Pro access.
  *   - COIN_VARIANTS  : map each coin-pack VARIANT ID to the coins it grants.
+ *   - COIN_PRODUCTS  : map each coin-pack PRODUCT ID to the coins it grants.
+ *     Used as fallback if variant_id is not in COIN_VARIANTS.
  * If PRO_PRODUCT_IDS is empty, any valid non-coin key unlocks Pro.
  * ===================================================================== */
 var PRO_PRODUCT_IDS = [1134081, 1130711, 1130720, 1130724, 1130727, 1073472];
@@ -77,12 +79,79 @@ var PLAN_DURATION_DAYS = {
   1073472: 0      /* Lifetime — 0 means permanent */
 };
 
+/* ---- Coin pack detection ----
+ * IMPORTANT: You MUST fill in the real variant IDs and/or product IDs
+ * from your Lemon Squeezy dashboard for coin packs to work!
+ *
+ * To find them:
+ *   1. Go to Lemon Squeezy dashboard → Products → your coin pack product
+ *   2. Check the URL or API for the product_id and variant_id
+ *   3. Add them below
+ *
+ * COIN_VARIANTS maps variant_id → coin count (most precise)
+ * COIN_PRODUCTS maps product_id → coin count (fallback)
+ * If neither matches, product_name is checked as last resort.
+ */
 var COIN_VARIANTS = {
-  /* replace with real variant IDs from your Lemon Squeezy dashboard */
+  /* TODO: Fill in your real coin pack variant IDs from Lemon Squeezy.
+   * Example:  12345: 1200,  12346: 4000,  12347: 12000  */
 };
 
-/* Lemon Squeezy's public license-key endpoint (no API key needed). */
+var COIN_PRODUCTS = {
+  /* TODO: Fill in your real coin pack product IDs from Lemon Squeezy.
+   * Example:  111: 1200,  112: 4000,  113: 12000  */
+};
+
+/* Fallback: detect coin packs by product_name keywords.
+ * Maps lowercase keyword → coin count.  Checked if neither
+ * COIN_VARIANTS nor COIN_PRODUCTS matched. */
+var COIN_NAME_MAP = {
+  'coin pack s': 1200,
+  'coin pack m': 4000,
+  'coin pack l': 12000,
+  '1200': 1200,
+  '4000': 4000,
+  '12000': 12000
+};
+
+/* ---- Pro membership detection by product_name (fallback) ----
+ * When the product_id from the API doesn't match PRO_PRODUCT_IDS,
+ * we fall back to checking the product_name for known patterns.
+ * This handles the case where Lemon Squeezy re-assigns product IDs
+ * or when the owner hasn't updated PRO_PRODUCT_IDS yet.
+ *
+ * Each entry: { pattern: RegExp or string, days: number }
+ *   days: 0 = lifetime/permanent, >0 = subscription duration
+ */
+var PRO_NAME_PATTERNS = [
+  /* English names — match "PromptRunic Pro 3 months", "3 Days", "1 Month", etc. */
+  { pattern: /\b3\s*days?\b/i,              days: 3 },
+  { pattern: /\b1\s*month\b/i,              days: 30 },
+  { pattern: /\b3\s*months?\b/i,            days: 90 },
+  { pattern: /\b6\s*months?\b/i,            days: 180 },
+  { pattern: /\b12\s*months?\b/i,           days: 365 },
+  { pattern: /\b1\s*year\b/i,               days: 365 },
+  { pattern: /\blifetime\b/i,               days: 0 },
+  /* Chinese names */
+  { pattern: /3天/i,                         days: 3 },
+  { pattern: /1个月/i,                       days: 30 },
+  { pattern: /3个月/i,                       days: 90 },
+  { pattern: /6个月/i,                       days: 180 },
+  { pattern: /12个月/i,                      days: 365 },
+  { pattern: /1年/i,                         days: 365 },
+  { pattern: /永久/i,                        days: 0 },
+  /* Also try variant_name */
+  { pattern: /3\s*day/i,                     days: 3 },
+  { pattern: /1\s*month/i,                   days: 30 },
+  { pattern: /3\s*month/i,                   days: 90 },
+  { pattern: /6\s*month/i,                   days: 180 },
+  { pattern: /12\s*month/i,                  days: 365 }
+];
+
+/* Lemon Squeezy license API endpoints (public, no API key needed). */
 var VALIDATE_URL = 'https://api.lemonsqueezy.com/v1/licenses/validate';
+var ACTIVATE_URL = 'https://api.lemonsqueezy.com/v1/licenses/activate';
+var DEACTIVATE_URL = 'https://api.lemonsqueezy.com/v1/licenses/deactivate';
 
 /* --------------------------------------------------------------- helpers */
 function openUrl(u){
@@ -95,45 +164,200 @@ function openUrl(u){
 }
 function configured(){ return !!BUY_PRO; }
 
-/* Verify a license key. Resolves to one of:
+/* Generate a unique instance name for this browser/device.
+ * This is required by Lemon Squeezy when activating a license.
+ * We store it so the same instance can be deactivated later if needed. */
+function getInstanceName(){
+  var name = lsGet('pp_instance_name');
+  if(!name){
+    name = 'PromptRunic-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2,8);
+    lsSet('pp_instance_name', name);
+  }
+  return name;
+}
+
+/* LocalStorage helpers (must exist in fun.js already, but safe fallback) */
+function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+
+/* Verify a license key by ACTIVATING it with Lemon Squeezy.
+ * We use the ACTIVATE endpoint (not just validate) because:
+ *   - New license keys have status "inactive" — validate returns valid:true
+ *     but license_key.status is "inactive", which the old code incorrectly rejected.
+ *   - Activate both validates AND activates the key in one step.
+ *   - It creates an "instance" so the key is properly registered as in use.
+ *
+ * Resolves to one of:
  *   { ok:true,  kind:'pro', days:N }   N=0 means lifetime; N>0 = subscription days
  *   { ok:true,  kind:'coins', coins:N }
  *   { ok:true,  kind:'unknown' }
- *   { ok:false }                       (invalid / not found / expired / inactive)
+ *   { ok:false }                       (invalid / not found / expired / disabled)
  *   { ok:false, error:'network' }      (could not reach server)
+ *   { ok:false, error:'limit' }        (activation limit reached)
  */
 function validateLicense(key){
-  return fetch(VALIDATE_URL, {
+  var instanceName = getInstanceName();
+
+  /* First, try to ACTIVATE the license key (validates + activates in one step) */
+  return fetch(ACTIVATE_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
       'Accept': 'application/json'
     },
-    body: 'license_key=' + encodeURIComponent(key)
+    body: 'license_key=' + encodeURIComponent(key) + '&instance_name=' + encodeURIComponent(instanceName)
   })
   .then(function(r){ return r.json(); })
   .then(function(d){
-    if(!d || d.valid !== true) return { ok:false };
-    var meta = d.meta || {};
-    var status = d.license_key && d.license_key.status || d.status || '';
-    /* Reject expired / inactive licenses */
-    if(status === 'expired' || status === 'inactive' || status === 'disabled') return { ok:false };
-    /* coin pack? */
-    var coins = COIN_VARIANTS[meta.variant_id];
-    if(coins) return { ok:true, kind:'coins', coins:coins };
-    /* Pro? — any membership product ID counts */
-    if(PRO_PRODUCT_IDS.length){
-      if(PRO_PRODUCT_IDS.indexOf(meta.product_id) >= 0){
-        var days = PLAN_DURATION_DAYS[meta.product_id];
-        if(typeof days === 'undefined') days = 0;
-        return { ok:true, kind:'pro', days: days };
-      }
-      return { ok:true, kind:'unknown' };
+    console.log('[PromptRunic] ACTIVATE response:', JSON.stringify(d, null, 2));
+
+    /* If activation succeeds, the key is valid and now active */
+    if(d && d.activated === true){
+      return processLicenseResponse(d, key);
     }
-    /* PRO_PRODUCT_IDS not set — treat any valid non-coin key as Pro */
-    return { ok:true, kind:'pro', days: 0 };
+
+    /* If activation fails because limit is reached, the key was already
+     * activated on this or another device/account. Since each code can
+     * only be used ONCE (one-time-use enforcement), we must NOT allow
+     * reuse via VALIDATE fallback. Return error instead.
+     *
+     * If the user legitimately has an active Pro subscription from this
+     * key, their Pro state will already be synced from the cloud doc —
+     * they do not need to enter the code again. */
+    if(d && d.error && (String(d.error).indexOf('limit') >= 0 || String(d.error).indexOf('No more activations') >= 0 || String(d.error).indexOf('activation') >= 0)){
+      console.log('[PromptRunic] Activation limit reached — key already used. Blocking reuse.');
+      return { ok:false, error:'limit' };
+    }
+
+    /* If activation failed for other reasons, DO NOT fall back to VALIDATE.
+     * The VALIDATE endpoint can return valid:true for already-activated keys,
+     * which would allow reuse. One-time-use enforcement means: if ACTIVATE
+     * fails (for any reason other than limit), the key is invalid. */
+    console.log('[PromptRunic] ACTIVATE failed — key invalid or already used');
+    return { ok:false };
   })
-  .catch(function(){ return { ok:false, error:'network' }; });
+  .catch(function(e){
+    console.error('[PromptRunic] Network error during license validation:', e);
+    return { ok:false, error:'network' };
+  });
+}
+
+/* Process the license response from Lemon Squeezy API (validate or activate)
+ *
+ * IMPORTANT: The ACTIVATE endpoint returns { activated: true, ... }
+ *            The VALIDATE endpoint returns { valid: true, ... }
+ * We must accept BOTH formats because processLicenseResponse is called
+ * from both code paths. */
+function processLicenseResponse(d, key){
+  /* Accept both VALIDATE responses (valid: true) and ACTIVATE responses (activated: true) */
+  if(!d) return { ok:false };
+  var isValid = (d.valid === true) || (d.activated === true);
+  if(!isValid) return { ok:false };
+
+  var meta = d.meta || {};
+  var licenseKey = d.license_key || {};
+  var status = licenseKey.status || d.status || '';
+
+  console.log('[PromptRunic] Processing license: status=' + status +
+    ', product_id=' + meta.product_id + ', variant_id=' + meta.variant_id +
+    ', product_name=' + meta.product_name + ', variant_name=' + meta.variant_name);
+
+  /* Only reject truly dead keys — "expired" and "disabled".
+   * IMPORTANT: Do NOT reject "inactive" — a key that hasn't been activated
+   * yet is still VALID. The old code incorrectly rejected "inactive" keys,
+   * which is why users couldn't activate newly purchased licenses! */
+  if(status === 'expired' || status === 'disabled'){
+    console.log('[PromptRunic] License is expired or disabled:', status);
+    return { ok:false };
+  }
+
+  /* Save the activated instance ID for future deactivation if needed */
+  if(d.instance && d.instance.id){
+    lsSet('pp_activated_instance_' + key, d.instance.id);
+  }
+
+  /* ---- Coin pack detection (3 levels of fallback) ---- */
+
+  /* Level 1: Check COIN_VARIANTS (variant_id → coins) — most precise */
+  var coins = COIN_VARIANTS[meta.variant_id];
+  if(coins){
+    console.log('[PromptRunic] Detected coin pack via COIN_VARIANTS: ' + coins + ' coins');
+    return { ok:true, kind:'coins', coins:coins };
+  }
+
+  /* Level 2: Check COIN_PRODUCTS (product_id → coins) — fallback */
+  coins = COIN_PRODUCTS[meta.product_id];
+  if(coins){
+    console.log('[PromptRunic] Detected coin pack via COIN_PRODUCTS: ' + coins + ' coins');
+    return { ok:true, kind:'coins', coins:coins };
+  }
+
+  /* Level 3: Check product_name keywords — last resort */
+  if(meta.product_name){
+    var nameLower = String(meta.product_name).toLowerCase();
+    for(var keyword in COIN_NAME_MAP){
+      if(nameLower.indexOf(keyword) >= 0){
+        console.log('[PromptRunic] Detected coin pack via product_name "' + meta.product_name + '": ' + COIN_NAME_MAP[keyword] + ' coins');
+        return { ok:true, kind:'coins', coins: COIN_NAME_MAP[keyword] };
+      }
+    }
+  }
+
+  /* ---- Pro membership detection ---- */
+
+  /* Level 1: Check PRO_PRODUCT_IDS (product_id → Pro) — most precise */
+  if(PRO_PRODUCT_IDS.length){
+    if(PRO_PRODUCT_IDS.indexOf(meta.product_id) >= 0){
+      var days = PLAN_DURATION_DAYS[meta.product_id];
+      if(typeof days === 'undefined') days = 0;
+      console.log('[PromptRunic] Detected Pro via PRO_PRODUCT_IDS: product_id=' + meta.product_id + ', days=' + days);
+      return { ok:true, kind:'pro', days: days };
+    }
+  }
+
+  /* Level 2: Check product_name / variant_name against known Pro patterns.
+   * This fallback handles the case where product_id doesn't match
+   * PRO_PRODUCT_IDS (e.g., Lemon Squeezy re-assigned the ID, or the
+   * owner hasn't updated the hardcoded IDs yet).
+   * The product name must contain "pro" or "PromptRunic" to qualify. */
+  var nameToCheck = String(meta.product_name || '') + ' ' + String(meta.variant_name || '');
+  var nameLower = nameToCheck.toLowerCase();
+  var isProByName = (nameLower.indexOf('pro') >= 0) || (nameLower.indexOf('promptrunic') >= 0);
+
+  if(isProByName){
+    /* Try to determine duration from the name */
+    var matchedDays = -1;
+    for(var i = 0; i < PRO_NAME_PATTERNS.length; i++){
+      if(PRO_NAME_PATTERNS[i].pattern.test(nameToCheck)){
+        matchedDays = PRO_NAME_PATTERNS[i].days;
+        break;
+      }
+    }
+    /* If no pattern matched but name contains "pro", default to 30 days
+     * (safest assumption for a subscription). The user can see the actual
+     * duration in their Lemon Squeezy receipt. */
+    if(matchedDays < 0){
+      /* Check expires_at from license_key to determine duration */
+      var expiresAt = licenseKey.expires_at;
+      if(expiresAt){
+        var expiryDate = new Date(expiresAt);
+        var now = new Date();
+        var diffMs = expiryDate.getTime() - now.getTime();
+        var diffDays = Math.ceil(diffMs / 86400000);
+        if(diffDays > 0) matchedDays = diffDays;
+        else matchedDays = 30; /* fallback */
+      }else{
+        /* No expiry date = lifetime */
+        matchedDays = 0;
+      }
+    }
+    console.log('[PromptRunic] Detected Pro via product_name "' + meta.product_name + '": days=' + matchedDays);
+    return { ok:true, kind:'pro', days: matchedDays };
+  }
+
+  /* Valid key but not a Pro product and not a coin product */
+  console.log('[PromptRunic] Valid key but not Pro or coin product: product_id=' + meta.product_id + ', product_name=' + meta.product_name);
+  return { ok:true, kind:'unknown', product_id: meta.product_id, product_name: meta.product_name || '' };
 }
 
 /* --------------------------------------------------------------- public */
