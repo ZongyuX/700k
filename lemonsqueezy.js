@@ -152,82 +152,17 @@ function classifyProduct(productId){
  * Only fall back to activate if validate fails and we need product_id info.
  */
 function validateLicense(key){
-  var instanceName = getInstanceName();
-
-  /* Step 1: Try the VALIDATE endpoint first (read-only, no activation count consumed).
-   * Lemon Squeezy's license API officially expects application/x-www-form-urlencoded
-   * format, though JSON also works in many cases. Using form-encoded for maximum
-   * compatibility with the official API spec. */
-  return fetch(VALIDATE_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'Accept': 'application/json'
-    },
-    body: 'license_key=' + encodeURIComponent(key) + '&instance_name=' + encodeURIComponent(instanceName)
-  })
-  .then(function(r){ return r.json(); })
-  .then(function(d){
-    console.log('[LemonSqueezy] validate response:', JSON.stringify(d).substring(0, 500));
-
-    /* Check if validate returned a valid license */
-    if(d && d.valid === true){
-      var meta = d.meta || {};
-      var licenseKey = d.license_key || {};
-      var status = licenseKey.status || d.status || '';
-      /* Reject expired / inactive / disabled */
-      if(status === 'expired' || status === 'inactive' || status === 'disabled'){
-        return { ok:false, error:'invalid' };
-      }
-      /* Get product_id from validate response */
-      var productId = licenseKey.product_id || meta.product_id || 0;
-      if(productId){
-        return classifyProduct(productId);
-      }
-      /* If no product_id from validate, try activate to get more details */
-      return tryActivate(key);
-    }
-
-    /* Validate didn't return valid=true. This is normal for keys that have
-     * already been activated — Lemon Squeezy validate returns valid:false
-     * for previously activated keys even if the key is still valid. */
-    if(d && d.license_key){
-      var lk = d.license_key;
-      var st = lk.status || '';
-      if(st === 'expired' || st === 'disabled'){
-        return { ok:false, error:'invalid' };
-      }
-      /* IMPORTANT: If the key is active (status='active'), the key is VALID.
-       * We should classify it using the product_id from the license_key object
-       * WITHOUT calling tryActivate (which would consume an activation slot
-       * and fail with activation_limit_reached for single-activation keys). */
-      if(st === 'active'){
-        var pid = lk.product_id || 0;
-        if(pid){
-          return classifyProduct(pid);
-        }
-        /* Active key but no product_id — still valid, classify as unknown */
-        return { ok:true, kind:'unknown' };
-      }
-      /* If status is 'inactive' the key hasn't been fully activated yet.
-       * Only then try the activate endpoint (which will consume a slot). */
-      if(st === 'inactive'){
-        return tryActivate(key);
-      }
-      /* If we have a product_id from the license_key object, use it */
-      if(lk.product_id){
-        return classifyProduct(lk.product_id);
-      }
-    }
-
-    /* Last resort: Try the ACTIVATE endpoint as fallback
-     * (this consumes an activation slot but returns full product info) */
-    return tryActivate(key);
-  })
-  .catch(function(e){
-    console.warn('validateLicense network error:', e);
-    return { ok:false, error:'network' };
-  });
+  /* Strategy: Go straight to the ACTIVATE endpoint (same approach as the
+   * game's working credit redeem code in game-pm.html). The validate
+   * endpoint returns valid:false for previously activated keys even if
+   * the key is valid, and often doesn't include product_id in the
+   * response. The activate endpoint either activates the key (returning
+   * full info including product_id) or returns activation_limit_reached
+   * (meaning the key IS valid, just maxed out on activations — we can
+   * still extract product_id from the response).
+   *
+   * This matches the working pattern in game-pm.html lines 5073-5106. */
+  return tryActivate(key);
 }
 
 /* Try the ACTIVATE endpoint — consumes an activation slot but returns full info */
@@ -246,14 +181,18 @@ function tryActivate(key){
   .then(function(d){
     console.log('[LemonSqueezy] activate response:', JSON.stringify(d).substring(0, 500));
 
-    /* Successful activation */
-    if(d && d.activated === true){
+    /* Successful activation — same check as game-pm.html: d.activated || d.valid */
+    if(d && (d.activated || d.valid)){
       var meta = d.meta || {};
-      var status = d.license_key && d.license_key.status || d.status || '';
-      if(status === 'expired' || status === 'inactive' || status === 'disabled'){
+      var status = (d.license_key && d.license_key.status) || d.status || '';
+      if(status === 'expired' || status === 'disabled'){
         return { ok:false, error:'invalid' };
       }
-      var productId = meta.product_id || (d.license_key && d.license_key.product_id) || 0;
+      /* Get product_id from multiple possible locations in the response */
+      var productId = meta.product_id
+        || (d.license_key && d.license_key.product_id)
+        || d.product_id
+        || 0;
       if(productId){
         return classifyProduct(productId);
       }
@@ -263,11 +202,12 @@ function tryActivate(key){
 
     /* Activation limit reached — key is valid but maxed out on activations.
      * This is actually a SUCCESS case — the user already purchased and
-     * activated the key before. We should still honor it. */
-    if(d && d.error === 'activation_limit_reached'){
+     * activated the key before. We should still honor it.
+     * Also handle: Lemon Squeezy sometimes returns this as a string. */
+    if(d && (d.error === 'activation_limit_reached' || String(d.error).indexOf('activation_limit') >= 0)){
       var meta2 = d.meta || {};
       var licenseKey = d.license_key || {};
-      var productId2 = licenseKey.product_id || meta2.product_id || 0;
+      var productId2 = licenseKey.product_id || meta2.product_id || d.product_id || 0;
       var status2 = licenseKey.status || '';
       if(status2 === 'expired' || status2 === 'disabled'){
         return { ok:false, error:'invalid' };
@@ -281,7 +221,6 @@ function tryActivate(key){
 
     /* Other activation errors — key might be invalid */
     if(d && d.error){
-      /* Key not found or other error */
       return { ok:false, error: d.error };
     }
 

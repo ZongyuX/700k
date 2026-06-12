@@ -5428,12 +5428,13 @@ async function searchUsers(){
     var html='';
     var seen={};
     var users=[];
-    /* Search by email (exact match) in users collection */
-    try{
-      var snap1=await db.collection('users').where('email','==',query).limit(5).get();
-      snap1.forEach(function(d){if(!seen[d.id]&&d.id!==currentUser.uid){seen[d.id]=1;users.push({uid:d.id,data:d.data()});}});
-    }catch(e){console.warn('email search',e);}
-    /* Search by displayName prefix in pp_public (populated by syncPublicProfile) */
+
+    /* IMPORTANT: Only use pp_public collection for search — the users
+     * collection has Firestore rules that only allow reading your own doc,
+     * so querying it always throws "Missing or insufficient permissions".
+     * pp_public is readable by anyone (allow read: if true). */
+
+    /* Search by name prefix in pp_public */
     try{
       var snap2=await db.collection('pp_public').where('name','>=',query).where('name','<=',query+'\uf8ff').limit(10).get();
       snap2.forEach(function(d){
@@ -5444,7 +5445,8 @@ async function searchUsers(){
         }
       });
     }catch(e){console.warn('name search pp_public',e);}
-    /* Search by email prefix in pp_public */
+
+    /* Search by email (exact and prefix) in pp_public */
     try{
       var snap3=await db.collection('pp_public').where('email','>=',query).where('email','<=',query+'\uf8ff').limit(10).get();
       snap3.forEach(function(d){
@@ -5455,66 +5457,26 @@ async function searchUsers(){
         }
       });
     }catch(e){console.warn('email prefix search pp_public',e);}
-    /* Fallback: try displayName in users collection */
-    try{
-      var snap4=await db.collection('users').where('displayName','>=',query).where('displayName','<=',query+'\uf8ff').limit(10).get();
-      snap4.forEach(function(d){if(!seen[d.id]&&d.id!==currentUser.uid){seen[d.id]=1;users.push({uid:d.id,data:d.data()});}});
-    }catch(e){console.warn('displayname search',e);}
-    /* Search game-related user data: try users where game.displayName matches */
-    try{
-      var snap5=await db.collection('users').where('game.displayName','>=',query).where('game.displayName','<=',query+'\uf8ff').limit(10).get();
-      snap5.forEach(function(d){
-        if(!seen[d.id]&&d.id!==currentUser.uid){
-          seen[d.id]=1;
-          var dd=d.data()||{};
-          var gd=dd.game||{};
-          users.push({uid:d.id,data:{displayName:gd.displayName||dd.displayName||dd.email||'User',email:dd.email||'',avatar:gd.avatar||0,lvl:gd.lvl||1,bio:dd.bio||''}});
-        }
-      });
-    }catch(e){console.warn('game displayname search',e);}
-    /* FALLBACK: If no Firestore query returned results (possibly due to
-     * missing indexes), try getting all users and filtering client-side.
-     * This is less efficient but ensures search works even without
-     * Firestore composite indexes configured. */
+
+    /* Fallback: If no results from indexed queries, try client-side
+     * filtering on pp_public (works even without Firestore indexes). */
     if(!users.length && query.length >= 2){
       try{
-        var allUsersSnap = await db.collection('users').limit(50).get();
-        var ql = query.toLowerCase();
-        allUsersSnap.forEach(function(d){
-          if(seen[d.id] || d.id===currentUser.uid) return;
-          var dd = d.data()||{};
-          var gd = dd.game||{};
-          var name = dd.displayName || gd.displayName || dd.email || '';
-          if(name.toLowerCase().indexOf(ql) >= 0 || (dd.email||'').toLowerCase().indexOf(ql) >= 0){
-            seen[d.id]=1;
-            users.push({uid:d.id, data:{
-              displayName: name,
-              email: dd.email||'',
-              avatar: gd.avatar||0,
-              lvl: gd.lvl||1,
-              bio: dd.bio||''
-            }});
-          }
-        });
-      }catch(e){console.warn('client-side search fallback',e);}
-    }
-    /* Also try pp_public client-side fallback if no results */
-    if(!users.length && query.length >= 2){
-      try{
-        var allPubSnap = await db.collection('pp_public').limit(50).get();
-        var ql = query.toLowerCase();
+        var allPubSnap=await db.collection('pp_public').limit(100).get();
+        var ql=query.toLowerCase();
         allPubSnap.forEach(function(d){
-          if(seen[d.id] || d.id===currentUser.uid) return;
-          var dd = d.data()||{};
-          var name = dd.name || dd.email || '';
-          if(name.toLowerCase().indexOf(ql) >= 0 || (dd.email||'').toLowerCase().indexOf(ql) >= 0){
+          if(seen[d.id]||d.id===currentUser.uid) return;
+          var dd=d.data()||{};
+          var name=dd.name||'';
+          var email=dd.email||'';
+          if(name.toLowerCase().indexOf(ql)>=0||email.toLowerCase().indexOf(ql)>=0){
             seen[d.id]=1;
-            users.push({uid:d.id, data:{
-              displayName: name,
-              email: dd.email||'',
-              avatar: dd.avatar||0,
-              lvl: dd.lvl||1,
-              bio: dd.bio||''
+            users.push({uid:d.id,data:{
+              displayName:name,
+              email:email,
+              avatar:dd.avatar||0,
+              lvl:dd.lvl||1,
+              bio:dd.bio||''
             }});
           }
         });
@@ -5725,16 +5687,11 @@ function viewSearchUser(uid,name){
       if(pubSnap.exists) pubData=pubSnap.data()||{};
     }catch(e){ console.warn('viewSearchUser pp_public read failed',e); }
 
-    /* Step 2: Try users doc for game stats */
-    var userData=null;
-    try{
-      var userSnap=await db.collection('users').doc(uid).get();
-      if(userSnap.exists) userData=userSnap.data()||{};
-    }catch(e){ console.warn('viewSearchUser users doc read failed',e); }
-
-    /* Step 3: Merge data — pp_public for basic info, users doc for game stats */
-    if(!pubData&&!userData){
-      /* Both failed — show minimal profile with just the name */
+    /* Step 2: Only use pp_public for profile data — the users collection
+     * requires owner-level access and will throw permission errors */
+    /* Step 3: Use pp_public data for display */
+    if(!pubData){
+      /* No public profile — show minimal profile with just the name */
       content.innerHTML='<div style="text-align:center">'+
         '<div style="font-size:16px;font-weight:800">'+esc(name)+'</div>'+
         profileBtnHtml(uid,name)+
@@ -5742,22 +5699,12 @@ function viewSearchUser(uid,name){
       overlay.classList.add('show');
       return;
     }
-    var bio=(userData&&userData.bio)||(pubData&&pubData.bio)||'';
-    var displayName=(pubData&&pubData.name)||(userData&&userData.displayName)||name||'User';
-    var email=(pubData&&pubData.email)||(userData&&userData.email)||'';
-    var avatar=0;
-    var lvl=1, coins=0, bestStreak=0;
-    /* Game stats from users doc (more detailed) */
-    if(userData){
-      try{
-        if(userData.game&&userData.game.avatar) avatar=userData.game.avatar;
-        if(userData.game&&userData.game.lvl) lvl=userData.game.lvl;
-        if(userData.game&&userData.game.coins) coins=userData.game.coins;
-        if(userData.game&&userData.game.best) bestStreak=userData.game.best;
-      }catch(e){}
-    }
-    /* Avatar from pp_public if users doc didn't have it */
-    if(avatar===0&&pubData&&pubData.avatar) avatar=pubData.avatar;
+    var bio=(pubData&&pubData.bio)||'';
+    var displayName=(pubData&&pubData.name)||name||'User';
+    var email=(pubData&&pubData.email)||'';
+    var avatar=(pubData&&pubData.avatar)||0;
+    var lvl=(pubData&&pubData.lvl)||1;
+    var coins=0, bestStreak=0;
     var svg=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(avatar):'';
     var rankInfo=(window.PPGame&&PPGame.rankOf)?PPGame.rankOf(lvl):{name:'Bronze',color:'#cd7f32'};
     var titleInfo=(window.PPGame&&PPGame.levelTitle)?PPGame.levelTitle(lvl):'Newcomer';
@@ -6519,13 +6466,12 @@ function showContactProfile(uid,name,avatar){
       try{
         var pubSnap=await db.collection('pp_public').doc(uid).get();
         var pubData=pubSnap.exists?pubSnap.data():null;
-        var userSnap=await db.collection('users').doc(uid).get();
-        var userData=userSnap.exists?userSnap.data():null;
-        var bio=(userData&&userData.bio)||(pubData&&pubData.bio)||'';
-        var lvl=1,coins=0,best=0;
-        if(userData&&userData.game){lvl=userData.game.lvl||1;coins=userData.game.coins||0;best=userData.game.best||0;}
+        /* Only use pp_public — the users collection requires owner-level access */
+        var bio=(pubData&&pubData.bio)||'';
+        var lvl=(pubData&&pubData.lvl)||1;
+        var coins=0,best=0;
         var av=avatar||0;
-        if(userData&&userData.game&&userData.game.avatar) av=userData.game.avatar;
+        if(pubData&&pubData.avatar) av=pubData.avatar;
         var svg2=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(av):'';
         var rk=(window.PPGame&&PPGame.rankOf)?PPGame.rankOf(lvl):{name:'Bronze',color:'#cd7f32'};
         var ttl=(window.PPGame&&PPGame.levelTitle)?PPGame.levelTitle(lvl):'Newcomer';
