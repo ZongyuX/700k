@@ -1577,11 +1577,27 @@ function startTimer(){
 var arcBtn, arcPanel;
 function buildArcadeBtn(){
   var bar=D.querySelector('.hbtns'); if(!bar) return;
+  /* Remove any existing arcade button first */
+  var existing=bar.querySelector('.arcade-btn');
+  if(existing) existing.remove();
   arcBtn=D.createElement('button');
-  arcBtn.className='pp-chip';
+  arcBtn.className='pp-chip arcade-btn';
   arcBtn.title='Arcade — coins, avatars & battles';
-  arcBtn.addEventListener('click', openArcade);
-  bar.insertBefore(arcBtn, bar.firstChild);
+  arcBtn.style.cursor='pointer';
+  arcBtn.addEventListener('click',function(e){
+    e.stopPropagation();
+    openArcade();
+  });
+  /* Insert after the game button for better visibility, or before authBtn */
+  var gameBtn=bar.querySelector('#gameBtn');
+  var authBtn=bar.querySelector('#authBtn');
+  if(gameBtn && gameBtn.nextSibling){
+    bar.insertBefore(arcBtn, gameBtn.nextSibling);
+  }else if(authBtn){
+    bar.insertBefore(arcBtn, authBtn);
+  }else{
+    bar.appendChild(arcBtn);
+  }
   paintArcadeBtn();
 }
 function paintArcadeBtn(){ if(arcBtn) arcBtn.innerHTML='<span class="lv">🪙 '+(game.coins||0)+'</span>'; }
@@ -1591,7 +1607,7 @@ function openArcade(){
   if(!arcPanel){
     arcPanel=D.createElement('div');
     arcPanel.className='overlay'; arcPanel.id='ppArcade';
-    arcPanel.innerHTML='<div class="modal sm"><button class="x" id="ppArcX">&times;</button>'
+    arcPanel.innerHTML='<div class="modal sm"><button class="x" id="ppArcX" data-close>&times;</button>'
       +'<h2>Arcade</h2><div class="desc">Earn coins by levelling up, staying active and winning battles. Spend them on avatars.</div>'
       +'<div id="ppArcBody"></div></div>';
     D.body.appendChild(arcPanel);
@@ -1847,7 +1863,7 @@ function openProfile(){
   if(!profPanel){
     profPanel=D.createElement('div');
     profPanel.className='overlay'; profPanel.id='ppProfile';
-    profPanel.innerHTML='<div class="modal sm"><button class="x" id="ppProfX">&times;</button>'
+    profPanel.innerHTML='<div class="modal sm"><button class="x" id="ppProfX" data-close>&times;</button>'
       +'<h2>Account &amp; Profile</h2>'
       +'<div class="desc">Your avatar, level and stats — this is the profile other members can view.</div>'
       +'<div id="ppProfBody"></div></div>';

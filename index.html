@@ -3213,30 +3213,22 @@ function planLabel(){
 }
 function openAccount(){
   if(!currentUser){ if(typeof openAuth==='function') openAuth(); return; }
-  hideOverlays();
+  // Close all other overlays first (but NOT the profile panel we're about to open)
+  document.querySelectorAll('.overlay').forEach(function(o){
+    if(o.id!=='ppProfile') o.classList.remove('show');
+  });
   // Open the profile panel from fun.js (avatar selection + stats)
   try{
     if(window.PPGame && PPGame.openProfile){
       PPGame.openProfile();
     } else {
       // Fallback to old account overlay if PPGame not loaded
-      var methodNames={'password':PPI18n.t('method.password'),'google.com':PPI18n.t('method.google.com'),'facebook.com':'Facebook','github.com':PPI18n.t('method.github.com')};
-      var pm=(currentUser.providerData&&currentUser.providerData[0]&&currentUser.providerData[0].providerId)||'password';
-      document.getElementById('accEmail').textContent=currentUser.email||'(no email)';
-      document.getElementById('accMethod').textContent=methodNames[pm]||pm;
-      document.getElementById('accPlan').textContent=planLabel();
-      document.getElementById('accFavs').textContent=PPI18n.t('account.saved.count').replace('{n}',favorites.length);
-      document.getElementById('setName').value=currentUser.displayName||'';
-      document.getElementById('setBio').value=userBio||'';
-      document.getElementById('setPass').value='';
-      document.getElementById('pwField').style.display=(pm==='password')?'block':'none';
-      document.getElementById('accMsg').className='msg';
-      document.getElementById('accountOverlay').classList.add('show');
+      openAccountSettings();
     }
   }catch(e){
     console.warn('openAccount error',e);
     // Last resort: show account settings
-    document.getElementById('accountOverlay').classList.add('show');
+    openAccountSettings();
   }
 }
 function saveAccountSettings(){
@@ -3273,8 +3265,10 @@ function refreshAuthUI(){
   if(currentUser){
     const nm=currentUser.displayName||((currentUser.email||'Account').split('@')[0]);
     b.innerHTML='👤<span class="btn-hide-sm"> '+nm+'</span>';
+    b.title='Account — click to view profile';
   }else{
     b.innerHTML='👤<span class="btn-hide-sm"> '+PPI18n.t('header.signin')+'</span>';
+    b.title='Sign in';
   }
 }
 
@@ -5219,11 +5213,15 @@ runQuickOptimizer = function(){
     else if(dy<-20) hideHdr();   /* finger swipes UP   -> page goes down -> hide */
   },{passive:true});
   /* wheel events trigger on the smallest mouse-wheel nudge too — but only for
-     the main page scroll, not inside the sidebar/grid/modal/overlay containers */
+     the main page scroll, not inside the sidebar/grid/modal/overlay containers,
+     and NOT when the mouse is over the header toolbar (hbtns) */
   window.addEventListener('wheel',function(e){
-    /* If the wheel event originates from an internal scrollable container, skip */
+    /* If the wheel event originates from the header toolbar, don't toggle header */
     var target=e.target;
     while(target && target!==document.body){
+      if(target.classList && (target.classList.contains('hbtns') || target.tagName==='HEADER')){
+        return; /* Let the hbtns wheel handler do horizontal scroll, don't hide header */
+      }
       var style=window.getComputedStyle(target);
       if(style.overflowY==='auto' || style.overflowY==='scroll'){
         /* This is a scrollable container — let it handle its own scroll, don't toggle header */
@@ -5647,9 +5645,18 @@ document.querySelectorAll('#communityOverlay .com-tab').forEach(function(t){
 });
 document.querySelector('#communityOverlay [data-close]').addEventListener('click',function(){
   document.getElementById('communityOverlay').classList.remove('show');
+  /* Also close any searchUserProfile or otherAvatarOverlay that might still be visible */
+  var sup=document.getElementById('searchUserProfile'); if(sup) sup.classList.remove('show');
+  var oao=document.getElementById('otherAvatarOverlay'); if(oao) oao.classList.remove('show');
+  var oach=document.getElementById('otherAchOverlay'); if(oach) oach.classList.remove('show');
 });
 document.getElementById('communityOverlay').addEventListener('click',function(e){
-  if(e.target===this) this.classList.remove('show');
+  if(e.target===this){
+    this.classList.remove('show');
+    var sup=document.getElementById('searchUserProfile'); if(sup) sup.classList.remove('show');
+    var oao=document.getElementById('otherAvatarOverlay'); if(oao) oao.classList.remove('show');
+    var oach=document.getElementById('otherAchOverlay'); if(oach) oach.classList.remove('show');
+  }
 });
 </script>
 
@@ -7208,7 +7215,10 @@ document.getElementById('unreadIndicator').addEventListener('click',function(){
     }
     });
   });
-document.getElementById('friendsBtn').addEventListener('click',toggleFriendsPanel);
+document.getElementById('friendsBtn').addEventListener('click',function(e){
+  e.stopPropagation();
+  toggleFriendsPanel();
+});
 document.getElementById('friendsPanelClose').addEventListener('click',function(){
   var p=document.getElementById('friendsPanel');
   if(p){p.style.display='none';}
@@ -7472,17 +7482,30 @@ window.syncPublicProfile = syncPublicProfile;
 window.openAccount = openAccount;
 window.openAccountSettings = function(){
   if(!currentUser) return;
-  var methodNames={'password':PPI18n.t('method.password'),'google.com':PPI18n.t('method.google.com'),'facebook.com':'Facebook','github.com':PPI18n.t('method.github.com')};
+  // Close profile panel if open
+  var profPanel=document.getElementById('ppProfile');
+  if(profPanel) profPanel.classList.remove('show');
+  // Populate account overlay fields
+  var methodNames={'password':PPI18n.t('method.password','Password'),'google.com':PPI18n.t('method.google.com','Google'),'facebook.com':'Facebook','github.com':PPI18n.t('method.github.com','GitHub')};
   var pm=(currentUser.providerData&&currentUser.providerData[0]&&currentUser.providerData[0].providerId)||'password';
-  document.getElementById('accEmail').textContent=currentUser.email||'(no email)';
-  document.getElementById('accMethod').textContent=methodNames[pm]||pm;
-  document.getElementById('accPlan').textContent=planLabel();
-  document.getElementById('accFavs').textContent=PPI18n.t('account.saved.count').replace('{n}',favorites.length);
-  document.getElementById('setName').value=currentUser.displayName||'';
-  document.getElementById('setBio').value=userBio||'';
-  document.getElementById('setPass').value='';
-  document.getElementById('pwField').style.display=(pm==='password')?'block':'none';
-  document.getElementById('accMsg').className='msg';
+  var accEmail=document.getElementById('accEmail');
+  var accMethod=document.getElementById('accMethod');
+  var accPlan=document.getElementById('accPlan');
+  var accFavs=document.getElementById('accFavs');
+  var setName=document.getElementById('setName');
+  var setBio=document.getElementById('setBio');
+  var setPass=document.getElementById('setPass');
+  var pwField=document.getElementById('pwField');
+  var accMsg=document.getElementById('accMsg');
+  if(accEmail) accEmail.textContent=currentUser.email||'(no email)';
+  if(accMethod) accMethod.textContent=methodNames[pm]||pm;
+  if(accPlan) accPlan.textContent=planLabel();
+  if(accFavs) accFavs.textContent=(typeof PPI18n!=='undefined'?PPI18n.t('account.saved.count','{n} saved').replace('{n}',favorites.length):favorites.length+' saved');
+  if(setName) setName.value=currentUser.displayName||'';
+  if(setBio) setBio.value=userBio||'';
+  if(setPass) setPass.value='';
+  if(pwField) pwField.style.display=(pm==='password')?'block':'none';
+  if(accMsg) accMsg.className='msg';
   document.getElementById('accountOverlay').classList.add('show');
 };
 window.openAuth = openAuth;
