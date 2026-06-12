@@ -300,6 +300,52 @@ body{background:#050508;color:#e0e0e0;font-family:'Share Tech Mono',monospace;ov
   </div>
 </div>
 
+<!-- Map Selection Screen (shown after multiplayer lobby, before difficulty) -->
+<div id="mapSelectScreen" style="position:fixed;inset:0;z-index:87;display:none;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(160deg,#060610,#0a0612,#060610)">
+  <div style="position:absolute;inset:0;box-shadow:inset 0 0 160px 70px rgba(0,0,0,0.7);pointer-events:none"></div>
+  <h2 class="text-2xl font-bold text-white/90 mb-2 tracking-widest relative z-10" style="font-family:'Orbitron',sans-serif">SELECT MAP</h2>
+  <p class="text-sm text-gray-400 mb-8 relative z-10">Choose your battlefield</p>
+  <div style="display:flex;flex-wrap:wrap;gap:1rem;justify-content:center;position:relative;z-index:10;max-width:700px;padding:0 1rem">
+    <!-- Map 1: Verdant Reach -->
+    <div class="diff-card" style="width:150px;min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;background:linear-gradient(145deg,rgba(34,197,94,0.15),rgba(34,197,94,0.04));border:2px solid rgba(34,197,94,0.2)" onclick="selectMap('verdant')">
+      <div style="font-size:2.5rem;line-height:1;margin-top:.5rem">🌿</div>
+      <div style="text-align:center">
+        <div style="font-family:'Orbitron',sans-serif;font-size:.8rem;font-weight:700;color:#22c55e;margin-bottom:.3rem">VERDANT REACH</div>
+        <div style="font-size:.6rem;color:#888;line-height:1.3">Lush forests and winding paths. Balanced terrain for all strategies.</div>
+      </div>
+      <div style="font-size:.5rem;color:#22c55e;margin-bottom:.5rem;letter-spacing:.1em">EASY TERRAIN</div>
+    </div>
+    <!-- Map 2: Crystal Caverns -->
+    <div class="diff-card" style="width:150px;min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;background:linear-gradient(145deg,rgba(59,130,246,0.15),rgba(59,130,246,0.04));border:2px solid rgba(59,130,246,0.2)" onclick="selectMap('crystal')">
+      <div style="font-size:2.5rem;line-height:1;margin-top:.5rem">💎</div>
+      <div style="text-align:center">
+        <div style="font-family:'Orbitron',sans-serif;font-size:.8rem;font-weight:700;color:#3b82f6;margin-bottom:.3rem">CRYSTAL CAVERNS</div>
+        <div style="font-size:.6rem;color:#888;line-height:1.3">Deep caves with crystal formations. Chokepoints favor tactical play.</div>
+      </div>
+      <div style="font-size:.5rem;color:#3b82f6;margin-bottom:.5rem;letter-spacing:.1em">MODERATE</div>
+    </div>
+    <!-- Map 3: Inferno Rift -->
+    <div class="diff-card" style="width:150px;min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;background:linear-gradient(145deg,rgba(249,115,22,0.15),rgba(249,115,22,0.04));border:2px solid rgba(249,115,22,0.2)" onclick="selectMap('inferno')">
+      <div style="font-size:2.5rem;line-height:1;margin-top:.5rem">🌋</div>
+      <div style="text-align:center">
+        <div style="font-family:'Orbitron',sans-serif;font-size:.8rem;font-weight:700;color:#f97316;margin-bottom:.3rem">INFERNO RIFT</div>
+        <div style="font-size:.6rem;color:#888;line-height:1.3">Volcanic terrain with lava flows. Open battlegrounds demand quick reflexes.</div>
+      </div>
+      <div style="font-size:.5rem;color:#f97316;margin-bottom:.5rem;letter-spacing:.1em">HARD</div>
+    </div>
+    <!-- Map 4: Void Nexus -->
+    <div class="diff-card" style="width:150px;min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;background:linear-gradient(145deg,rgba(147,51,234,0.15),rgba(147,51,234,0.04));border:2px solid rgba(147,51,234,0.2)" onclick="selectMap('void')">
+      <div style="font-size:2.5rem;line-height:1;margin-top:.5rem">🌀</div>
+      <div style="text-align:center">
+        <div style="font-family:'Orbitron',sans-serif;font-size:.8rem;font-weight:700;color:#9333ea;margin-bottom:.3rem">VOID NEXUS</div>
+        <div style="font-size:.6rem;color:#888;line-height:1.3">Twisted reality warps the battlefield. Unpredictable terrain for veterans.</div>
+      </div>
+      <div style="font-size:.5rem;color:#9333ea;margin-bottom:.5rem;letter-spacing:.1em">EXPERT</div>
+    </div>
+  </div>
+  <button class="text-sm text-gray-500 hover:text-gray-300 cursor-pointer transition-colors relative z-10" style="margin-top:1.5rem" onclick="document.getElementById('mapSelectScreen').style.display='none';document.getElementById('multiplayerScreen').style.display='flex'">&#8592; Back to Lobby</button>
+</div>
+
 <div id="diffScreen">
   <h2 class="text-2xl font-bold text-white/90 mb-2 tracking-widest relative z-10" style="font-family:'Orbitron',sans-serif" data-gm="diff.title">SELECT DIFFICULTY</h2>
   <p class="text-sm text-gray-400 mb-8 relative z-10" data-gm="diff.subtitle">Choose your challenge level</p>
@@ -2049,8 +2095,8 @@ function sitDown(tableNum,seatNum){
   }
   var rtdb=getRtdb();
   if(!rtdb){
-    /* No Firebase: start solo game immediately */
-    toast('Playing solo — lobby unavailable','info');
+    /* No Firebase: show clear message and start solo game */
+    toast('Multiplayer requires login. Please sign in from the PromptRunic app, or play solo mode.','info');
     startSoloWhileWaiting(tableNum,seatNum);
     return;
   }
@@ -2070,7 +2116,9 @@ function sitDown(tableNum,seatNum){
     var update={};
     update['seat'+seatNum]={uid:myUid,name:getMyName(),ready:false};
     update['mode']=mpMode;
-    update['updatedAt']=firebase.database.ServerValue.TIMESTAMP;
+    /* Use Date.now() instead of firebase.database.ServerValue.TIMESTAMP
+       since the Firebase SDK is not loaded inside the iframe */
+    update['updatedAt']=Date.now();
     tableRef.update(update);
     mpMyTable=tableNum;
     mpMySeat=seatNum;
@@ -2110,7 +2158,7 @@ function listenToLobby(){
   var rtdb=getRtdb();
   if(!rtdb){
     var container=document.getElementById('lobbyTables');
-    if(container) container.innerHTML='<div style="color:#888;font-size:.7rem;text-align:center;padding:20px">Lobby unavailable — click a seat to play solo, or open from the PromptRunic app for multiplayer.</div>';
+    if(container) container.innerHTML='<div style="color:#888;font-size:.7rem;text-align:center;padding:20px">Multiplayer requires login. Please sign in from the PromptRunic app, or play solo mode.</div>';
     return;
   }
   mpLobbyRef=rtdb.ref('lobby/'+mpMode);
@@ -2191,12 +2239,21 @@ function leaveLobby(){
   stopLobbyListener();
 }
 
+/* Global reference to parent's firebase object, if available */
+var _parentFirebase=null;
+
 /* Get RTDB instance from parent */
 function getRtdb(){
   try{
-    if(window.parent&&window.parent!==window&&window.parent.rtdb) return window.parent.rtdb;
-    if(window.parent&&window.parent!==window&&window.parent.firebase){
-      return window.parent.firebase.database();
+    if(window.parent&&window.parent!==window){
+      /* Store parent's firebase reference for ServerValue access */
+      if(window.parent.firebase&&!_parentFirebase){
+        _parentFirebase=window.parent.firebase;
+      }
+      if(window.parent.rtdb) return window.parent.rtdb;
+      if(window.parent.firebase){
+        return window.parent.firebase.database();
+      }
     }
   }catch(e){}
   return null;
@@ -2275,9 +2332,17 @@ function startMultiplayerGame(tableNum,uid1,uid2){
   }
   mpMyTable=-1;mpMySeat=-1;mpIsReady=false;
   stopLobbyListener();
-  /* Hide lobby, show game */
+  /* Hide lobby, show map selection before difficulty */
   document.getElementById('multiplayerScreen').style.display='none';
-  /* Show difficulty selection */
+  document.getElementById('mapSelectScreen').style.display='flex';
+}
+
+/* Map selection: called when a map card is clicked */
+var selectedMap='verdant'; /* default map */
+function selectMap(mapId){
+  selectedMap=mapId;
+  /* Hide map screen, show difficulty selection */
+  document.getElementById('mapSelectScreen').style.display='none';
   showDiffSelect(savedMode);
 }
 
