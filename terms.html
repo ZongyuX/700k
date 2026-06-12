@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Terms of Service — PromptRunic</title>
+<meta name="robots" content="all" />
+<style>
+  :root{--bg:#0b0f1a;--panel:#121828;--text:#e8ecf4;--muted:#9aa4b2;--accent:#7c5cff;--accent2:#22d3ee;--border:#222a40}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.65}
+  a{color:var(--accent2)}
+  header{padding:18px 6vw;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+  .logo{font-weight:800;font-size:20px}
+  .logo span{background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  .logo a{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:var(--panel);transition:all .2s;font-size:14px;font-weight:700;color:var(--text);text-decoration:none}
+  .logo a:hover{border-color:var(--accent);background:rgba(124,92,255,.1)}
+  .lang-switch{display:flex;gap:6px}
+  .lang-switch button{background:var(--panel);border:1px solid var(--border);color:var(--muted);padding:4px 10px;border-radius:6px;cursor:pointer;font-size:12px;transition:all .2s}
+  .lang-switch button:hover,.lang-switch button.active{color:#fff;border-color:var(--accent)}
+  main{max-width:780px;margin:0 auto;padding:40px 6vw 70px}
+  h1{font-size:30px;margin-bottom:6px}
+  .upd{color:var(--muted);font-size:13px;margin-bottom:26px}
+  h2{font-size:18px;margin:28px 0 8px;color:#fff}
+  p,li{font-size:14.5px;color:#d3d9e6;margin-bottom:10px}
+  ul{margin:0 0 12px 22px}
+  li{margin-bottom:6px}
+  .box{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin:18px 0}
+  footer{border-top:1px solid var(--border);padding:26px 6vw;color:var(--muted);font-size:13px;text-align:center}
+  strong{color:#fff}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo"><a href="index.html"><span style="font-size:16px">←</span> <span data-t="backHome">Back to Home</span></a></div>
+  <div class="lang-switch" id="langSwitch">
+    <button data-lang="en">EN</button>
+    <button data-lang="zh">中文</button>
+    <button data-lang="es">ES</button>
+  </div>
+</header>
+<main id="content"></main>
+<footer>
+  <span class="footer-copy">&copy; 2026 PromptRunic. <span data-t="footer.rights"></span></span> &nbsp;·&nbsp;
+  <a href="index.html" data-t="footer.home"></a> &nbsp;·&nbsp; <a href="privacy.html" data-t="footer.privacy"></a>
+</footer>
+
+<script>
+(function(){
+'use strict';
+
+var LANGS = {
+
+en: {
+  'backHome': 'Back to Home',
+  'footer.rights': 'All rights reserved.',
+  'footer.home': 'Home',
+  'footer.privacy': 'Privacy Policy',
+  'title': 'Terms of Service',
+  'updated': 'Last updated: 10 June 2026',
+  'intro': 'These Terms of Service ("Terms") govern your use of the <strong>PromptRunic</strong> website and desktop application (together, the "Service"), maintained by Z. Xie ("we", "us"). By using the Service or creating an account, you agree to these Terms. If you do not agree, please do not use the Service.',
+  's1h': '1. What PromptRunic is',
+  's1p': 'PromptRunic is a library of ready-to-use AI prompt templates and related tools. It helps you fill in and send prompts to third-party AI assistants, and (in the desktop app) to local AI models. PromptRunic does not itself generate AI answers; the answers come from the AI service you choose to use.',
+  's2h': '2. Accounts',
+  's2l1': 'You may create an account using email/password, Google, or GitHub. We use Firebase Authentication to handle sign-in; we never receive or store your password.',
+  's2l2': 'You are responsible for keeping your account credentials secure and for activity under your account. Provide accurate information, and use one account per person. You must be old enough to form a binding contract in your country to use the Service.',
+  's3h': '3. Free and Pro',
+  's3l1': 'The Service offers a free tier with a limited set of prompts. A Pro tier unlocks the full library and is obtained by purchasing an activation code, or via a free trial. The free trial provides Pro access for a limited period and is available once per account.',
+  's3l2': 'We may change the features included in the free or Pro tiers over time. We will notify you of material changes via the Service or email.',
+  's4h': '4. License to use',
+  's4p': 'We grant you a personal, non-exclusive, non-transferable license to use the Service and its prompt library for your own personal or business purposes. You <strong>may</strong> freely use the outputs you generate with the prompts. You <strong>may not</strong> resell, redistribute, sublicense, or publish the prompt library itself (in whole or substantial part) as a competing product, nor share Pro access or activation codes.',
+  's5h': '5. Acceptable use',
+  's5p': 'You agree not to: use the Service for any unlawful purpose; attempt to bypass the free/Pro restrictions or reverse-engineer the Service to do so; resell or redistribute the prompt library; or use the Service to create harmful, deceptive, or infringing content.',
+  's6h': '6. Third-party AI services — important',
+  's6p1': 'PromptRunic is an <strong>independent product</strong> and is <strong>not affiliated with, endorsed by, or sponsored by</strong> OpenAI (ChatGPT), Anthropic (Claude), Microsoft (Copilot), Google (Gemini), or DeepSeek. Their names are trademarks of their respective owners and are used only to describe compatibility.',
+  's6p2': 'When you send a prompt to a third-party AI service, you are using that service directly and must comply with <strong>its own terms of service</strong>. We are not responsible for those services, their availability, their content policies, or any changes they make.',
+  's7h': '7. Payments and refunds',
+  's7p': 'Pro activation codes and coin packs are sold through <strong>Lemon Squeezy</strong>, which acts as our merchant of record and processes all payments. Purchases are subject to Lemon Squeezy\'s terms. If you are entitled to a refund under applicable consumer law (for example, the EU right of withdrawal for digital products — you acknowledge that this right may be lost once you have started using the activation code or service, as permitted by law), please contact us. We aim to handle reasonable refund requests fairly.',
+  's8h': '8. Disclaimers',
+  's8p1': 'The Service is provided <strong>"as is" and "as available"</strong>, without warranties of any kind, whether express or implied, to the maximum extent permitted by law.',
+  's8p2': 'AI-generated answers may be inaccurate, incomplete, or out of date. <strong>You are responsible for reviewing and verifying any AI output before relying on it.</strong> The Service does not provide legal, financial, medical, or other professional advice; prompts in those categories are for general information only.',
+  's9h': '9. Limitation of liability',
+  's9p': 'To the maximum extent permitted by law, we will not be liable for any indirect, incidental, special, or consequential damages, or for any loss of data, profits, or revenue, arising from your use of (or inability to use) the Service. Nothing in these Terms limits liability that cannot be limited under applicable law.',
+  's10h': '10. Intellectual property',
+  's10p1': 'The PromptRunic name, the curated prompt library, the software, and the design of the Service are owned by us and protected by applicable laws. These Terms do not transfer any ownership to you beyond the license in Section 4.',
+  's10p2': 'Third-party trademarks mentioned on the Service are the property of their respective owners. Reference to them does not imply affiliation or endorsement.',
+  's11h': '11. Termination',
+  's11p': 'You may stop using the Service and delete your account at any time. We may suspend or terminate access if you breach these Terms. Sections that by their nature should survive termination (such as disclaimers, limitation of liability, and intellectual property) will continue to apply.',
+  's12h': '12. Changes to these Terms',
+  's12p': 'We may update these Terms from time to time. When we do, we will update the "Last updated" date above. Continued use of the Service after changes means you accept the updated Terms.',
+  's13h': '13. Governing law',
+  's13p': 'These Terms are governed by the laws of <strong>the State of Connecticut, United States</strong>, without regard to its conflict-of-laws rules. Any disputes will be handled by the state or federal courts located in Connecticut, unless mandatory consumer-protection law gives you other rights.',
+  's14h': '14. Contact',
+  's14p': 'Questions about these Terms? Contact us at <a href="mailto:zongxie22@gmail.com">zongxie22@gmail.com</a>.'
+},
+
+zh: {
+  'backHome': '返回首页',
+  'footer.rights': '保留所有权利。',
+  'footer.home': '首页',
+  'footer.privacy': '隐私政策',
+  'title': '服务条款',
+  'updated': '最后更新：2026 年 6 月 10 日',
+  'intro': '本服务条款（"条款"）管辖您对 <strong>PromptRunic</strong> 网站和桌面应用程序（统称"服务"）的使用，由 Z. Xie（"我们"）维护。使用本服务或创建账户即表示您同意这些条款。如果您不同意，请不要使用本服务。',
+  's1h': '1. PromptRunic 是什么',
+  's1p': 'PromptRunic 是一个即用型 AI 提示词模板库及相关工具。它帮助您填写提示词并发送给第三方 AI 助手，以及在桌面应用中发送给本地 AI 模型。PromptRunic 本身不生成 AI 回答；回答来自您选择使用的 AI 服务。',
+  's2h': '2. 账户',
+  's2l1': '您可以使用邮箱/密码、Google 或 GitHub 创建账户。我们使用 Firebase Authentication 处理登录；我们从不接收或存储您的密码。',
+  's2l2': '您有责任保护您的账户凭据安全，并对您账户下的活动负责。请提供准确信息，每人限一个账户。您必须达到您所在国家/地区订立具有约束力合同的法定年龄才能使用本服务。',
+  's3h': '3. 免费版和专业版',
+  's3l1': '服务提供免费版，包含有限的提示词集。专业版解锁完整提示词库，可通过购买激活码或免费试用获得。免费试用提供有限时间的专业版权限，每个账户限一次。',
+  's3l2': '我们可能会随时间更改免费版或专业版包含的功能。我们将通过服务或邮件通知您重大变更。',
+  's4h': '4. 使用许可',
+  's4p': '我们授予您个人、非独占、不可转让的许可，用于您自己的个人或商业目的使用本服务及其提示词库。您<strong>可以</strong>自由使用您通过提示词生成的输出内容。您<strong>不得</strong>将提示词库本身（全部或实质性部分）作为竞争产品转售、再分发、再许可或发布，也不得分享专业版权限或激活码。',
+  's5h': '5. 合理使用',
+  's5p': '您同意不会：将服务用于任何非法目的；试图绕过免费/专业版限制或对服务进行逆向工程；转售或再分发提示词库；或使用服务创建有害、欺骗性或侵权内容。',
+  's6h': '6. 第三方 AI 服务 — 重要说明',
+  's6p1': 'PromptRunic 是<strong>独立产品</strong>，<strong>不隶属于、不被认可、也不受赞助于</strong> OpenAI (ChatGPT)、Anthropic (Claude)、Microsoft (Copilot)、Google (Gemini) 或 DeepSeek。它们的名称是其各自所有者的商标，仅用于描述兼容性。',
+  's6p2': '当您将提示词发送给第三方 AI 服务时，您是直接使用该服务，必须遵守<strong>其自身的服务条款</strong>。我们对这些服务、其可用性、其内容政策或其做出的任何变更不承担责任。',
+  's7h': '7. 付款和退款',
+  's7p': '专业版激活码和金币包通过 <strong>Lemon Squeezy</strong> 出售，它作为我们的商户记录方处理所有支付。购买受 Lemon Squeezy 条款约束。如果您根据适用的消费者法律有权获得退款（例如，欧盟数字产品撤回权 — 您承认一旦开始使用激活码或服务，此项权利可能会丧失，法律允许的情况下），请联系我们。我们旨在公平处理合理的退款请求。',
+  's8h': '8. 免责声明',
+  's8p1': '服务按<strong>"原样"和"可用"基础</strong>提供，在法律允许的最大范围内不提供任何形式的明示或暗示保证。',
+  's8p2': 'AI 生成的回答可能不准确、不完整或已过时。<strong>您有责任在依赖任何 AI 输出之前进行审查和验证。</strong>本服务不提供法律、财务、医疗或其他专业建议；这些类别的提示词仅供一般参考。',
+  's9h': '9. 责任限制',
+  's9p': '在法律允许的最大范围内，我们不对因您使用（或无法使用）服务而产生的任何间接、附带、特殊或后果性损害，或任何数据、利润或收入损失承担责任。本条款中的任何内容均不限制适用法律下无法限制的责任。',
+  's10h': '10. 知识产权',
+  's10p1': 'PromptRunic 名称、精选提示词库、软件和服务设计归我们所有，受适用法律保护。本条款不向您转让第 4 节许可之外的任何所有权。',
+  's10p2': '本服务中提及的第三方商标是其各自所有者的财产。对其的引用不暗示关联或认可。',
+  's11h': '11. 终止',
+  's11p': '您可以随时停止使用服务并删除您的账户。如果您违反这些条款，我们可能会暂停或终止您的访问。根据其性质应在终止后继续有效的条款（如免责声明、责任限制和知识产权）将继续适用。',
+  's12h': '12. 条款变更',
+  's12p': '我们可能会不时更新这些条款。更新时，我们将修改上方的"最后更新"日期。在变更后继续使用服务即表示您接受更新后的条款。',
+  's13h': '13. 管辖法律',
+  's13p': '这些条款受<strong>美国康涅狄格州</strong>法律管辖，不适用其冲突法规则。任何争议将由康涅狄格州的州立或联邦法院处理，除非强制性消费者保护法律赋予您其他权利。',
+  's14h': '14. 联系方式',
+  's14p': '对这些条款有疑问？请通过 <a href="mailto:zongxie22@gmail.com">zongxie22@gmail.com</a> 联系我们。'
+},
+
+es: {
+  'backHome': 'Volver al inicio',
+  'footer.rights': 'Todos los derechos reservados.',
+  'footer.home': 'Inicio',
+  'footer.privacy': 'Política de privacidad',
+  'title': 'Términos de servicio',
+  'updated': 'Última actualización: 10 de junio de 2026',
+  'intro': 'Estos Términos de servicio ("Términos") rigen el uso del sitio web y la aplicación de escritorio de <strong>PromptRunic</strong> (juntos, el "Servicio"), mantenido por Z. Xie ("nosotros"). Al usar el Servicio o crear una cuenta, aceptas estos Términos. Si no estás de acuerdo, por favor no uses el Servicio.',
+  's1h': '1. Qué es PromptRunic',
+  's1p': 'PromptRunic es una biblioteca de plantillas de prompts de IA listas para usar y herramientas relacionadas. Te ayuda a rellenar y enviar prompts a asistentes de IA de terceros, y (en la aplicación de escritorio) a modelos de IA locales. PromptRunic en sí no genera respuestas de IA; las respuestas provienen del servicio de IA que elijas usar.',
+  's2h': '2. Cuentas',
+  's2l1': 'Puedes crear una cuenta usando correo/contraseña, Google o GitHub. Usamos Firebase Authentication para gestionar el inicio de sesión; nunca recibimos ni almacenamos tu contraseña.',
+  's2l2': 'Eres responsable de mantener seguras las credenciales de tu cuenta y de la actividad bajo tu cuenta. Proporciona información precisa y usa una cuenta por persona. Debes tener la edad suficiente para formar un contrato vinculante en tu país para usar el Servicio.',
+  's3h': '3. Gratuito y Pro',
+  's3l1': 'El Servicio ofrece un nivel gratuito con un conjunto limitado de prompts. Un nivel Pro desbloquea la biblioteca completa y se obtiene comprando un código de activación, o a través de una prueba gratuita. La prueba gratuita proporciona acceso Pro por un período limitado y está disponible una vez por cuenta.',
+  's3l2': 'Podemos cambiar las funciones incluidas en los niveles gratuito o Pro con el tiempo. Te notificaremos de cambios significativos a través del Servicio o por correo electrónico.',
+  's4h': '4. Licencia de uso',
+  's4p': 'Te otorgamos una licencia personal, no exclusiva e intransferible para usar el Servicio y su biblioteca de prompts para tus propios fines personales o comerciales. <strong>Puedes</strong> usar libremente los resultados que generes con los prompts. <strong>No puedes</strong> revender, redistribuir, sublicenciar o publicar la biblioteca de prompts en sí (en su totalidad o parte sustancial) como un producto competidor, ni compartir acceso Pro o códigos de activación.',
+  's5h': '5. Uso aceptable',
+  's5p': 'Aceptas no: usar el Servicio para ningún propósito ilegal; intentar eludir las restricciones gratuito/Pro o hacer ingeniería inversa del Servicio; revender o redistribuir la biblioteca de prompts; o usar el Servicio para crear contenido dañino, engañoso o infractor.',
+  's6h': '6. Servicios de IA de terceros — importante',
+  's6p1': 'PromptRunic es un <strong>producto independiente</strong> y <strong>no está afiliado, respaldado ni patrocinado por</strong> OpenAI (ChatGPT), Anthropic (Claude), Microsoft (Copilot), Google (Gemini) o DeepSeek. Sus nombres son marcas comerciales de sus respectivos propietarios y se usan solo para describir compatibilidad.',
+  's6p2': 'Cuando envías un prompt a un servicio de IA de terceros, estás usando ese servicio directamente y debes cumplir con <strong>sus propios términos de servicio</strong>. No somos responsables de esos servicios, su disponibilidad, sus políticas de contenido o los cambios que hagan.',
+  's7h': '7. Pagos y reembolsos',
+  's7p': 'Los códigos de activación Pro y los paquetes de monedas se venden a través de <strong>Lemon Squeezy</strong>, que actúa como nuestro comerciante de registro y procesa todos los pagos. Las compras están sujetas a los términos de Lemon Squeezy. Si tienes derecho a un reembolso según la ley de protección al consumidor aplicable (por ejemplo, el derecho de retirada de la UE para productos digitales — reconoces que este derecho puede perderse una vez que hayas comenzado a usar el código de activación o el servicio, según lo permitido por la ley), por favor contáctanos. Nuestro objetivo es manejar las solicitudes de reembolso razonables de manera justa.',
+  's8h': '8. Descargos de responsabilidad',
+  's8p1': 'El Servicio se proporciona <strong>"tal cual" y "según disponibilidad"</strong>, sin garantías de ningún tipo, ya sean expresas o implícitas, en la máxima medida permitida por la ley.',
+  's8p2': 'Las respuestas generadas por IA pueden ser inexactas, incompletas o desactualizadas. <strong>Eres responsable de revisar y verificar cualquier salida de IA antes de confiar en ella.</strong> El Servicio no proporciona asesoramiento legal, financiero, médico u otro profesional; los prompts en esas categorías son solo para información general.',
+  's9h': '9. Limitación de responsabilidad',
+  's9p': 'En la máxima medida permitida por la ley, no seremos responsables de daños indirectos, incidentales, especiales o consecuentes, ni de pérdida de datos, beneficios o ingresos, derivados de tu uso (o incapacidad de uso) del Servicio. Nada en estos Términos limita la responsabilidad que no pueda limitarse bajo la ley aplicable.',
+  's10h': '10. Propiedad intelectual',
+  's10p1': 'El nombre PromptRunic, la biblioteca de prompts seleccionada, el software y el diseño del Servicio son propiedad nuestra y están protegidos por las leyes aplicables. Estos Términos no transfieren ninguna propiedad más allá de la licencia en la Sección 4.',
+  's10p2': 'Las marcas comerciales de terceros mencionadas en el Servicio son propiedad de sus respectivos propietarios. La referencia a ellas no implica afiliación ni respaldo.',
+  's11h': '11. Terminación',
+  's11p': 'Puedes dejar de usar el Servicio y eliminar tu cuenta en cualquier momento. Podemos suspender o terminar el acceso si incumples estos Términos. Las secciones que por su naturaleza deben sobrevivir la terminación (como descargos de responsabilidad, limitación de responsabilidad y propiedad intelectual) seguirán aplicándose.',
+  's12h': '12. Cambios a estos Términos',
+  's12p': 'Podemos actualizar estos Términos de vez en cuando. Cuando lo hagamos, actualizaremos la fecha de "Última actualización" arriba. El uso continuado del Servicio después de los cambios significa que aceptas los Términos actualizados.',
+  's13h': '13. Ley aplicable',
+  's13p': 'Estos Términos se rigen por las leyes de <strong>el Estado de Connecticut, Estados Unidos</strong>, sin tener en cuenta sus reglas de conflicto de leyes. Cualquier disputa será manejada por los tribunales estatales o federales ubicados en Connecticut, a menos que la ley de protección al consumidor obligatoria te otorgue otros derechos.',
+  's14h': '14. Contacto',
+  's14p': '¿Preguntas sobre estos Términos? Contáctanos en <a href="mailto:zongxie22@gmail.com">zongxie22@gmail.com</a>.'
+}
+
+};
+
+function getLang(){
+  try{ var l=localStorage.getItem('pp_lang'); if(l&&LANGS[l]) return l; }catch(e){}
+  var n=navigator.language||''; if(n.startsWith('zh')) return 'zh'; if(n.startsWith('es')) return 'es'; return 'en';
+}
+
+function render(lang){
+  var t=LANGS[lang]||LANGS.en;
+  document.documentElement.lang=lang;
+  document.title=(lang==='zh'?'服务条款 — PromptRunic':lang==='es'?'Términos de servicio — PromptRunic':'Terms of Service — PromptRunic');
+  var h='';
+  h+='<h1>'+t.title+'</h1>';
+  h+='<div class="upd">'+t.updated+'</div>';
+  h+='<p>'+t.intro+'</p>';
+  h+='<h2>'+t.s1h+'</h2><p>'+t.s1p+'</p>';
+  h+='<h2>'+t.s2h+'</h2><p>'+t.s2l1+'</p><p>'+t.s2l2+'</p>';
+  h+='<h2>'+t.s3h+'</h2><p>'+t.s3l1+'</p><p>'+t.s3l2+'</p>';
+  h+='<h2>'+t.s4h+'</h2><p>'+t.s4p+'</p>';
+  h+='<h2>'+t.s5h+'</h2><p>'+t.s5p+'</p>';
+  h+='<h2>'+t.s6h+'</h2><p>'+t.s6p1+'</p><p>'+t.s6p2+'</p>';
+  h+='<h2>'+t.s7h+'</h2><p>'+t.s7p+'</p>';
+  h+='<h2>'+t.s8h+'</h2><p>'+t.s8p1+'</p><p>'+t.s8p2+'</p>';
+  h+='<h2>'+t.s9h+'</h2><p>'+t.s9p+'</p>';
+  h+='<h2>'+t.s10h+'</h2><p>'+t.s10p1+'</p><p>'+t.s10p2+'</p>';
+  h+='<h2>'+t.s11h+'</h2><p>'+t.s11p+'</p>';
+  h+='<h2>'+t.s12h+'</h2><p>'+t.s12p+'</p>';
+  h+='<h2>'+t.s13h+'</h2><p>'+t.s13p+'</p>';
+  h+='<h2>'+t.s14h+'</h2><div class="box"><p style="margin:0">'+t.s14p+'</p></div>';
+  document.getElementById('content').innerHTML=h;
+  document.querySelectorAll('[data-t]').forEach(function(el){ el.innerHTML=t[el.getAttribute('data-t')]||''; });
+  document.querySelectorAll('.lang-switch button').forEach(function(b){ b.classList.toggle('active',b.getAttribute('data-lang')===lang); });
+}
+
+var currentLang=getLang();
+render(currentLang);
+
+document.getElementById('langSwitch').addEventListener('click',function(e){
+  var btn=e.target.closest('button[data-lang]'); if(!btn) return;
+  currentLang=btn.getAttribute('data-lang');
+  try{ localStorage.setItem('pp_lang',currentLang); }catch(ex){}
+  render(currentLang);
+});
+
+})();
+</script>
+</body>
+</html>
