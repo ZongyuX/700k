@@ -14,6 +14,7 @@ var ES = {
   'header.game': 'Juego',
   'header.getpro': 'Obtener Pro',
   'header.community': 'Comunidad',
+  'header.friends': 'Amigos',
 
   /* ---- Hero ---- */
   'hero.h1.prefix': 'PromptRunic',
@@ -23,7 +24,7 @@ var ES = {
 
   /* ---- CTA ---- */
   'cta.browse': 'Explorar prompts',
-  'cta.unlock': 'Obtener membresía Pro — desde $7.99/mes',
+  'cta.unlock': 'Obtener Pro — desde $0.99',
   'cta.play': '🎮 Jugar',
 
   /* ---- Stats ---- */
@@ -87,6 +88,24 @@ var ES = {
   'pm.noblanks': 'Este prompt no tiene espacios — solo cópialo o envíalo a una IA.',
   'pm.ai.label': 'Enviar directamente a una IA — el prompt se copia y la IA se abre:',
   'pm.ai.note': 'ChatGPT y Claude rellenan automáticamente el prompt desde el enlace. Para Copilot, Gemini y DeepSeek, presiona <strong>Ctrl+V</strong> para pegar — ya está en tu portapapeles. El autocompletado con un clic en todas las IA, además de dos IA locales integradas, están en la aplicación de escritorio PromptRunic.',
+
+  /* ---- Prompt History / Share ---- */
+  'pm.history.title': 'Historial de Prompts',
+  'pm.history.empty': 'Aún no hay prompts vistos recientemente.',
+  'pm.share.copied': '¡Enlace compartido copiado! Los prompts Pro requieren inicio de sesión + Pro para ver.',
+  'share.login.required': 'Este es un prompt Pro. Inicia sesión para verlo.',
+  'share.pro.required': 'Este es un prompt Pro. Activa Pro para verlo.',
+
+  /* ---- Avatar ---- */
+  'avatar.title': 'Elige Tu Avatar',
+  'avatar.desc': 'Los avatares gratuitos siempre están disponibles. Los avatares Pro requieren Pro. Los avatares de nivel se desbloquean al subir de nivel. Los avatares de monedas se pueden comprar con monedas.',
+
+  /* ---- Friends ---- */
+  'friends.title': 'Amigos',
+  'friends.add': '+ Agregar',
+  'friends.email.placeholder': 'Correo del amigo',
+  'friends.sendrequest': 'Enviar solicitud',
+  'friends.chat.placeholder': 'Escribe un mensaje...',
 
   /* ---- Variant groups ---- */
   'variant.depth': 'Profundidad',
@@ -185,13 +204,17 @@ var ES = {
 
   /* ---- Activate Modal ---- */
   'activate.title': 'Activar PromptRunic Pro',
-  'activate.desc': 'Desbloquea los más de 700,000+ prompts en este sitio.',
-  'activate.login.required': 'Pro está vinculado a tu cuenta. Por favor inicia sesión o regístrate antes de comprar o activar Pro.',
+  'activate.desc': 'Ingresa tu código para desbloquear los más de 700,000+ prompts. Soporta todos los planes Pro y paquetes de monedas.',
+  'activate.login.title': 'Cuenta requerida',
+  'activate.login.desc': 'Para usar Pro, debes iniciar sesión con una cuenta registrada o continuar con Google/GitHub. Tu membresía Pro está vinculada a tu cuenta y se sincroniza en todos los dispositivos.',
+  'activate.login.btn': 'Iniciar sesión / Crear cuenta',
+  'activate.login.required': 'Por favor inicia sesión primero. Pro requiere una cuenta registrada o inicio de sesión con Google/GitHub.',
+  'activate.trial.removed': 'La prueba gratuita de 3 días ha sido descontinuada. Por favor elige un plan de membresía desde $0.99 por 3 días.',
   'activate.code.label': 'Ingresa tu código de activación',
   'activate.code.placeholder': 'ej. 8B7C-4FA2-9D11-...',
   'activate.redeem': 'Activar',
   'activate.buy': 'Ver planes de membresía',
-  'activate.note': 'Pro está vinculado a tu cuenta — inicia sesión en cualquier dispositivo para acceder a tu membresía. Debes iniciar sesión para usar las funciones Pro.',
+  'activate.note': 'Cada código de activación solo puede usarse una vez. Pro y monedas están vinculados a tu cuenta y se sincronizan en todos los dispositivos.',
   'activate.entercode': 'Por favor ingresa tu código de activación.',
   'activate.checking': 'Verificando…',
   'activate.notready': 'La activación aún no está lista. Por favor intenta de nuevo en un momento.',
@@ -201,14 +224,19 @@ var ES = {
   'activate.network': 'No se pudo conectar al servidor de activación. Verifica tu conexión e intenta de nuevo.',
   'activate.invalid': 'Código inválido. Revisa el código en el correo de recibo de Lemon Squeezy.',
   'activate.testmode': 'Desbloqueo en modo PRUEBA — los clientes usan un código real de Lemon Squeezy.',
-  'activate.alreadypro': 'Ya tienes acceso completo a Pro.',
+  'activate.alreadypro': 'Ya tienes acceso completo a Pro — no necesitas prueba.',
+  'activate.trialused': 'Tu prueba gratuita ya ha sido utilizada.',
+  'activate.trialactive': 'Pro está activo — disfruta los {n} prompts!', 
   'activate.pro.unlocked': '¡PromptRunic Pro desbloqueado!',
-  'activate.trial.unlocked': '¡Pro activado!',
+  'activate.trial.unlocked': 'Pro desbloqueado!',
   'activate.unlocked.sub': 'Pro desbloqueado por {d} días. ¡Disfruta la biblioteca completa de prompts!',
   'activate.promo.14d': '¡Pro de 14 días activado! Disfruta los 700,000+ prompts.',
   'activate.promo.1m': '¡Pro de 1 mes activado! Disfruta los 700,000+ prompts.',
   'activate.promo.5000c': '¡5,000 monedas añadidas a tu cuenta!',
   'activate.promo.used': 'Este código promocional ya ha sido usado en esta cuenta.',
+  'activate.code.used': 'Este código de activación ya ha sido usado en tu cuenta. Cada código solo puede activarse una vez.',
+  'activate.code.used.other': 'Este código de activación ya ha sido usado y activado. Cada código solo puede usarse una vez.',
+  'activate.limit': 'Esta clave de licencia ha alcanzado su límite de activación. Si ya la activaste en otro dispositivo, desactívala allí primero, o contacta soporte.',
 
   /* ---- Auth Modal ---- */
   'auth.signin.title': 'Iniciar sesión en PromptRunic',
@@ -281,9 +309,10 @@ var ES = {
   /* ---- Plan badge ---- */
   'plan.free': 'GRATIS',
   'plan.pro': 'PRO',
+  'plan.pro.days': 'PRO · {d}d restantes',
   'plan.pro.trial': 'PRO · {d}d restantes',
   'plan.pro.full': 'Pro — acceso completo',
-  'plan.pro.trial.label': 'Prueba Pro — {d} día{s} restantes',
+  'plan.pro.trial.label': 'Pro — {d} día{s} restantes',
 
   /* ---- Upsell ---- */
   'upsell.title': 'Elige tu plan Pro',
@@ -304,6 +333,8 @@ var ES = {
   'pricing.save': 'Ahorro',
   'pricing.month': 'Mes',
   'pricing.months': 'Meses',
+  'pricing.days': 'Días',
+  'pricing.billed.3d': 'Cobro único de $0.99',
   'pricing.lifetime': 'Vitalicio',
   'pricing.flexible': 'Prueba flexible',
   'pricing.bestvalue': 'Mejor valor',
@@ -321,25 +352,25 @@ var ES = {
   'pricing.feat.ai': 'Todos los asistentes de IA',
   'pricing.feat.priority': 'Soporte prioritario',
   'pricing.feat.nosub': 'Sin suscripción',
-  'pricing.days': 'Días',
-  'pricing.per3days': '/3 días',
-  'pricing.billed.3d': 'Facturado $0.99 una vez',
-  'pricing.tryit': 'Pruébalo',
-  'purchase.login.required': 'Por favor inicia sesión o crea una cuenta primero — Pro está vinculado a tu cuenta.',
 
   /* ---- Footer ---- */
-  'footer.tagline': 'PromptRunic — una plataforma de lanzamiento de prompts de IA con 700,000+ plantillas en 1,684 categorías.',
-  'footer.builtby': 'Creado por Zongyu Xie',
+  'footer.tagline': 'PromptRunic — biblioteca de plantillas de prompts de IA',
+  'footer.stats': '700,000+ plantillas · 1,600+ categorías',
+  'footer.builtby': 'Mantenido por Z. Xie',
   'footer.privacy': 'Política de privacidad',
   'footer.terms': 'Términos de servicio',
-  'footer.disclaimer': 'PromptRunic es un producto independiente y no está afiliado, respaldado ni patrocinado por OpenAI, Anthropic, Microsoft, Google o DeepSeek. Todos los nombres de productos y marcas comerciales son propiedad de sus respectivos dueños. Las respuestas generadas por IA pueden ser inexactas — verifica antes de confiar en ellas.',
+  'footer.disclaimer': 'Descargo de responsabilidad: PromptRunic proporciona acceso a modelos de IA de terceros solo con fines informativos. No poseemos, operamos ni controlamos ningún modelo de IA subyacente. Todos los resultados generados por IA pueden ser inexactos, incompletos o sesgados. Usted es el único responsable de verificar cualquier información antes de depender de ella.',
+  'footer.affiliation': 'PromptRunic no está afiliado con OpenAI, Anthropic, Microsoft, Google, DeepSeek ni ningún otro proveedor de modelos.',
+  'footer.accuracy': 'Precisión de datos: los recuentos de prompts y los números de categorías son aproximados y se actualizan regularmente. Los números reales pueden variar ligeramente.',
+  'footer.misuse': 'Usted acepta no usar este sitio para generar: contenido dañino, ilegal o poco ético; contenido que infrinja derechos de terceros; o desinformación, acoso o código malicioso.',
   'footer.rights': 'Todos los derechos reservados.',
 
   /* ---- Toast messages ---- */
   'toast.copied': 'Prompt copiado al portapapeles',
   'toast.opening': 'Abriendo {ai} con tu prompt…',
   'toast.copypaste': 'Prompt copiado — presiona Ctrl+V en {ai}',
-  'toast.trial.ended': 'Tu prueba Pro de {d} días ha terminado — activa Pro para mantener acceso completo',
+  'toast.trial.ended': 'Tu acceso Pro ha terminado — activa Pro para mantener acceso completo',
+  'toast.pro.ended': 'Tu acceso Pro ha terminado — activa Pro para mantener acceso completo',
 
   /* ---- Fun.js / Gamification ---- */
   'game.levelup': '🎉 ¡Subiste de nivel! Nivel {lvl} — +{coins} 🪙',
@@ -362,6 +393,8 @@ var ES = {
   'community.desc': 'Mira a los mejores jugadores y los estados de ánimo que los miembros dejan en los prompts. Toca cualquier jugador para ver su perfil.',
   'community.tab.level': '🏆 Nivel',
   'community.tab.coins': '🪙 Monedas',
+  'community.tab.badges': '🏅 Insignias',
+  'community.tab.avatars': '🎭 Avatares',
   'community.tab.games': '🎮 Juegos',
   'community.tab.speed': '⏱️ Velocidad',
   'community.tab.mood': '😊 Muro de ánimos',
@@ -369,6 +402,8 @@ var ES = {
   'community.empty': 'No hay jugadores en la tabla aún.<br>Inicia sesión y usa PromptRunic — tu perfil aparecerá aquí automáticamente.',
   'community.top50.level': 'Top 50 — nivel más alto y XP',
   'community.top50.coins': 'Top 50 — más monedas',
+  'community.top50.badges': '🏅 Top 50 — más insignias desbloqueadas',
+  'community.top50.avatars': '🎭 Top 50 — avatares desbloqueados',
   'community.top50.games': 'Top 50 — mejores puntuaciones PROMPT MATRIX',
   'community.top50.speed': 'Top 50 — completaciones más rápidas de PROMPT MATRIX',
   'community.back': '‹ Volver a la tabla de clasificación',

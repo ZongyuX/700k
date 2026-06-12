@@ -14,6 +14,7 @@ var ZH = {
   'header.game': '游戏',
   'header.getpro': '获取专业版',
   'header.community': '社区',
+  'header.friends': '好友',
 
   /* ---- Hero ---- */
   'hero.h1.prefix': 'PromptRunic',
@@ -23,7 +24,7 @@ var ZH = {
 
   /* ---- CTA ---- */
   'cta.browse': '浏览提示语',
-  'cta.unlock': '获取 Pro 会员 — 低至 $7.99/月',
+  'cta.unlock': '获取 Pro — 低至 $0.99',
   'cta.play': '🎮 玩游戏',
 
   /* ---- Stats ---- */
@@ -87,6 +88,24 @@ var ZH = {
   'pm.noblanks': '此提示语无需填空 — 直接复制或发送给 AI。',
   'pm.ai.label': '直接发送给 AI — 提示语已复制，AI 页面将打开：',
   'pm.ai.note': 'ChatGPT 和 Claude 会通过链接自动填入提示语。对于 Copilot、Gemini 和 DeepSeek，请按 <strong>Ctrl+V</strong> 粘贴 — 已在剪贴板中。所有 AI 的一键自动填入及两个内置本地 AI，在 PromptRunic 桌面应用中。',
+
+  /* ---- Prompt History / Share ---- */
+  'pm.history.title': '提示词历史记录',
+  'pm.history.empty': '还没有浏览过的提示词。',
+  'pm.share.copied': '分享链接已复制！专业版提示词需要登录 + Pro 才能查看。',
+  'share.login.required': '这是一个专业版提示词，请登录后查看。',
+  'share.pro.required': '这是一个专业版提示词，请激活 Pro 后查看。',
+
+  /* ---- Avatar ---- */
+  'avatar.title': '选择你的头像',
+  'avatar.desc': '免费头像始终可用。Pro 头像需要 Pro。等级头像随等级解锁。金币头像可用金币购买。',
+
+  /* ---- Friends ---- */
+  'friends.title': '好友',
+  'friends.add': '+ 添加',
+  'friends.email.placeholder': '输入好友邮箱',
+  'friends.sendrequest': '发送请求',
+  'friends.chat.placeholder': '输入消息...',
   'pm.tts': '🔊 朗读',
   'pm.expand': '⬆️ 展开',
   'pm.collapse': '⬇️ 收起',
@@ -189,13 +208,17 @@ var ZH = {
 
   /* ---- Activate Modal ---- */
   'activate.title': '激活 PromptRunic 专业版',
-  'activate.desc': '解锁本站所有 700,000+ 条提示语。',
-  'activate.login.required': '专业版与你的账号绑定。请先注册或登录后再购买或激活专业版。',
+  'activate.desc': '输入激活码解锁全部 700,000+ 条提示语。支持所有专业版方案和金币包。',
+  'activate.login.title': '需要登录账号',
+  'activate.login.desc': '使用专业版必须注册账号或通过 Google/GitHub 登录。你的专业版会员与账号绑定，可在所有设备上同步。',
+  'activate.login.btn': '登录 / 注册账号',
+  'activate.login.required': '请先登录。专业版需要注册账号或通过 Google/GitHub 登录。',
+  'activate.trial.removed': '免费 3 天试用已取消。请选择会员方案，最低 $0.99 可用 3 天。',
   'activate.code.label': '输入你的激活码',
   'activate.code.placeholder': '例如 8B7C-4FA2-9D11-...',
   'activate.redeem': '激活',
   'activate.buy': '查看会员方案',
-  'activate.note': '专业版与你的账号绑定 — 在任何设备登录即可使用会员功能。必须登录才能使用专业版。',
+  'activate.note': '每个激活码只能使用一次。专业版和金币与你的账号绑定，可在所有设备上同步。',
   'activate.entercode': '请输入你的激活码。',
   'activate.checking': '验证中…',
   'activate.notready': '激活功能尚未就绪，请稍后再试。',
@@ -205,14 +228,19 @@ var ZH = {
   'activate.network': '无法连接激活服务器，请检查网络后重试。',
   'activate.invalid': '激活码无效。请检查 Lemon Squeezy 收据邮件中的激活码。',
   'activate.testmode': '测试模式解锁 — 客户请使用真实 Lemon Squeezy 激活码。',
-  'activate.alreadypro': '你已拥有完整专业版权限。',
+  'activate.alreadypro': '你已拥有完整专业版权限 — 无需试用。',
+  'activate.trialused': '你的免费试用已使用。',
+  'activate.trialactive': '专业版已激活 — 畅享全部 {n} 条提示语！',
   'activate.pro.unlocked': 'PromptRunic 专业版已解锁！',
-  'activate.trial.unlocked': '专业版已激活！',
+  'activate.trial.unlocked': '专业版已解锁！',
   'activate.unlocked.sub': '专业版已解锁 {d} 天，畅享完整提示语库！',
   'activate.promo.14d': '14天专业版已激活！畅享全部 700,000+ 条提示语。',
   'activate.promo.1m': '1个月专业版已激活！畅享全部 700,000+ 条提示语。',
   'activate.promo.5000c': '已添加 5,000 金币到你的账户！',
   'activate.promo.used': '此推广码已在该账号上使用过。',
+  'activate.code.used': '此激活码已在你的账号上使用过。每个激活码只能激活一次。',
+  'activate.code.used.other': '此激活码已经被使用激活。每个激活码只能使用一次。',
+  'activate.limit': '此许可证密钥已达到激活上限。如果你已在其他设备上激活，请先在该设备上停用，或联系客服。',
 
   /* ---- Auth Modal ---- */
   'auth.signin.title': '登录 PromptRunic',
@@ -285,9 +313,10 @@ var ZH = {
   /* ---- Plan badge ---- */
   'plan.free': '免费版',
   'plan.pro': '专业版',
+  'plan.pro.days': '专业版 · 剩 {d} 天',
   'plan.pro.trial': '专业版 · 剩 {d} 天',
   'plan.pro.full': '专业版 — 完整权限',
-  'plan.pro.trial.label': '专业版试用 — 剩 {d} 天',
+  'plan.pro.trial.label': '专业版 — 剩 {d} 天',
 
   /* ---- Upsell ---- */
   'upsell.title': '选择您的 Pro 方案',
@@ -308,6 +337,8 @@ var ZH = {
   'pricing.save': '节省',
   'pricing.month': '个月',
   'pricing.months': '个月',
+  'pricing.days': '天',
+  'pricing.billed.3d': '一次性支付 $0.99',
   'pricing.lifetime': '终身买断',
   'pricing.flexible': '灵活试用',
   'pricing.bestvalue': '最划算',
@@ -325,25 +356,25 @@ var ZH = {
   'pricing.feat.ai': '所有 AI 助手',
   'pricing.feat.priority': '优先客服支持',
   'pricing.feat.nosub': '无需订阅',
-  'pricing.days': '天',
-  'pricing.per3days': '/3天',
-  'pricing.billed.3d': '一次性 $0.99',
-  'pricing.tryit': '体验',
-  'purchase.login.required': '请先注册或登录 — 专业版与账号绑定。',
 
   /* ---- Footer ---- */
-  'footer.tagline': 'PromptRunic — AI 提示语发射台，700,000+ 模板横跨 1,684 分类。',
-  'footer.builtby': '由 Zongyu Xie 开发',
+  'footer.tagline': 'PromptRunic — AI 提示词模板库',
+  'footer.stats': '700,000+ 模板 · 1,600+ 分类',
+  'footer.builtby': '由 Z. Xie 维护',
   'footer.privacy': '隐私政策',
   'footer.terms': '服务条款',
-  'footer.disclaimer': 'PromptRunic 是独立产品，与 OpenAI、Anthropic、Microsoft、Google 或 DeepSeek 无关联、未获认可、未获赞助。所有产品名称和商标均为其各自所有者的财产。AI 生成的回答可能不准确 — 请在依赖前验证。',
+  'footer.disclaimer': '免责声明：PromptRunic 仅提供对第三方 AI 模型的访问，仅供参考。我们不拥有、运营或控制任何底层 AI 模型。所有 AI 生成的输出可能不准确、不完整或存在偏见。您需自行负责在依赖任何信息前进行验证。',
+  'footer.affiliation': 'PromptRunic 与 OpenAI、Anthropic、Microsoft、Google、DeepSeek 或任何其他模型提供商无关。',
+  'footer.accuracy': '数据准确性：提示词数量和分类数字为近似值，定期更新。实际数字可能略有差异。',
+  'footer.misuse': '您同意不使用本网站生成：有害、非法或不道德的内容；侵犯第三方权利的内容；或虚假信息、骚扰或恶意代码。',
   'footer.rights': '保留所有权利。',
 
   /* ---- Toast messages ---- */
   'toast.copied': '提示语已复制到剪贴板',
   'toast.opening': '正在打开 {ai}，提示语已准备…',
   'toast.copypaste': '提示语已复制 — 请在 {ai} 中按 Ctrl+V 粘贴',
-  'toast.trial.ended': '你的 {d} 天专业版试用已结束 — 激活专业版以继续使用完整权限',
+  'toast.trial.ended': '你的专业版权限已结束 — 激活专业版以继续使用完整权限',
+  'toast.pro.ended': '你的专业版权限已结束 — 激活专业版以继续使用完整权限',
 
   /* ---- Fun.js / Gamification ---- */
   'game.levelup': '🎉 升级！等级 {lvl} — +{coins} 🪙',
@@ -366,6 +397,8 @@ var ZH = {
   'community.desc': '查看顶级玩家和成员在提示语上留下心情。点击任何玩家查看其资料。',
   'community.tab.level': '🏆 等级',
   'community.tab.coins': '🪙 金币',
+  'community.tab.badges': '🏅 徽章',
+  'community.tab.avatars': '🎭 头像',
   'community.tab.games': '🎮 游戏',
   'community.tab.speed': '⏱️ 速度',
   'community.tab.mood': '😊 心情墙',
@@ -373,6 +406,8 @@ var ZH = {
   'community.empty': '排行榜上还没有玩家。<br>登录并使用 PromptRunic — 你的资料会自动出现在这里。',
   'community.top50.level': '前 50 名 — 最高等级和 XP',
   'community.top50.coins': '前 50 名 — 最多金币',
+  'community.top50.badges': '🏅 前 50 名 — 最多徽章解锁',
+  'community.top50.avatars': '🎭 前 50 名 — 头像解锁',
   'community.top50.games': '前 50 名 — 最佳 PROMPT MATRIX 得分',
   'community.top50.speed': '前 50 名 — 最快 PROMPT MATRIX 通关',
   'community.back': '‹ 返回排行榜',

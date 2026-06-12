@@ -14,6 +14,7 @@ var EN = {
   'header.game': 'Game',
   'header.getpro': 'Get Pro',
   'header.community': 'Community',
+  'header.friends': 'Friends',
 
   /* ---- Hero ---- */
   'hero.h1.prefix': 'PromptRunic',
@@ -23,7 +24,7 @@ var EN = {
 
   /* ---- CTA ---- */
   'cta.browse': 'Browse Prompts',
-  'cta.unlock': 'Get Pro Membership — from $7.99/mo',
+  'cta.unlock': 'Get Pro — from $0.99',
   'cta.play': '🎮 Play Game',
 
   /* ---- Stats ---- */
@@ -87,6 +88,24 @@ var EN = {
   'pm.noblanks': 'This prompt has no blanks — just copy it or send it to an AI.',
   'pm.ai.label': 'Send straight to an AI — the prompt is copied and the AI opens:',
   'pm.ai.note': 'ChatGPT and Claude auto-fill the prompt from the link. For Copilot, Gemini and DeepSeek, press <strong>Ctrl+V</strong> to paste — it is already on your clipboard. True one-click auto-fill on every AI, plus two built-in local AIs, are in the PromptRunic desktop app.',
+
+  /* ---- Prompt History / Share ---- */
+  'pm.history.title': 'Prompt History',
+  'pm.history.empty': 'No recently viewed prompts yet.',
+  'pm.share.copied': 'Share link copied! Pro prompts require login + Pro to view.',
+  'share.login.required': 'This is a Pro prompt. Please sign in to view it.',
+  'share.pro.required': 'This is a Pro prompt. Activate Pro to view it.',
+
+  /* ---- Avatar ---- */
+  'avatar.title': 'Choose Your Avatar',
+  'avatar.desc': 'Free avatars are always available. Pro avatars require Pro. Level avatars unlock as you level up. Coin avatars can be purchased with coins.',
+
+  /* ---- Friends ---- */
+  'friends.title': 'Friends',
+  'friends.add': '+ Add',
+  'friends.email.placeholder': "Enter friend's email",
+  'friends.sendrequest': 'Send Request',
+  'friends.chat.placeholder': 'Type a message...',
 
   /* ---- Variant groups ---- */
   'variant.depth': 'Depth',
@@ -185,13 +204,17 @@ var EN = {
 
   /* ---- Activate Modal ---- */
   'activate.title': 'Activate PromptRunic Pro',
-  'activate.desc': 'Unlock all 700,000+ prompts on this site.',
-  'activate.login.required': 'Pro is linked to your account. Please sign in or register before purchasing or activating Pro.',
+  'activate.desc': 'Enter your code to unlock all 700,000+ prompts. Supports all Pro plans and coin packs.',
+  'activate.login.title': 'Account Required',
+  'activate.login.desc': 'To use Pro, you must be signed in with a registered account or continue with Google/GitHub. Your Pro membership is linked to your account and syncs across all devices.',
+  'activate.login.btn': 'Sign in / Create account',
+  'activate.login.required': 'Please sign in first. Pro requires a registered account or Google/GitHub login.',
+  'activate.trial.removed': 'The free 3-day trial has been discontinued. Please choose a membership plan starting at $0.99 for 3 days.',
   'activate.code.label': 'Enter your activation code',
   'activate.code.placeholder': 'e.g. 8B7C-4FA2-9D11-...',
   'activate.redeem': 'Activate',
   'activate.buy': 'View membership plans',
-  'activate.note': 'Pro is linked to your account — sign in on any device to access your membership. You must be signed in for Pro features to work.',
+  'activate.note': 'Each activation code can only be used once. Pro and coins are linked to your account and sync across all devices.',
   'activate.entercode': 'Please enter your activation code.',
   'activate.checking': 'Checking…',
   'activate.notready': 'Activation is not ready yet. Please try again in a moment.',
@@ -201,14 +224,19 @@ var EN = {
   'activate.network': 'Could not reach the activation server. Check your connection and try again.',
   'activate.invalid': 'Invalid code. Check the code in your Lemon Squeezy receipt email.',
   'activate.testmode': 'TEST mode unlock — customers use a real Lemon Squeezy code.',
-  'activate.alreadypro': 'You already have full Pro access.',
+  'activate.alreadypro': 'You already have full Pro access — no trial needed.',
+  'activate.trialused': 'Your free trial has already been used.',
+  'activate.trialactive': 'Pro is active — enjoy all {n} prompts!',
   'activate.pro.unlocked': 'PromptRunic Pro unlocked!',
-  'activate.trial.unlocked': 'Pro activated!',
+  'activate.trial.unlocked': 'Pro unlocked!',
   'activate.unlocked.sub': 'Pro unlocked for {d} days. Enjoy the full prompt library!',
   'activate.promo.14d': '14-day Pro activated! Enjoy all 700,000+ prompts.',
   'activate.promo.1m': '1-month Pro activated! Enjoy all 700,000+ prompts.',
   'activate.promo.5000c': '5,000 coins added to your account!',
   'activate.promo.used': 'This promo code has already been used on this account.',
+  'activate.code.used': 'This activation code has already been used on your account. Each code can only be activated once.',
+  'activate.code.used.other': 'This activation code has already been activated. Each code can only be used once.',
+  'activate.limit': 'This license key has reached its activation limit. If you already activated on another device, please deactivate it there first, or contact support.',
 
   /* ---- Auth Modal ---- */
   'auth.signin.title': 'Sign in to PromptRunic',
@@ -281,9 +309,10 @@ var EN = {
   /* ---- Plan badge ---- */
   'plan.free': 'FREE',
   'plan.pro': 'PRO',
+  'plan.pro.days': 'PRO · {d}d left',
   'plan.pro.trial': 'PRO · {d}d left',
   'plan.pro.full': 'Pro — full access',
-  'plan.pro.trial.label': 'Pro trial — {d} day{s} left',
+  'plan.pro.trial.label': 'Pro — {d} day{s} left',
 
   /* ---- Upsell ---- */
   'upsell.title': 'Choose Your Pro Plan',
@@ -304,6 +333,8 @@ var EN = {
   'pricing.save': 'You Save',
   'pricing.month': 'Month',
   'pricing.months': 'Months',
+  'pricing.days': 'Days',
+  'pricing.billed.3d': 'Billed $0.99 once',
   'pricing.lifetime': 'Lifetime',
   'pricing.flexible': 'Flexible trial',
   'pricing.bestvalue': 'Best Value',
@@ -321,25 +352,25 @@ var EN = {
   'pricing.feat.ai': 'All AI assistants',
   'pricing.feat.priority': 'Priority support',
   'pricing.feat.nosub': 'No subscription ever',
-  'pricing.days': 'Days',
-  'pricing.per3days': '/3 days',
-  'pricing.billed.3d': 'Billed $0.99 once',
-  'pricing.tryit': 'Try it',
-  'purchase.login.required': 'Please sign in or create an account first — Pro is linked to your account.',
 
   /* ---- Footer ---- */
-  'footer.tagline': 'PromptRunic — an AI prompt launchpad with 700,000+ templates across 1,684 categories.',
-  'footer.builtby': 'Built by Zongyu Xie',
+  'footer.tagline': 'PromptRunic — AI prompt template library',
+  'footer.stats': '700,000+ templates · 1,600+ categories',
+  'footer.builtby': 'Maintained by Z. Xie',
   'footer.privacy': 'Privacy Policy',
   'footer.terms': 'Terms of Service',
-  'footer.disclaimer': 'PromptRunic is an independent product and is not affiliated with, endorsed by, or sponsored by OpenAI, Anthropic, Microsoft, Google, or DeepSeek. All product names and trademarks are the property of their respective owners. AI-generated answers may be inaccurate — please verify before relying on them.',
+  'footer.disclaimer': 'Disclaimer: PromptRunic provides access to third-party AI models for informational purposes only. We do not own, operate, or control any underlying AI model. All AI-generated outputs may be inaccurate, incomplete, or biased. You are solely responsible for verifying any information before relying on it.',
+  'footer.affiliation': 'PromptRunic is not affiliated with OpenAI, Anthropic, Microsoft, Google, DeepSeek, or any other model provider.',
+  'footer.accuracy': 'Data accuracy: Prompt counts and category numbers are approximate and updated regularly. Actual numbers may vary slightly.',
+  'footer.misuse': 'You agree not to use this site to generate: harmful, illegal, or unethical content; content that infringes third-party rights; or misinformation, harassment, or malicious code.',
   'footer.rights': 'All rights reserved.',
 
   /* ---- Toast messages ---- */
   'toast.copied': 'Prompt copied to clipboard',
   'toast.opening': 'Opening {ai} with your prompt…',
   'toast.copypaste': 'Prompt copied — press Ctrl+V in {ai}',
-  'toast.trial.ended': 'Your {d}-day Pro trial has ended — activate Pro to keep full access',
+  'toast.trial.ended': 'Your Pro access has ended — activate Pro to keep full access',
+  'toast.pro.ended': 'Your Pro access has ended — activate Pro to keep full access',
 
   /* ---- Fun.js / Gamification ---- */
   'game.levelup': '🎉 Level up! Level {lvl} — +{coins} 🪙',
@@ -362,6 +393,8 @@ var EN = {
   'community.desc': 'See the top players and the moods members leave on prompts. Tap any player to view their profile.',
   'community.tab.level': '🏆 Level',
   'community.tab.coins': '🪙 Coins',
+  'community.tab.badges': '🏅 Badges',
+  'community.tab.avatars': '🎭 Avatars',
   'community.tab.games': '🎮 Games',
   'community.tab.speed': '⏱️ Speed',
   'community.tab.mood': '😊 Mood Wall',
@@ -369,6 +402,8 @@ var EN = {
   'community.empty': 'No players on the board yet.<br>Sign in and use PromptRunic — your profile appears here automatically.',
   'community.top50.level': 'Top 50 — highest level & XP',
   'community.top50.coins': 'Top 50 — most coins',
+  'community.top50.badges': '🏅 Top 50 — most badges unlocked',
+  'community.top50.avatars': '🎭 Top 50 — avatar unlocks',
   'community.top50.games': 'Top 50 — best PROMPT MATRIX scores',
   'community.top50.speed': 'Top 50 — fastest PROMPT MATRIX clears',
   'community.back': '‹ Back to leaderboard',

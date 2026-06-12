@@ -47,7 +47,7 @@
     "@type": "Offer",
     "price": "0",
     "priceCurrency": "USD",
-    "description": "Free tier with 1,575+ prompts. Membership plans from $7.99/month or lifetime $69 for 700,000+ prompts."
+    "description": "Free tier with 1,575+ prompts. Membership plans from $0.99/3 days, $7.99/month or lifetime $69 for 700,000+ prompts. Account required for Pro."
   },
   "featureList": [
     "700,000+ AI prompt templates",
@@ -95,7 +95,7 @@
   "@type": "FAQPage",
   "mainEntity": [
     {"@type": "Question", "name": "What is PromptRunic?", "acceptedAnswer": {"@type": "Answer", "text": "PromptRunic is an AI prompt generator and AI helper that provides 700,000+ ready-to-use prompt templates across 1,684 categories. It helps you write better prompts for ChatGPT, Claude, Copilot, Gemini, DeepSeek and other AI assistants. Just fill in the blanks and fire the prompt to your AI in one click."}},
-    {"@type": "Question", "name": "Is PromptRunic a free AI helper?", "acceptedAnswer": {"@type": "Answer", "text": "Yes! PromptRunic offers 1,575+ AI prompts for free. For unlimited access to all 700,000+ prompts, you can purchase a Pro membership starting at $7.99/month or get lifetime access for $69."}},
+    {"@type": "Question", "name": "Is PromptRunic a free AI helper?", "acceptedAnswer": {"@type": "Answer", "text": "Yes! PromptRunic offers 1,575+ AI prompts for free. For unlimited access to all 700,000+ prompts, you can purchase a Pro membership starting at $0.99 for 3 days, $7.99/month or get lifetime access for $69. Account required for Pro."}},
     {"@type": "Question", "name": "How does the AI prompt generator work?", "acceptedAnswer": {"@type": "Answer", "text": "Browse or search 700,000+ prompt templates, pick one, fill in the blanks with your details, choose your answer style, then send it directly to ChatGPT, Claude, Copilot, Gemini, DeepSeek or any supported AI assistant with one click."}},
     {"@type": "Question", "name": "What AI assistants does PromptRunic support?", "acceptedAnswer": {"@type": "Answer", "text": "PromptRunic supports ChatGPT, Claude, Copilot, Gemini, DeepSeek, Kimi, Z.ai GLM, Grok, Perplexity, Mistral, Qwen and more. Prompts are copied to clipboard and sent directly to the AI."}},
     {"@type": "Question", "name": "Can PromptRunic help me write better AI prompts?", "acceptedAnswer": {"@type": "Answer", "text": "Absolutely! PromptRunic includes a built-in Prompt Optimizer that transforms your rough ideas into professional, structured prompts. It also has a beginner guide that teaches you the 5 key elements of great prompts: Role, Task, Context, Format, and Constraints."}},
@@ -940,7 +940,8 @@
   .upsell p:last-child{opacity:0;transform:translateY(12px);transition:opacity .6s cubic-bezier(.22,1,.36,1) .4s,transform .6s cubic-bezier(.22,1,.36,1) .4s}
   .upsell.revealed p:last-child{opacity:1;transform:translateY(0)}
   /* Pricing cards — professional SaaS style */
-  .pricing-cards{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;max-width:1060px;margin:22px auto 0;opacity:0;transform:translateY(14px);transition:opacity .6s cubic-bezier(.22,1,.36,1) .25s,transform .6s cubic-bezier(.22,1,.36,1) .25s}
+  .pricing-cards{display:grid;grid-template-columns:repeat(5,1fr);grid-template-rows:auto auto;gap:14px;max-width:1060px;margin:22px auto 0;opacity:0;transform:translateY(14px);transition:opacity .6s cubic-bezier(.22,1,.36,1) .25s,transform .6s cubic-bezier(.22,1,.36,1) .25s}
+  .p-card-trial{align-self:end}
   .upsell.revealed .pricing-cards{opacity:1;transform:translateY(0)}
   .p-card{background:var(--panel2);border:1px solid var(--border);border-radius:14px;padding:22px 18px 20px;display:flex;flex-direction:column;align-items:center;text-align:center;transition:transform .2s,border-color .2s,box-shadow .2s;position:relative}
   .p-card:hover{transform:translateY(-4px);border-color:rgba(124,92,255,.4);box-shadow:0 8px 28px rgba(0,0,0,.3),0 0 20px rgba(124,92,255,.08)}
@@ -961,14 +962,6 @@
   .p-card-badge-lt{background:linear-gradient(135deg,#7c5cff,#5a3fd6);color:#fff}
   .p-card-popular{border-color:rgba(245,185,66,.5);background:linear-gradient(180deg,rgba(245,185,66,.08),var(--panel2))}
   .p-card-lifetime{border-color:rgba(124,92,255,.5);background:linear-gradient(180deg,rgba(124,92,255,.08),var(--panel2))}
-  /* Mini 3-day card */
-  .p-card-mini{padding:14px 12px 12px!important;border-style:dashed!important;border-color:rgba(245,185,66,.3)!important;background:rgba(245,185,66,.04)!important}
-  .p-card-mini:hover{border-color:rgba(245,185,66,.5)!important;box-shadow:0 4px 16px rgba(245,185,66,.1)!important}
-  .p-card-badge-mini{background:linear-gradient(135deg,#f5b842,#e8872a)!important;color:#000!important;font-size:9px!important;padding:3px 10px!important}
-  .p-card-mini .p-card-name{font-size:13px!important;margin-bottom:6px!important}
-  .p-card-mini .p-card-billed{font-size:10.5px!important;margin-bottom:8px!important}
-  .p-card-mini .p-card-features li{font-size:11px!important;padding:2px 0 2px 16px!important}
-  .p-card-mini .p-card-btn{padding:7px 0!important;font-size:12px!important}
   @media(max-width:960px){
     .pricing-cards{grid-template-columns:repeat(3,1fr);gap:12px}
   }
@@ -1566,6 +1559,7 @@
     <a href="#guide" data-i18n="header.guide">Beginner Guide</a>
     <button class="pp-chip" id="communityBtn" data-i18n="header.community" title="Leaderboards & Mood Wall">🏆<span class="btn-hide-sm"> Community</span></button>
     <button class="hbtn-game" id="gameBtn" data-i18n="header.game">🎮<span class="btn-hide-sm"> Game</span></button>
+    <button class="pp-chip" id="friendsBtn" title="Friends & Chat">👥<span class="btn-hide-sm"> Friends</span></button>
     <span class="badge" id="planBadge">FREE</span>
     <button class="hbtn-user" id="authBtn" data-i18n="header.signin">👤<span class="btn-hide-sm"> Sign in</span></button>
     <a href="#pro" class="hbtn-gold" data-i18n="header.getpro">Get Pro</a>
@@ -1638,7 +1632,7 @@
     </div>
     <div class="cta-row">
       <a href="#templates" class="btn btn-primary" data-i18n="cta.browse">Browse Prompts</a>
-      <a href="#pro" class="btn btn-gold" data-i18n="cta.unlock">Get Pro Membership — from $7.99/mo</a>
+      <a href="#pro" class="btn btn-gold" data-i18n="cta.unlock">Get Pro — from $0.99</a>
       <a href="javascript:void(0)" onclick="openGameOverlay()" class="btn btn-ghost" data-i18n="cta.play">🎮 Play Game</a>
     </div>
     <div class="cta-hook">
@@ -1801,35 +1795,27 @@
 </section>
 
 <section class="upsell" id="pro">
-  <h2 data-i18n="upsell.title">Choose Your Pro Plan</h2>
-  <p data-i18n="upsell.desc">Unlock all 700,000+ prompts across 1,684 categories — writing, marketing, sales, career, coding, AI basics, parenting, travel and more. Flexible plans to fit your needs.</p>
-  <div class="feats">
-    <span data-i18n="upsell.feat1">✓ 700,000+ prompts</span>
-    <span data-i18n="upsell.feat2">✓ 1,684 categories</span>
-    <span data-i18n="upsell.feat3">✓ 40 answer styles</span>
-    <span data-i18n="upsell.feat4">✓ All AI assistants</span>
-  </div>
-  <!-- Professional card-based pricing -->
-  <!-- Mini 3-day plan card (above main grid) -->
-  <div style="max-width:1060px;margin:0 auto 6px;display:flex;justify-content:center">
-    <div class="p-card p-card-mini" data-plan="3day" style="max-width:220px;width:100%">
-      <div class="p-card-badge p-card-badge-mini" data-i18n="pricing.tryit">Try it</div>
-      <div class="p-card-name">3 <span data-i18n="pricing.days">Days</span></div>
-      <div class="p-card-price-row">
-        <span class="p-card-price" style="font-size:24px">$0.99</span>
-        <span class="p-card-period" data-i18n="pricing.per3days">/3 days</span>
-      </div>
-      <div class="p-card-billed" data-i18n="pricing.billed.3d">Billed $0.99 once</div>
-      <ul class="p-card-features" style="margin-bottom:10px">
-        <li data-i18n="pricing.feat.all">Full access to 700K+ prompts</li>
-        <li data-i18n="pricing.feat.styles">40 answer styles</li>
-      </ul>
-      <button class="mbtn mbtn-ghost p-card-btn" data-plan-id="3day" data-i18n="pricing.select">Select</button>
-    </div>
-  </div>
   <div id="pricingTable" class="pricing-cards">
+    <!-- Row 1: 3-day trial card above $7.99, description centered over 6-month card -->
+    <div class="p-card-trial" data-plan="3day" style="grid-column:1;grid-row:1;background:linear-gradient(135deg,rgba(34,211,238,.12),rgba(124,92,255,.12));border:1.5px dashed rgba(34,211,238,.5);border-radius:16px;padding:16px 14px;text-align:center;position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff;font-size:8px;font-weight:800;padding:3px 0;letter-spacing:.06em;text-transform:uppercase">Limited Offer</div>
+      <div style="margin-top:14px;font-size:11px;color:var(--accent2);font-weight:700;letter-spacing:.03em">TRY</div>
+      <div style="font-size:14px;font-weight:800;color:#fff;margin:2px 0">3 Days</div>
+      <div style="font-size:28px;font-weight:900;background:linear-gradient(135deg,#22d3ee,#7c5cff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.1">$0.99</div>
+      <button class="mbtn mbtn-ghost p-card-btn" data-plan-id="3day" style="font-size:10px!important;padding:5px 10px!important;margin-top:8px;border-radius:8px!important;white-space:nowrap;border-color:rgba(34,211,238,.4);color:var(--accent2)" data-i18n="pricing.select">Select</button>
+    </div>
+    <div style="grid-column:2/5;grid-row:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 10px">
+      <h2 data-i18n="upsell.title" style="margin-bottom:8px;font-size:24px">Choose Your Pro Plan</h2>
+      <p data-i18n="upsell.desc" style="color:var(--muted);max-width:520px;margin:0 auto 14px">Unlock all 700,000+ prompts across 1,684 categories — writing, marketing, sales, career, coding, AI basics, parenting, travel and more. Flexible plans to fit your needs.</p>
+      <div class="feats" style="margin-bottom:0">
+        <span data-i18n="upsell.feat1">✓ 700,000+ prompts</span>
+        <span data-i18n="upsell.feat2">✓ 1,684 categories</span>
+        <span data-i18n="upsell.feat3">✓ 40 answer styles</span>
+        <span data-i18n="upsell.feat4">✓ All AI assistants</span>
+      </div>
+    </div>
     <!-- 1 Month -->
-    <div class="p-card" data-plan="1month">
+    <div class="p-card" data-plan="1month" style="grid-row:2">
       <div class="p-card-name">1 <span data-i18n="pricing.month">Month</span></div>
       <div class="p-card-price-row">
         <span class="p-card-price">$7.99</span>
@@ -1844,7 +1830,7 @@
       <button class="mbtn mbtn-ghost p-card-btn" data-plan-id="1month" data-i18n="pricing.select">Select</button>
     </div>
     <!-- 3 Months -->
-    <div class="p-card" data-plan="3month">
+    <div class="p-card" data-plan="3month" style="grid-row:2">
       <div class="p-card-name">3 <span data-i18n="pricing.months">Months</span></div>
       <div class="p-card-price-row">
         <span class="p-card-price">$6.00</span>
@@ -1860,7 +1846,7 @@
       <button class="mbtn mbtn-ghost p-card-btn" data-plan-id="3month" data-i18n="pricing.select">Select</button>
     </div>
     <!-- 6 Months -->
-    <div class="p-card" data-plan="6month">
+    <div class="p-card" data-plan="6month" style="grid-row:2">
       <div class="p-card-name">6 <span data-i18n="pricing.months">Months</span></div>
       <div class="p-card-price-row">
         <span class="p-card-price">$4.83</span>
@@ -1876,7 +1862,7 @@
       <button class="mbtn mbtn-ghost p-card-btn" data-plan-id="6month" data-i18n="pricing.select">Select</button>
     </div>
     <!-- 12 Months — Best Value -->
-    <div class="p-card p-card-popular" data-plan="12month">
+    <div class="p-card p-card-popular" data-plan="12month" style="grid-row:2">
       <div class="p-card-badge" data-i18n="pricing.bestvalue">Best Value</div>
       <div class="p-card-name">12 <span data-i18n="pricing.months">Months</span></div>
       <div class="p-card-price-row">
@@ -1894,7 +1880,7 @@
       <button class="mbtn mbtn-gold p-card-btn" data-plan-id="12month" data-i18n="pricing.select">Select</button>
     </div>
     <!-- Lifetime -->
-    <div class="p-card p-card-lifetime" data-plan="lifetime">
+    <div class="p-card p-card-lifetime" data-plan="lifetime" style="grid-row:2">
       <div class="p-card-badge p-card-badge-lt" data-i18n="pricing.onetime">One-time</div>
       <div class="p-card-name" data-i18n="pricing.lifetime">Lifetime</div>
       <div class="p-card-price-row">
@@ -1933,7 +1919,7 @@
   <h3>AI Marketing Helper — Boost Your Marketing with AI</h3>
   <p>PromptRunic is also an AI marketing helper. Find prompt templates for ad copy, SEO content, social media strategy, email campaigns, brand messaging, customer research, competitive analysis, and much more. Your AI marketing companion that delivers professional results.</p>
   <h3>Free AI Prompts — No Sign-Up Required</h3>
-  <p>Get started with 1,575+ free AI prompts — no account needed. Upgrade to Pro with flexible membership plans starting at $7.99/month, or get lifetime access for $69 (one-time payment) to unlock all 700,000+ prompts across 1,684 categories. PromptRunic is the most affordable AI prompt library and AI assistant tool on the web.</p>
+  <p>Get started with 1,575+ free AI prompts — no account needed. Upgrade to Pro with flexible membership plans starting at $0.99 for 3 days, $7.99/month, or get lifetime access for $69 (one-time payment) to unlock all 700,000+ prompts across 1,684 categories. Pro requires a registered account or Google/GitHub login. PromptRunic is the most affordable AI prompt library and AI assistant tool on the web.</p>
   <h3>Supported AI Assistants</h3>
   <p>PromptRunic works with all major AI assistants: ChatGPT, Claude, Copilot, Gemini, DeepSeek, Kimi, Z.ai GLM, Grok, Perplexity, Mistral, Qwen, and more. One click copies the prompt and opens your chosen AI — it could not be easier.</p>
   <h3>Multi-Language AI Prompt Library</h3>
@@ -1941,10 +1927,14 @@
 </section>
 
 <footer id="about">
-  <div data-i18n="footer.tagline">PromptRunic — an AI prompt launchpad with 700,000+ templates across 1,600+ categories.</div>
-  <div style="margin-top:8px" data-i18n="footer.builtby">Built by Zongyu Xie</div>
+  <div data-i18n="footer.tagline">PromptRunic — AI prompt template library</div>
+  <div style="margin-top:6px" data-i18n="footer.stats">700,000+ templates · 1,600+ categories</div>
+  <div style="margin-top:6px" data-i18n="footer.builtby">Maintained by Z. Xie</div>
   <div style="margin-top:8px"><a href="privacy.html" data-i18n="footer.privacy">Privacy Policy</a> &nbsp;·&nbsp; <a href="terms.html" data-i18n="footer.terms">Terms of Service</a></div>
-  <div style="margin-top:10px;font-size:11.5px;max-width:660px;margin-left:auto;margin-right:auto;opacity:.78" data-i18n="footer.disclaimer">PromptRunic is an independent product and is not affiliated with, endorsed by, or sponsored by OpenAI, Anthropic, Microsoft, Google, or DeepSeek. All product names and trademarks are the property of their respective owners. AI-generated answers may be inaccurate — please verify before relying on them.</div>
+  <div style="margin-top:10px;font-size:11.5px;max-width:660px;margin-left:auto;margin-right:auto;opacity:.78" data-i18n="footer.disclaimer">Disclaimer: PromptRunic provides access to third-party AI models for informational purposes only. We do not own, operate, or control any underlying AI model. All AI-generated outputs may be inaccurate, incomplete, or biased. You are solely responsible for verifying any information before relying on it.</div>
+  <div style="margin-top:6px;font-size:11.5px;max-width:660px;margin-left:auto;margin-right:auto;opacity:.78" data-i18n="footer.affiliation">PromptRunic is not affiliated with OpenAI, Anthropic, Microsoft, Google, DeepSeek, or any other model provider.</div>
+  <div style="margin-top:6px;font-size:11.5px;max-width:660px;margin-left:auto;margin-right:auto;opacity:.78" data-i18n="footer.accuracy">Data accuracy: Prompt counts and category numbers are approximate and updated regularly. Actual numbers may vary slightly.</div>
+  <div style="margin-top:6px;font-size:11.5px;max-width:660px;margin-left:auto;margin-right:auto;opacity:.78" data-i18n="footer.misuse">You agree not to use this site to generate: harmful, illegal, or unethical content; content that infringes third-party rights; or misinformation, harassment, or malicious code.</div>
   <div style="margin-top:8px">© <span id="year"></span> PromptRunic. <span data-i18n="footer.rights">All rights reserved.</span></div>
 </footer>
 
@@ -1967,7 +1957,7 @@
       <button class="mbtn mbtn-ghost" id="pmRandom" style="display:flex;align-items:center;gap:5px" title="Try a random prompt">🎲 Random</button>
       <button class="mbtn mbtn-ghost" id="pmHistory" style="display:flex;align-items:center;gap:5px" title="Recently viewed prompts">📜 History</button>
       <button class="mbtn mbtn-ghost" id="pmTTS" style="display:flex;align-items:center;gap:5px" title="Read prompt aloud">🔊 Read</button>
-      <button class="mbtn mbtn-ghost" id="pmExpand" style="display:flex;align-items:center;gap:5px" title="Expand output area">⬆️ Expand</button>
+
     </div>
     <div class="ai-label" data-i18n="pm.ai.label">Send straight to an AI — the prompt is copied and the AI opens:</div>
     <div class="ai-row" id="pmAiRow"></div>
@@ -1980,9 +1970,20 @@
   <div class="modal sm">
     <button class="x" data-close>&times;</button>
     <h2 data-i18n="activate.title">Activate PromptRunic Pro</h2>
-    <div class="desc" data-i18n="activate.desc">Unlock all 700,000+ prompts on this site.</div>
-    <div class="pro-box" style="background:rgba(245,185,66,.08);border:1px solid rgba(245,185,66,.2);border-radius:10px;padding:12px 14px;margin-bottom:14px">
-      <p style="font-size:13px;color:var(--gold);margin:0" data-i18n="activate.login.required">⚠ Pro is linked to your account. Please sign in or register before purchasing or activating Pro.</p>
+    <div class="desc" data-i18n="activate.desc">Enter your code to unlock all 700,000+ prompts. Supports all Pro plans and coin packs.</div>
+    <div class="act-plans" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;justify-content:center">
+      <span class="tag" style="background:rgba(245,185,66,.12);color:var(--gold);font-size:11px;border-radius:6px;padding:3px 8px">3 Days</span>
+      <span class="tag" style="background:rgba(245,185,66,.12);color:var(--gold);font-size:11px;border-radius:6px;padding:3px 8px">1 Month</span>
+      <span class="tag" style="background:rgba(245,185,66,.12);color:var(--gold);font-size:11px;border-radius:6px;padding:3px 8px">3 Months</span>
+      <span class="tag" style="background:rgba(245,185,66,.12);color:var(--gold);font-size:11px;border-radius:6px;padding:3px 8px">6 Months</span>
+      <span class="tag" style="background:rgba(245,185,66,.12);color:var(--gold);font-size:11px;border-radius:6px;padding:3px 8px">12 Months</span>
+      <span class="tag" style="background:rgba(245,185,66,.15);color:var(--gold);font-size:11px;border-radius:6px;padding:3px 8px;font-weight:700">Lifetime</span>
+      <span class="tag" style="background:rgba(100,200,255,.1);color:#64c8ff;font-size:11px;border-radius:6px;padding:3px 8px">Coin Packs</span>
+    </div>
+    <div class="pro-box" id="actLoginReminder" style="background:rgba(245,185,66,.08);border:1px solid rgba(245,185,66,.3);border-radius:10px;padding:14px 18px;margin-bottom:14px">
+      <h3 style="color:var(--gold);font-size:14px;margin-bottom:6px" data-i18n="activate.login.title">Account Required</h3>
+      <p style="font-size:13px;color:var(--muted);line-height:1.6" data-i18n="activate.login.desc">To use Pro, you must be signed in with a registered account or continue with Google/GitHub. Your Pro membership is linked to your account and syncs across all devices.</p>
+      <button class="mbtn mbtn-gold" id="actLoginBtn" style="margin-top:8px;width:100%" data-i18n="activate.login.btn">Sign in / Create account</button>
     </div>
     <div class="field">
       <label data-i18n="activate.code.label">Enter your activation code</label>
@@ -1993,7 +1994,7 @@
       <button class="mbtn mbtn-ghost" id="buyBtn" data-i18n="activate.buy">View membership plans</button>
     </div>
     <div class="msg" id="actMsg"></div>
-    <div class="note" data-i18n="activate.note">Pro is linked to your account — sign in on any device to access your membership. You must be signed in for Pro features to work.</div>
+    <div class="note" data-i18n="activate.note">Each activation code can only be used once. Pro and coins are linked to your account and sync across all devices.</div>
   </div>
 </div>
 
@@ -2100,12 +2101,114 @@
   </div>
 </div>
 
+<!-- History Panel (overlaid on prompt modal) -->
+<div class="history-panel" id="historyPanel" style="display:none;position:fixed;top:0;right:0;width:340px;max-width:90vw;height:100vh;background:var(--panel);border-left:1px solid var(--border);z-index:10001;overflow-y:auto;padding:20px 16px;box-shadow:-4px 0 24px rgba(0,0,0,.5)">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <h3 style="font-size:16px;margin:0" data-i18n="pm.history.title">Prompt History</h3>
+    <button onclick="document.getElementById('historyPanel').style.display='none'" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer">&times;</button>
+  </div>
+  <div id="historyList"></div>
+</div>
+
+<!-- Avatar Picker Overlay -->
+<div class="overlay" id="avatarOverlay">
+  <div class="modal" style="max-width:540px">
+    <button class="x" data-close>&times;</button>
+    <h2 data-i18n="avatar.title">Choose Your Avatar</h2>
+    <div class="desc" data-i18n="avatar.desc">Free avatars are always available. Pro avatars require Pro. Level avatars unlock as you level up. Coin avatars can be purchased with coins.</div>
+    <div id="avatarGrid" style="display:grid;grid-template-columns:repeat(8,1fr);gap:6px;margin-top:14px"></div>
+  </div>
+</div>
+
+<!-- ===== QQ-Style Friends Panel (sidebar) ===== -->
+<div class="friends-panel" id="friendsPanel" style="position:fixed;top:0;right:0;width:360px;max-width:100vw;height:100vh;background:var(--panel);border-left:1px solid var(--border);z-index:10000;box-shadow:-4px 0 24px rgba(0,0,0,.5);overflow:hidden;flex-direction:column;display:none">
+  <!-- Header -->
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px 10px;background:linear-gradient(135deg,rgba(124,92,255,.15),rgba(34,211,238,.08));border-bottom:1px solid var(--border)">
+    <div style="display:flex;align-items:center;gap:8px">
+      <div style="width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:16px">💬</div>
+      <h4 style="margin:0;font-size:15px;font-weight:700;letter-spacing:.3px">Messages</h4>
+    </div>
+    <button id="friendsPanelClose" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:8px;transition:.15s" onmouseenter="this.style.background='rgba(255,255,255,.08)'" onmouseleave="this.style.background='none'">&times;</button>
+  </div>
+  <!-- Tab Bar -->
+  <div id="friendsTabBar" style="display:flex;border-bottom:1px solid var(--border);background:var(--panel2)">
+    <button class="qq-tab active" data-tab="chats" style="flex:1;padding:10px 0;font-size:13px;font-weight:600;background:none;border:none;color:var(--accent2);cursor:pointer;border-bottom:2px solid var(--accent2);transition:.2s;position:relative">💬 Chats</button>
+    <button class="qq-tab" data-tab="contacts" style="flex:1;padding:10px 0;font-size:13px;font-weight:600;background:none;border:none;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:.2s;position:relative">👥 Contacts<span id="friendReqBadge" style="display:none;position:absolute;top:4px;right:16px;width:16px;height:16px;border-radius:50%;background:#ef4444;color:#fff;font-size:9px;font-weight:700;text-align:center;line-height:16px"></span></button>
+    <button class="qq-tab" data-tab="discover" style="flex:1;padding:10px 0;font-size:13px;font-weight:600;background:none;border:none;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:.2s">🔍 Discover</button>
+  </div>
+  <!-- Tab Content: Chats -->
+  <div id="tabChats" style="flex:1;overflow-y:auto;padding:0">
+    <div id="conversationsList" style="padding:0"></div>
+  </div>
+  <!-- Tab Content: Contacts -->
+  <div id="tabContacts" style="flex:1;overflow-y:auto;display:none;padding:0">
+    <!-- Friend Requests Section -->
+    <div id="contactReqSection" style="border-bottom:1px solid var(--border)">
+      <div id="contactReqHeader" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;cursor:pointer" onclick="toggleContactReqSection()">
+        <span style="font-size:12px;font-weight:700;color:var(--gold)">📨 Friend Requests</span>
+        <span id="contactReqCount" style="font-size:11px;color:var(--muted)"></span>
+        <span id="contactReqArrow" style="font-size:10px;color:var(--muted);transition:.2s">▼</span>
+      </div>
+      <div id="contactReqList" style="display:none;padding:0 14px 10px;max-height:200px;overflow-y:auto"></div>
+    </div>
+    <!-- Pending Sent Section -->
+    <div id="contactPendingSection" style="border-bottom:1px solid var(--border);display:none">
+      <div style="padding:8px 14px 4px"><span style="font-size:12px;font-weight:700;color:var(--gold)">⏳ Pending Sent</span></div>
+      <div id="contactPendingList" style="padding:0 14px 10px"></div>
+    </div>
+    <!-- Friends List -->
+    <div id="contactFriendsList" style="padding:0"></div>
+  </div>
+  <!-- Tab Content: Discover -->
+  <div id="tabDiscover" style="flex:1;overflow-y:auto;display:none;padding:0">
+    <div style="padding:14px 14px 8px">
+      <div style="font-size:12px;font-weight:700;color:var(--accent2);margin-bottom:10px">🔍 Find Friends</div>
+      <div style="display:flex;gap:6px">
+        <input type="text" id="friendSearchInput" placeholder="Search by username or email..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:10px;font-size:13px;outline:none;transition:border .2s" onfocus="this.style.borderColor='var(--accent2)'" onblur="this.style.borderColor='var(--border)'" />
+        <button id="friendSearchBtn" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:9px 16px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;transition:.15s;white-space:nowrap" onmouseenter="this.style.transform='scale(1.04)'" onmouseleave="this.style.transform='scale(1)'">Search</button>
+      </div>
+    </div>
+    <div id="friendSearchResults" style="padding:0 14px 14px"></div>
+    <!-- Suggested Users -->
+    <div style="padding:0 14px 14px">
+      <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px">✨ Suggested for You</div>
+      <div id="suggestedUsers"></div>
+    </div>
+  </div>
+  <!-- Unread indicator bar at bottom -->
+  <div id="unreadIndicator" style="display:none;padding:8px 14px;border-top:1px solid var(--border);text-align:center;font-size:12px;color:var(--accent2);cursor:pointer;background:rgba(124,92,255,.06)"></div>
+</div>
+
+<!-- ===== Chat Window (per friend) — QQ-style floating ===== -->
+<div class="chat-window" id="chatWindow" style="display:none!important;position:fixed;bottom:20px;right:380px;width:360px;max-width:90vw;background:var(--panel);border:1px solid var(--border);border-radius:16px;z-index:10001;box-shadow:0 8px 32px rgba(0,0,0,.5);overflow:hidden;resize:both;min-width:280px;min-height:340px">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,rgba(124,92,255,.1),rgba(34,211,238,.05));cursor:move" id="chatWindowHeader">
+    <div style="display:flex;align-items:center;gap:10px;cursor:pointer" id="chatFriendInfo">
+      <div id="chatFriendAvatar" style="width:34px;height:34px;border-radius:10px;overflow:hidden;border:1px solid var(--border)"></div>
+      <div>
+        <span id="chatFriendName" style="font-size:14px;font-weight:700">Friend</span>
+        <span id="chatFriendStatus" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#555;margin-left:5px;vertical-align:middle"></span>
+        <div id="chatFriendSub" style="font-size:10px;color:var(--muted)">offline</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:4px">
+      <button onclick="toggleChatMinimize()" style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:4px 6px;border-radius:6px;transition:.15s" onmouseenter="this.style.background='rgba(255,255,255,.08)'" onmouseleave="this.style.background='none'">─</button>
+      <button id="chatWindowClose" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px 8px;border-radius:6px;transition:.15s" onmouseenter="this.style.background='rgba(239,68,68,.15)';this.style.color='#ef4444'" onmouseleave="this.style.background='none';this.style.color='var(--muted)'">&times;</button>
+    </div>
+  </div>
+  <div id="chatMessages" style="height:300px;overflow-y:auto;padding:12px 16px;font-size:13px;display:flex;flex-direction:column;gap:8px"></div>
+  <div id="chatInputRow" style="display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--border);background:var(--panel2)">
+    <input type="text" id="chatInput" placeholder="Type a message..." style="flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:10px;font-size:13px;outline:none;transition:border .2s" onfocus="this.style.borderColor='var(--accent2)'" onblur="this.style.borderColor='var(--border)'" />
+    <button onclick="sendChatMessage()" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:9px 18px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;transition:.15s" onmouseenter="this.style.transform='scale(1.04)'" onmouseleave="this.style.transform='scale(1)'">Send</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <!-- Firebase SDK — loaded async so they don't block rendering -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js" async></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js" async></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js" async></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js" async></script>
 
 <!-- Core i18n — small, must load first -->
 <script src="i18n.js"></script>
@@ -2195,7 +2298,10 @@ if(window.PPI18n && window.PPI18n.registerDict){
  *     See PAYMENT-SETUP.md for the full step-by-step.
  * ============================================================ */
 
-/* ---- (free 3-day trial removed — Pro requires login) ---- */
+/* ---- 3-day free Pro trial — REMOVED ---- */
+/* Free trial and TRYPRO3 activation code have been removed.
+   Pro requires a logged-in account. Users must sign in or use Google/GitHub login.
+   A $0.99/3-day paid plan is available as an affordable trial option. */
 
 /* ============================================================
  *  2) FIREBASE — accounts, social login, cross-device sync
@@ -2324,27 +2430,30 @@ let favorites = [];
 try { favorites = JSON.parse(lsGet('pp_favorites')||'[]'); } catch(e){ favorites=[]; }
 if(!Array.isArray(favorites)) favorites=[];
 
+/* ---- Firebase / account state (declared early so evalProState can reference) ---- */
+let fbReady = false;
+let auth = null, db = null, rtdb = null;
+let currentUser = null;
+let userBio = '';
+let authMode = 'signin';   /* 'signin' | 'register' */
+
 function proUntil(){ return parseInt(lsGet('pp_pro_until')||'0',10) || 0; }
 function evalProState(){
   const code = lsGet('pp_pro_code') || '';
   if(!code){ isPro=false; return; }
-  /* Pro requires login — if not logged in, don't grant Pro */
-  if(typeof currentUser !== 'undefined' && !currentUser){ isPro=false; return; }
   const until = proUntil();
   if(until>0 && Date.now()>until){
     lsDel('pp_pro_code'); lsDel('pp_pro_until');
-    isPro=false; proExpired=true; return;
+    isPro=false; proExpired=true;
+    /* Sync the expired state to cloud so the Firestore doc is accurate */
+    if(fbReady && currentUser) cloudSavePro();
+    return;
   }
+  /* Pro only works for logged-in users — without login, treat as free */
+  if(!currentUser){ isPro=false; return; }
   isPro=true;
 }
 evalProState();
-
-/* ---- Firebase / account state ---- */
-let fbReady = false;
-let auth = null, db = null;
-let currentUser = null;
-let userBio = '';
-let authMode = 'signin';   /* 'signin' | 'register' */
 
 let activeCat="All", activeView="all", currentPrompt=null, currentVariant=0, shown=PAGE;
 
@@ -2370,7 +2479,7 @@ function init(){
   }
   if(!window._mailLinkWired){
     var mailLink=document.getElementById('mailLink');
-    if(mailLink) mailLink.addEventListener('click',()=>{ window.location.href='mailto:zongyufred@gmail.com'; });
+    if(mailLink) mailLink.addEventListener('click',()=>{ window.location.href='mailto:zongxie22@gmail.com'; });
     window._mailLinkWired=true;
   }
   /* Reset category filter so it matches the current language's data */
@@ -2400,7 +2509,7 @@ function init(){
   wireEvents();
   initFirebase();
   if(proExpired){
-    toast(PPI18n.t('toast.pro.expired','Your Pro membership has expired. Renew to keep access.'),'info');
+    toast(PPI18n.t('toast.pro.ended'),'info');
   }
   /* Build language switcher (only once) */
   if(!document.getElementById('langSwitch')){
@@ -2525,6 +2634,7 @@ function initFirebase(){
     firebase.initializeApp(firebaseConfig);
     auth=firebase.auth();
     db=firebase.firestore();
+    rtdb=firebase.database();
     fbReady=true;
     auth.onAuthStateChanged(handleAuthChange);
   }catch(e){
@@ -2535,18 +2645,93 @@ function initFirebase(){
 
 async function handleAuthChange(user){
   currentUser=user||null;
+
+  /* Helper: clear all account-specific localStorage keys */
+  function clearAccountKeys(){
+    /* Pro / trial */
+    lsDel('pp_pro_code'); lsDel('pp_pro_until'); lsDel('pp_trial_used');
+    /* Used license keys */
+    try{
+      var usedKeys=JSON.parse(localStorage.getItem('pp_used_keys')||'[]');
+      usedKeys.forEach(function(k){ lsDel('pp_used_key_'+k); });
+    }catch(e){}
+    lsDel('pp_used_keys');
+    /* Promo usage */
+    try{
+      var promoUsed=JSON.parse(localStorage.getItem('pp_promo_used')||'[]');
+      promoUsed.forEach(function(c){ lsDel('pp_promo_'+c); });
+    }catch(e){}
+    lsDel('pp_promo_used');
+    /* Demo friend requests */
+    lsDel('pp_demo_sent');
+    /* Marketing opt-in */
+    lsDel('pp_optin');
+    /* Favorites — prevent bleed between accounts */
+    lsDel('pp_favorites');
+    /* Game high score — clear account-specific best score if present */
+    if(currentUser){
+      lsDel('pp_game_best_'+currentUser.uid);
+    }
+    lsDel('pp_game_best'); /* legacy key */
+    /* Game-pm (Prompt Matrix) credits / unlocks — these are shared across
+     * accounts unless we clear them. They live in the same localStorage
+     * as the parent page (same origin). */
+    var pmKeys=['pm_unlock_credits','pm_unlocked_towers','pm_unlocked_monsters',
+                'pm_unlocked_skills','pm_used_keys','pm_hard_cleared','pm_last_license'];
+    pmKeys.forEach(function(k){ try{localStorage.removeItem(k);}catch(e){} });
+  }
+
+  if(!user){
+    /* ---- LOGGING OUT ---- */
+    /* Switch PPGame to guest mode — this reads/writes pp_game_guest */
+    if(window.PPGame && PPGame.setUserId){
+      PPGame.setUserId(null); // switches to pp_game_guest key
+    }
+    /* Clear all account-specific keys (pro, trial, keys, promos, pm_*) */
+    clearAccountKeys();
+    isPro=false; proExpired=false;
+    /* Clear friends/chat state */
+    if(typeof _chatFriendUid!=='undefined') _chatFriendUid=null;
+  } else {
+    /* ---- LOGGING IN ---- */
+    /* Before clearing anything, save the current guest game state as a backup
+     * so new accounts can optionally import it. Only save if there is
+     * meaningful guest progress (non-default state). */
+    var guestGameRaw = localStorage.getItem('pp_game_guest');
+    if(guestGameRaw && !localStorage.getItem('pp_guest_backup')){
+      try{
+        var guestObj = JSON.parse(guestGameRaw);
+        /* Only backup if the guest actually earned something (xp > 0 or coins > 0 or lvl > 1) */
+        if((guestObj.xp||0) > 0 || (guestObj.coins||0) > 0 || (guestObj.lvl||0) > 1){
+          localStorage.setItem('pp_guest_backup', guestGameRaw);
+        }
+      }catch(e){}
+    }
+    /* Clear ALL account-specific data to prevent bleed from previous account */
+    clearAccountKeys();
+    /* Reset in-memory state */
+    isPro=false; proExpired=false;
+    /* Switch PPGame to this user's UID-prefixed key */
+    if(window.PPGame && PPGame.setUserId){
+      PPGame.setUserId(user.uid);
+    }
+  }
+  /* Re-evaluate Pro state — Pro only works for logged-in users */
+  evalProState();
   if(currentUser){
     try{ await loadUserDoc(currentUser); }catch(e){ console.warn('loadUserDoc',e); }
-    /* Re-evaluate Pro state now that user is logged in */
-    evalProState();
-  } else {
-    /* Logged out — Pro requires login, so clear Pro state */
-    isPro=false;
   }
+  /* Refresh game state from cloud — each account has independent game data */
   refreshAuthUI();
   refreshBadge();
   renderSidebar();
   renderGrid();
+  /* Refresh friends panel if it's open */
+  try{
+    if(currentUser && typeof loadFriendsList==='function') loadFriendsList();
+    if(currentUser && typeof loadFriendRequests==='function') loadFriendRequests();
+    if(currentUser && typeof loadConversations==='function') loadConversations();
+  }catch(e){}
 }
 
 function userDocRef(){ return db.collection('users').doc(currentUser.uid); }
@@ -2559,44 +2744,91 @@ async function loadUserDoc(user){
   const localFavs=favorites.slice();
   const localPermanent=(proUntil()===0 && isPro);
   const localUntil=proUntil();
+  const localTrialUsed=!!lsGet('pp_trial_used');
   const TS=firebase.firestore.FieldValue.serverTimestamp();
   const method=(user.providerData&&user.providerData[0]&&user.providerData[0].providerId)||'password';
 
   if(!snap.exists){
+    /* New account — ALWAYS start as Free. Only a purchased subscription
+     * can grant Pro; never inherit leftover local pro state from a
+     * previous session / different account.
+     * New accounts start with ZERO game progress by default.
+     * Guest progress import is offered via showGuestImportDialog() below. */
+    lsDel('pp_pro_code'); lsDel('pp_pro_until'); isPro=false; proExpired=false;
     const doc={
       email:user.email||'', displayName:user.displayName||'', method:method,
-      favorites:localFavs, pro:localPermanent, proUntil:localUntil,
-      proCode:lsGet('pp_pro_code')||'',
+      favorites:localFavs, pro:false, proUntil:0,
+      trialUsed:false, proCode:'',
       marketingOptIn:(lsGet('pp_optin')!=='0'),
       bio:'',
-      game:(window.PPGame?PPGame.exportState():null),
+      game:null, /* new accounts start with no game progress */
       createdAt:TS, updatedAt:TS
     };
     try{ await ref.set(doc); }catch(e){ console.warn('user doc create',e); }
     applyUserState(doc);
+    /* Also create pp_public document for new accounts so they're searchable */
+    try{
+      var pubName = user.displayName || (user.email ? user.email.split('@')[0] : 'User');
+      db.collection('pp_public').doc(user.uid).set({
+        name: pubName,
+        email: user.email || '',
+        avatar: 0,
+        lvl: 1,
+        bio: '',
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      },{merge:true});
+    }catch(e){ console.warn('pp_public create',e); }
+    /* Check if the user had guest progress they might want to import */
+    if(localStorage.getItem('pp_guest_backup')){
+      showGuestImportDialog();
+    }
   }else{
     const d=snap.data()||{};
+    /* Returning account — clear any guest backup (only new accounts get the import prompt) */
+    localStorage.removeItem('pp_guest_backup');
     const merged=[];
     [].concat(Array.isArray(d.favorites)?d.favorites:[], localFavs).forEach(id=>{
       if(merged.indexOf(id)<0) merged.push(id);
     });
-    const permanent=(!!d.pro)||localPermanent;
-    const untilM=permanent?0:Math.max(d.proUntil||0, localUntil||0);
+    /* Validate cloud pro state: only grant pro if there's a real license
+     * key (not a placeholder like 'ACCOUNT' or empty). This ensures only
+     * purchased subscriptions can provide Pro access. */
+    var cloudProCode = d.proCode || '';
+    var hasRealProCode = cloudProCode && cloudProCode !== 'ACCOUNT';
+    var cloudPermanent = hasRealProCode && !!d.pro;
+    var permanent=cloudPermanent||localPermanent;
+    /* If the cloud says pro=true but the proCode is just a placeholder,
+     * don't grant permanent pro — force the user to re-activate. */
+    if(d.pro && !hasRealProCode){
+      permanent = false;
+    }
+    var untilM=permanent?0:Math.max(d.proUntil||0, localUntil||0);
+    /* Also reject timed pro without a real code */
+    if(untilM > 0 && !hasRealProCode && !localPermanent){
+      var localCode = lsGet('pp_pro_code') || '';
+      if(!localCode || localCode === 'ACCOUNT' || localCode === 'TRIAL'){
+        untilM = 0; /* no valid code — clear timed pro */
+      }
+    }
+    const trialUsedM=(!!d.trialUsed)||localTrialUsed;
     const state={
       email:user.email||d.email||'', method:method,
-      favorites:merged, pro:permanent, proUntil:untilM,
+      favorites:merged, pro:permanent, proUntil:untilM, trialUsed:trialUsedM,
+      proCode:cloudProCode,
       marketingOptIn:(d.marketingOptIn!==false)
     };
     try{
       await ref.set({
         email:state.email, displayName:user.displayName||d.displayName||'', method:method,
-        favorites:merged, pro:permanent, proUntil:untilM,
+        favorites:merged, pro:permanent, proUntil:untilM, trialUsed:trialUsedM,
+        proCode:cloudProCode,
         updatedAt:TS
       },{merge:true});
     }catch(e){ console.warn('user doc merge',e); }
     applyUserState(state);
     userBio = d.bio || '';
     if(window.PPGame && d.game) PPGame.importState(d.game);
+    else if(window.PPGame && PPGame.resetToDefaults) PPGame.resetToDefaults();
     /* Merge promo usage from cloud */
     if(Array.isArray(d.promoUsed)){
       var localPromoList=[];
@@ -2604,6 +2836,14 @@ async function loadUserDoc(user){
       var allPromos=[].concat(d.promoUsed,localPromoList).filter(function(v,i,a){return a.indexOf(v)===i;});
       lsSet('pp_promo_used',JSON.stringify(allPromos));
       allPromos.forEach(function(c){ lsSet('pp_promo_'+c,'1'); });
+    }
+    /* Merge used license keys from cloud (one-time-use enforcement) */
+    if(Array.isArray(d.usedKeys)){
+      var localUsedKeys=[];
+      try{ localUsedKeys=JSON.parse(lsGet('pp_used_keys')||'[]'); }catch(e){ localUsedKeys=[]; }
+      var allUsedKeys=[].concat(d.usedKeys,localUsedKeys).filter(function(v,i,a){return a.indexOf(v)===i;});
+      lsSet('pp_used_keys',JSON.stringify(allUsedKeys));
+      allUsedKeys.forEach(function(k){ lsSet('pp_used_key_'+k,'1'); });
     }
   }
 }
@@ -2613,14 +2853,108 @@ function applyUserState(s){
   favorites=Array.isArray(s.favorites)?s.favorites.slice():[];
   saveFavs();
   if(s.pro){
-    lsSet('pp_pro_code', lsGet('pp_pro_code')||'ACCOUNT'); lsDel('pp_pro_until'); isPro=true; proExpired=false;
+    /* Use the real license key from the cloud doc.
+     * Only a genuine license key (from a purchased subscription) grants Pro.
+     * Reject placeholder codes like 'ACCOUNT' — if no real code exists,
+     * the user must re-activate with a valid key. */
+    var code=s.proCode || lsGet('pp_pro_code') || '';
+    if(code && code !== 'ACCOUNT'){
+      lsSet('pp_pro_code', code);
+      lsDel('pp_pro_until'); isPro=true; proExpired=false;
+    }else{
+      /* No valid license key — cannot grant Pro */
+      lsDel('pp_pro_code'); lsDel('pp_pro_until'); isPro=false;
+    }
   }else if(s.proUntil && Date.now()<s.proUntil){
-    lsSet('pp_pro_code','SUBSCRIPTION'); lsSet('pp_pro_until',String(s.proUntil)); isPro=true; proExpired=false;
+    var code=s.proCode || lsGet('pp_pro_code') || '';
+    if(code && code !== 'TRIAL'){
+      lsSet('pp_pro_code', code);
+    }else if(code === 'TRIAL'){
+      /* 'TRIAL' is acceptable for timed subscriptions that were activated
+       * via valid promo codes (ZX14D-, ZX1M-). Keep for backward compat. */
+      lsSet('pp_pro_code', code);
+    }else{
+      lsSet('pp_pro_code', 'TRIAL');
+    }
+    lsSet('pp_pro_until',String(s.proUntil)); isPro=true; proExpired=false;
   }else{
     lsDel('pp_pro_code'); lsDel('pp_pro_until'); isPro=false;
   }
-  /* Re-evaluate Pro (enforces login requirement) */
-  evalProState();
+  if(s.trialUsed) lsSet('pp_trial_used','1');
+}
+
+/* ============================================================
+ *  GUEST PROGRESS IMPORT — offer new accounts the chance to
+ *  carry over their guest XP/coins/level.
+ * ============================================================ */
+function showGuestImportDialog(){
+  var backupRaw = localStorage.getItem('pp_guest_backup');
+  if(!backupRaw) return;
+  var guestData;
+  try{ guestData = JSON.parse(backupRaw); }catch(e){ localStorage.removeItem('pp_guest_backup'); return; }
+  var gLvl = guestData.lvl || 1;
+  var gCoins = guestData.coins || 0;
+  var gXp = guestData.xp || 0;
+  /* Don't offer import for trivial progress */
+  if(gLvl <= 1 && gCoins <= 0 && gXp <= 0){
+    localStorage.removeItem('pp_guest_backup');
+    return;
+  }
+
+  /* Build modal */
+  var overlay = document.createElement('div');
+  overlay.className = 'overlay show';
+  overlay.id = 'guestImportOverlay';
+  overlay.style.zIndex = '10001';
+  var modal = document.createElement('div');
+  modal.className = 'modal sm';
+  modal.innerHTML = '<h2>🎮 Import Guest Progress?</h2>'
+    +'<div class="desc" style="margin:12px 0;line-height:1.6">'
+    +'You have guest progress from before you signed up:<br>'
+    +'<strong>Level '+gLvl+'</strong> &middot; <strong>'+gCoins+' 🪙</strong> &middot; <strong>'+gXp+' XP</strong><br><br>'
+    +'Would you like to import this progress to your new account?'
+    +'</div>'
+    +'<div style="display:flex;gap:10px;margin-top:16px">'
+    +'<button class="mbtn mbtn-primary" id="guestImportYes" style="flex:1">Yes, import</button>'
+    +'<button class="mbtn mbtn-ghost" id="guestImportNo" style="flex:1">No, start fresh</button>'
+    +'</div>';
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+
+  /* Close on backdrop click */
+  overlay.addEventListener('click', function(e){ if(e.target===overlay) closeGuestImport(false); });
+
+  document.getElementById('guestImportYes').addEventListener('click', function(){
+    closeGuestImport(true);
+  });
+  document.getElementById('guestImportNo').addEventListener('click', function(){
+    closeGuestImport(false);
+  });
+
+  function closeGuestImport(doImport){
+    overlay.classList.remove('show');
+    setTimeout(function(){ if(overlay.parentNode) overlay.parentNode.removeChild(overlay); }, 300);
+    if(doImport){
+      /* Import guest data into the current account's game state */
+      if(window.PPGame && PPGame.importState){
+        PPGame.importState(guestData);
+        /* Save imported state to cloud */
+        if(fbReady && currentUser){
+          var gameData = PPGame.exportState();
+          userDocRef().set({
+            game: gameData,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          },{merge:true}).catch(function(e){ console.warn('import guest to cloud',e); });
+          /* Update public profile with imported level */
+          try{
+            if(typeof syncPublicProfile === 'function') syncPublicProfile();
+          }catch(e){}
+        }
+      }
+    }
+    /* Always clear the backup after showing the dialog */
+    localStorage.removeItem('pp_guest_backup');
+  }
 }
 
 /* save current favorites / Pro to the signed-in user's cloud doc */
@@ -2636,6 +2970,7 @@ function cloudSavePro(){
   userDocRef().set({
     pro:(proUntil()===0 && isPro),
     proUntil:proUntil(),
+    trialUsed:!!lsGet('pp_trial_used'),
     proCode:lsGet('pp_pro_code')||'',
     updatedAt:firebase.firestore.FieldValue.serverTimestamp()
   },{merge:true}).catch(e=>console.warn('save pro',e));
@@ -2715,14 +3050,25 @@ function doPasswordReset(){
   const m=document.getElementById('authMsg'); m.style.display='block'; m.className='msg';
   const email=document.getElementById('authEmail').value.trim();
   if(!email){ m.className='msg err'; m.textContent=PPI18n.t('auth.resetplaceholder'); return; }
-  auth.sendPasswordResetEmail(email).then(()=>{
+  /* Use actionCodeSettings to set the project name to PromptRunic
+   * in the password reset email (replaces default project-179379045554) */
+  var actionCodeSettings = {
+    url: window.location.origin + window.location.pathname,
+    handleCodeInApp: false
+  };
+  auth.sendPasswordResetEmail(email, actionCodeSettings).then(()=>{
     m.className='msg ok'; m.textContent=PPI18n.t('auth.resetsent');
   }).catch(e=>{ m.className='msg err'; m.textContent=authErrMsg(e); });
 }
 
 function doSignOut(){
   if(!fbReady || !auth) return;
-  auth.signOut().then(()=>{ hideOverlays(); toast(PPI18n.t('auth.signedout')); });
+  /* The actual clearing of account data happens in handleAuthChange(!user)
+   * which fires after auth.signOut(). We just trigger the sign-out here;
+   * handleAuthChange will clear all account-specific localStorage keys,
+   * switch PPGame to guest mode, and reset in-memory state. */
+  isPro=false; proExpired=false;
+  auth.signOut().then(()=>{ hideOverlays(); toast(PPI18n.t('auth.signedout')); refreshBadge(); renderGrid(); });
 }
 
 function setAuthMode(mode){
@@ -2833,7 +3179,7 @@ function refreshBadge(){
     const until=proUntil();
     if(until>0){
       const days=Math.max(1,Math.ceil((until-Date.now())/86400000));
-      b.textContent=PPI18n.t('plan.pro.trial').replace('{d}',days);
+      b.textContent=PPI18n.t('plan.pro.days').replace('{d}',days);
     }else{
       b.textContent=PPI18n.t('plan.pro');
     }
@@ -3324,87 +3670,163 @@ function toggleFav(id){
  * ============================================================ */
 function openActivate(){
   const m=document.getElementById('actMsg'); m.className='msg'; m.textContent='';
+  /* Show/hide login reminder based on auth state */
+  var loginBox = document.getElementById('actLoginReminder');
+  if(loginBox){
+    loginBox.style.display = currentUser ? 'none' : 'block';
+  }
   document.getElementById('actOverlay').classList.add('show');
 }
+var _redeemProcessing = false;
+
 async function redeemCode(){
   const key=document.getElementById('codeInput').value.trim();
   const m=document.getElementById('actMsg');
   if(!key){ m.className='msg err'; m.textContent=PPI18n.t('activate.entercode'); return; }
-  /* Require login for Pro activation */
+
+  /* Prevent concurrent submissions */
+  if(_redeemProcessing){ return; }
+
+  /* Require login for any activation (Pro, coins, credits) */
   if(!currentUser){
     m.className='msg err';
-    m.textContent=PPI18n.t('activate.login.required','Please sign in or create an account first — Pro is linked to your account.');
+    m.textContent=PPI18n.t('activate.login.required');
     return;
   }
+
+  /* ---- Check if this EXACT license key has already been used ---- */
+  /* Use the async version which checks localStorage AND the global
+   * Firestore used_license_keys collection (prevents reuse across
+   * different accounts and devices) */
+  var usedResult = await isLicenseUsedAsync(key);
+  if(usedResult.used){
+    m.className='msg err';
+    if(usedResult.byOtherAccount){
+      /* Different account used this code — show "already activated" message */
+      m.textContent=PPI18n.t('activate.code.used.other');
+    }else{
+      /* Same account already used this code */
+      m.textContent=PPI18n.t('activate.code.used');
+    }
+    return;
+  }
+
+  _redeemProcessing = true;
   m.className='msg'; m.textContent=PPI18n.t('activate.checking'); m.style.display='block';
 
   /* ---- Promo codes (advertising / marketing) ---- */
   const promoKey = key.toUpperCase();
 
-  /* ZXTEST- : test mode — permanent Pro unlock */
-  if(promoKey.indexOf('ZXTEST-')===0){
-    if(isPromoUsed('ZXTEST')) return promoAlreadyUsed(m,'ZXTEST');
-    markPromoUsed('ZXTEST');
-    return unlock(key,m,PPI18n.t('activate.testmode'));
-  }
+  /* ZXTEST- : REMOVED — free permanent Pro is no longer allowed.
+   * Only a purchased subscription can grant Pro access. */
 
   /* ZX14D- : free 14-day Pro trial */
   if(promoKey.indexOf('ZX14D-')===0){
-    if(isPromoUsed('ZX14D')) return promoAlreadyUsed(m,'ZX14D');
+    if(isPromoUsed('ZX14D')){ _redeemProcessing=false; return promoAlreadyUsed(m,'ZX14D'); }
     markPromoUsed('ZX14D');
+    await markLicenseUsedAsync(key);
+    _redeemProcessing=false;
     return unlockTimed(key,m,14,PPI18n.t('activate.promo.14d'));
   }
 
   /* ZX1M- : free 1-month (30-day) Pro */
   if(promoKey.indexOf('ZX1M-')===0){
-    if(isPromoUsed('ZX1M')) return promoAlreadyUsed(m,'ZX1M');
+    if(isPromoUsed('ZX1M')){ _redeemProcessing=false; return promoAlreadyUsed(m,'ZX1M'); }
     markPromoUsed('ZX1M');
+    await markLicenseUsedAsync(key);
+    _redeemProcessing=false;
     return unlockTimed(key,m,30,PPI18n.t('activate.promo.1m'));
   }
 
   /* ZX5000C- : add 5000 coins */
   if(promoKey.indexOf('ZX5000C-')===0){
-    if(isPromoUsed('ZX5000C')) return promoAlreadyUsed(m,'ZX5000C');
+    if(isPromoUsed('ZX5000C')){ _redeemProcessing=false; return promoAlreadyUsed(m,'ZX5000C'); }
     markPromoUsed('ZX5000C');
+    await markLicenseUsedAsync(key);
     if(window.PPGame && PPGame.addCoins) PPGame.addCoins(5000);
     m.className='msg ok';
     m.textContent=PPI18n.t('activate.promo.5000c');
+    _redeemProcessing=false;
     return;
   }
 
   if(!window.PPLemon || !PPLemon.validateLicense){
     m.className='msg err';
     m.textContent=PPI18n.t('activate.notready');
+    _redeemProcessing=false;
     return;
   }
   /* verify the license key with Lemon Squeezy */
   try{
     const res=await PPLemon.validateLicense(key);
+    console.log('[PromptRunic] redeemCode result:', JSON.stringify(res));
+
+    /* ---- DOUBLE-CHECK: after Lemon Squeezy validation, verify key
+     * was not already used (prevents race condition and ensures
+     * Firestore-based tracking is checked even if local check missed it) ---- */
+    var secondCheck = await isLicenseUsedAsync(key);
+    if(secondCheck.used){
+      m.className='msg err';
+      if(secondCheck.byOtherAccount){
+        m.textContent=PPI18n.t('activate.code.used.other');
+      }else{
+        m.textContent=PPI18n.t('activate.code.used');
+      }
+      _redeemProcessing=false;
+      return;
+    }
+
     if(res.ok && res.kind==='pro'){
+      /* Mark the key as used BEFORE unlocking to prevent reuse */
+      await markLicenseUsedAsync(key);
       /* Lifetime (days===0) → permanent; subscription (days>0) → set expiry */
       if(res.days && res.days > 0){
+        _redeemProcessing=false;
         return unlockTimed(key,m,res.days,PPI18n.t('activate.unlocked.sub').replace('{d}',res.days));
       }
+      _redeemProcessing=false;
       return unlock(key,m,PPI18n.t('activate.unlocked'));
     }
     if(res.ok && res.kind==='coins'){
+      /* Mark the key as used BEFORE adding coins to prevent reuse */
+      await markLicenseUsedAsync(key);
       if(window.PPGame && PPGame.addCoins) PPGame.addCoins(res.coins);
       m.className='msg ok';
       m.textContent=PPI18n.t('activate.coincode').replace('{n}',res.coins);
+      _redeemProcessing=false;
       return;
     }
     if(res.ok){
-      m.className='msg err'; m.textContent=PPI18n.t('activate.notpro');
+      /* Valid key but couldn't determine type (unknown product).
+       * Still mark as used so it can't be re-entered. */
+      await markLicenseUsedAsync(key);
+      console.warn('[PromptRunic] Valid key but unknown product type. product_id=' +
+        (res.product_id||'?') + ', product_name=' + (res.product_name||'?'));
+      m.className='msg err';
+      m.textContent=PPI18n.t('activate.notpro') + ' (Product: ' + (res.product_name||res.product_id||'unknown') + ')';
+      _redeemProcessing=false;
       return;
     }
     if(res.error==='network'){
       m.className='msg err'; m.textContent=PPI18n.t('activate.network');
+      _redeemProcessing=false;
       return;
     }
-    m.className='msg err'; m.textContent=PPI18n.t('activate.invalid');
+    if(res.error==='limit'){
+      /* Activation limit reached means this code was already activated before.
+       * Mark it as used locally/cloud to prevent future attempts. */
+      await markLicenseUsedAsync(key);
+      m.className='msg err'; m.textContent=PPI18n.t('activate.code.used.other');
+      _redeemProcessing=false;
+      return;
+    }
+    /* All other failures (invalid code, not found, etc.) */
+    m.className='msg err'; m.textContent=PPI18n.t('activate.code.used.other');
   }catch(e){
+    console.error('[PromptRunic] redeemCode exception:', e);
     m.className='msg err'; m.textContent=PPI18n.t('activate.network');
   }
+  _redeemProcessing=false;
 }
 
 /* Check / mark promo code usage (per account or per browser) */
@@ -3436,6 +3858,177 @@ function promoAlreadyUsed(m,code){
   m.textContent=PPI18n.t('activate.promo.used');
 }
 
+/* ---- License key one-time-use tracking ----
+ * Every license key (whether Pro, coin, or credit) can only be used ONCE.
+ * This prevents the same code from being entered repeatedly, even across
+ * different accounts and devices.
+ *
+ * Tracking layers:
+ *   1. localStorage pp_used_keys array + per-key flags (fast, local)
+ *   2. Firestore users/{uid}/usedKeys array (synced on login)
+ *   3. Firestore global used_license_keys/{normalizedKey} (cross-account)
+ *
+ * redeemCode() calls isLicenseUsedAsync() which checks all three layers.
+ */
+function isLicenseUsed(key){
+  var normalizedKey = key.trim().toUpperCase();
+  /* Check local list */
+  var usedKeys=[];
+  try{ usedKeys=JSON.parse(lsGet('pp_used_keys')||'[]'); }catch(e){ usedKeys=[]; }
+  if(usedKeys.indexOf(normalizedKey)>=0) return true;
+  /* Check per-key flag (set when signed in) */
+  if(lsGet('pp_used_key_'+normalizedKey)) return true;
+  /* Also check the current pro code — if this is the key that's already
+   * providing the active Pro subscription, it's already used */
+  if(lsGet('pp_pro_code') && lsGet('pp_pro_code').trim().toUpperCase() === normalizedKey) return true;
+  return false;
+}
+
+/* Async version: also checks the global Firestore used_license_keys collection.
+ * This is the authoritative check — it prevents the same activation code
+ * from being used by different accounts on different devices.
+ * MUST be used in redeemCode() before processing any license key.
+ *
+ * Returns an object: { used: boolean, byOtherAccount: boolean }
+ *   used=true, byOtherAccount=false → same account already used this key
+ *   used=true, byOtherAccount=true  → a DIFFERENT account already used this key
+ *   used=false → key has never been used
+ */
+async function isLicenseUsedAsync(key){
+  /* First, do the fast synchronous check (local storage) */
+  if(isLicenseUsed(key)) return {used:true, byOtherAccount:false};
+  var normalizedKey = key.trim().toUpperCase();
+
+  /* Check Firestore: global used_license_keys collection (cross-account) */
+  if(fbReady && db){
+    try{
+      var globalDoc = await db.collection('used_license_keys').doc(normalizedKey).get();
+      if(globalDoc.exists){
+        /* This key was already used — check if by this account or another */
+        var globalData = globalDoc.data()||{};
+        var isOtherAccount = globalData.usedBy && currentUser && globalData.usedBy !== currentUser.uid;
+        /* Mark it locally too */
+        markLicenseUsed(key);
+        return {used:true, byOtherAccount: isOtherAccount};
+      }
+    }catch(e){
+      console.warn('[PromptRunic] Could not check global used keys:', e);
+      /* Fallback: check the user's subcollection (in case global collection
+       * is blocked by Firestore rules) */
+      if(currentUser){
+        try{
+          var subDoc = await db.collection('users').doc(currentUser.uid).collection('used_license_keys').doc(normalizedKey).get();
+          if(subDoc.exists){
+            markLicenseUsed(key);
+            var subData = subDoc.data()||{};
+            var isOther = subData.usedBy && subData.usedBy !== currentUser.uid;
+            return {used:true, byOtherAccount: isOther};
+          }
+        }catch(e2){
+          console.warn('[PromptRunic] Could not check user subcollection used keys:', e2);
+        }
+      }
+    }
+  }
+  /* Check Firestore: current user's usedKeys array (in case local was cleared) */
+  if(fbReady && db && currentUser){
+    try{
+      var userDoc = await db.collection('users').doc(currentUser.uid).get();
+      if(userDoc.exists){
+        var userData = userDoc.data()||{};
+        var cloudUsedKeys = userData.usedKeys || [];
+        if(cloudUsedKeys.indexOf(normalizedKey) >= 0){
+          /* This key was already used by this account — mark locally */
+          markLicenseUsed(key);
+          return {used:true, byOtherAccount:false};
+        }
+      }
+    }catch(e){
+      console.warn('[PromptRunic] Could not check user used keys:', e);
+    }
+  }
+  return {used:false, byOtherAccount:false};
+}
+function markLicenseUsed(key){
+  /* Synchronous version — writes to localStorage immediately, then
+   * fires off async Firestore writes (fire-and-forget).
+   * For the await version, use markLicenseUsedAsync() instead. */
+  var normalizedKey = key.trim().toUpperCase();
+  var usedKeys=[];
+  try{ usedKeys=JSON.parse(lsGet('pp_used_keys')||'[]'); }catch(e){ usedKeys=[]; }
+  if(usedKeys.indexOf(normalizedKey)<0) usedKeys.push(normalizedKey);
+  lsSet('pp_used_keys',JSON.stringify(usedKeys));
+  /* Per-key flag */
+  lsSet('pp_used_key_'+normalizedKey,'1');
+  /* Fire-and-forget Firestore writes */
+  _markLicenseUsedCloud(normalizedKey);
+}
+
+/* Async version: awaits all Firestore writes to ensure the key is
+ * properly recorded before returning. This is the RECOMMENDED version
+ * to use in redeemCode() to guarantee one-time-use enforcement. */
+async function markLicenseUsedAsync(key){
+  var normalizedKey = key.trim().toUpperCase();
+  /* 1. Write to localStorage (immediate, reliable) */
+  var usedKeys=[];
+  try{ usedKeys=JSON.parse(lsGet('pp_used_keys')||'[]'); }catch(e){ usedKeys=[]; }
+  if(usedKeys.indexOf(normalizedKey)<0) usedKeys.push(normalizedKey);
+  lsSet('pp_used_keys',JSON.stringify(usedKeys));
+  lsSet('pp_used_key_'+normalizedKey,'1');
+
+  /* 2. Await cloud writes to guarantee persistence */
+  await _markLicenseUsedCloud(normalizedKey);
+}
+
+/* Internal: write used key to Firestore (both user doc and global registry).
+ * Returns a Promise so callers can await it if needed. */
+function _markLicenseUsedCloud(normalizedKey){
+  if(!currentUser || !fbReady) return Promise.resolve();
+
+  var promises = [];
+
+  /* Write to user's cloud doc */
+  try{
+    promises.push(
+      userDocRef().set({
+        usedKeys:firebase.firestore.FieldValue.arrayUnion(normalizedKey),
+        updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+      },{merge:true}).catch(function(e){
+        console.warn('markLicenseUsed cloud sync failed:', e);
+      })
+    );
+  }catch(e){ console.warn('markLicenseUsed cloud sync',e); }
+
+  /* Write to the GLOBAL used_license_keys collection.
+   * This is the authoritative cross-account registry — once a key is
+   * written here, no other account can ever use it again. */
+  try{
+    promises.push(
+      db.collection('used_license_keys').doc(normalizedKey).set({
+        usedBy: currentUser.uid,
+        usedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        key: normalizedKey
+      }).catch(function(e){
+        console.warn('markLicenseUsed global registry failed:', e);
+        /* If the global registry write fails (e.g., Firestore rules),
+         * try an alternative path: write to a subcollection under the
+         * user's own document where rules are more permissive. */
+        try{
+          db.collection('users').doc(currentUser.uid).collection('used_license_keys').doc(normalizedKey).set({
+            usedBy: currentUser.uid,
+            usedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            key: normalizedKey
+          }).catch(function(e2){
+            console.warn('markLicenseUsed user subcollection fallback failed:', e2);
+          });
+        }catch(e3){}
+      })
+    );
+  }catch(e){ console.warn('markLicenseUsed global registry',e); }
+
+  return Promise.all(promises);
+}
+
 function unlock(key,m,text){
   lsSet('pp_pro_code',key); lsDel('pp_pro_until');   /* permanent — no expiry */
   isPro=true; proExpired=false;
@@ -3456,6 +4049,12 @@ function unlockTimed(key,m,days,text){
   refreshBadge(); renderGrid();
   setTimeout(()=>document.getElementById('actOverlay').classList.remove('show'),1400);
   toast(PPI18n.t('activate.pro.unlocked'));
+}
+function startTrial(){
+  /* Free trial removed — redirect to Pro plans */
+  const m=document.getElementById('actMsg'); m.style.display='block';
+  m.className='msg err';
+  m.textContent=PPI18n.t('activate.trial.removed');
 }
 
 /* ============================================================
@@ -3514,13 +4113,23 @@ function wireEvents(){
   });
   document.getElementById('pmCopy').addEventListener('click',()=>{ copyText(buildOutput()); if(window.PPGame) PPGame.award('copy'); toast(PPI18n.t('toast.copied')); });
   document.getElementById('pmFav').addEventListener('click',()=>{ if(currentPrompt) toggleFav(currentPrompt.id); });
-  /* Share prompt button */
+  /* Share prompt button — generates shareable link */
   document.getElementById('pmShare').addEventListener('click',()=>{
     if(!currentPrompt) return;
-    var text=buildOutput();
-    var shareData={title:'PromptRunic Prompt',text:text,url:location.href};
-    if(navigator.share){navigator.share(shareData).catch(()=>copyText(text));}
-    else{copyText(text);toast(PPI18n.t('toast.copied','Prompt copied for sharing!'));}
+    var baseUrl=location.origin+location.pathname;
+    var shareUrl=baseUrl+'#prompt='+currentPrompt.id;
+    var isProPrompt=!currentPrompt.free;
+    var shareText=currentPrompt.t||currentPrompt.title||'';
+    if(isProPrompt){
+      shareText+=' (Pro)';
+    }
+    var fullShareText=shareText+'\n'+shareUrl;
+    if(navigator.share){
+      navigator.share({title:'PromptRunic Prompt',text:fullShareText,url:shareUrl}).catch(()=>{copyText(fullShareText);toast(PPI18n.t('toast.copied'));});
+    }else{
+      copyText(fullShareText);
+      toast(PPI18n.t('pm.share.copied','Share link copied! Pro prompts require login + Pro to view.'));
+    }
   });
   /* Random prompt button */
   document.getElementById('pmRandom').addEventListener('click',()=>{
@@ -3528,14 +4137,33 @@ function wireEvents(){
     var freePrompts=prompts.filter(p=>p.free||isPro);
     if(freePrompts.length){var rp=freePrompts[Math.floor(Math.random()*freePrompts.length)];openPrompt(rp.id);}
   });
-  /* History button */
+  /* History button — shows history panel with all previously viewed prompts */
   document.getElementById('pmHistory').addEventListener('click',()=>{
     var hist=[];
     try{hist=JSON.parse(lsGet('pp_prompt_history')||'[]');}catch(e){}
-    if(!hist.length){toast(PPI18n.t('pm.history.empty','No recently viewed prompts yet.'));return;}
-    /* Show last prompt from history */
-    var lastId=hist[0];
-    if(lastId) openPrompt(lastId);
+    var panel=document.getElementById('historyPanel');
+    var list=document.getElementById('historyList');
+    if(panel.style.display==='block'){panel.style.display='none';return;}
+    if(!hist.length){
+      list.innerHTML='<div style="color:var(--muted);font-size:13px;text-align:center;padding:40px 0" data-i18n="pm.history.empty">No recently viewed prompts yet.</div>';
+      panel.style.display='block';
+      return;
+    }
+    var allPrompts=getCurrentPrompts();
+    var h='';
+    hist.forEach(function(id){
+      var p=allPrompts.find(function(x){return x.id===id;});
+      if(p){
+        var cat=p.cat||'';
+        var isProP=!p.free;
+        h+='<div style="padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="document.getElementById(\'historyPanel\').style.display=\'none\';openPrompt('+p.id+')">';
+        h+='<div style="font-size:13px;font-weight:600;color:var(--text)">'+esc(p.t||p.title||'Untitled')+'</div>';
+        h+='<div style="font-size:11px;color:var(--muted);margin-top:2px">'+esc(cat)+(isProP?' · <span style="color:var(--accent2)">Pro</span>':'')+'</div>';
+        h+='</div>';
+      }
+    });
+    list.innerHTML=h;
+    panel.style.display='block';
   });
   /* TTS — Read prompt aloud */
   document.getElementById('pmTTS').addEventListener('click',()=>{
@@ -3550,19 +4178,6 @@ function wireEvents(){
     utterance.rate=0.9;
     window.speechSynthesis.speak(utterance);
   });
-  /* Expand/Collapse output area */
-  var outputExpanded=false;
-  document.getElementById('pmExpand').addEventListener('click',()=>{
-    var outputEl=document.getElementById('pmOutput');
-    outputExpanded=!outputExpanded;
-    if(outputExpanded){
-      outputEl.style.maxHeight='70vh';
-      document.getElementById('pmExpand').innerHTML='⬇️ Collapse';
-    }else{
-      outputEl.style.maxHeight='280px';
-      document.getElementById('pmExpand').innerHTML='⬆️ Expand';
-    }
-  });
   document.getElementById('pmAiRow').addEventListener('click',e=>{
     const b=e.target.closest('[data-ai]'); if(b) sendToAI(b.dataset.ai);
   });
@@ -3570,10 +4185,17 @@ function wireEvents(){
   var actBtn=document.getElementById('activateBtn'); if(actBtn) actBtn.addEventListener('click',openActivate);
   document.getElementById('activateBtn2').addEventListener('click',openActivate);
   document.getElementById('redeemBtn').addEventListener('click',redeemCode);
+  document.getElementById('actLoginBtn').addEventListener('click',function(){ hideOverlays(); setTimeout(function(){ openAuth(); },200); });
   document.getElementById('buyBtn').addEventListener('click',()=>{ hideOverlays(); setTimeout(function(){ document.getElementById('pro').scrollIntoView({behavior:'smooth'}); },200); });
   /* Wire up pricing card buttons */
   document.querySelectorAll('.p-card-btn').forEach(function(btn){
     btn.addEventListener('click', function(){
+      /* Require login before purchasing Pro */
+      if(!currentUser){
+        toast(PPI18n.t('activate.login.required'),'info');
+        openAuth();
+        return;
+      }
       var planId = this.getAttribute('data-plan-id');
       if(window.PPLemon && PPLemon.buyMembership) PPLemon.buyMembership(planId);
       else if(window.PPLemon) PPLemon.buyPro();
@@ -4241,7 +4863,7 @@ var PP_KNOWLEDGE=[
   'AI Optimize downloads a local AI model (Qwen2.5-1.5B, ~1GB) that runs entirely in your browser. No data leaves your device. The model is cached after first download.',
   'The Prompt Optimizer supports interactive refinement: after AI Optimize, you can chat with the AI to keep refining your prompt until it\'s perfect.',
   'Categories include: AI Basics, Writing, Marketing, Sales, Career, Coding, Startup, Business, E-commerce, Social, Learning, Personal, Productivity, Research, Image, Support, HR, Finance, Real Estate, Education, Health, Parenting, Travel, and Legal.',
-  'Free prompts are available without any code. Pro membership unlocks all 700,000+ prompts. Plans start at $0.99 for 3 days or $7.99/month. Sign in to purchase.',
+  'Free prompts are available without any code. Pro membership unlocks all 700,000+ prompts. Plans start at $0.99 for 3 days, $7.99/month or $69 lifetime. Account required for Pro.',
   'You can save favorite prompts by clicking the star icon. Favorites are saved in your browser or synced to your account.',
   'The search box supports searching by prompt title, description, category, and even template content.',
   'Each prompt has fill-in-the-blank variables. Fill them in, choose an answer style (Standard, In-depth, Quick, etc.), then copy or send to an AI.',
@@ -4425,8 +5047,9 @@ runQuickOptimizer = function(){
     try{ if(window.PPGame && PPGame.addCoins) PPGame.addCoins(100); }catch(_){}
     var score=parseInt(d.score||0,10)||0;
     try{
-      var prev=parseInt(localStorage.getItem('pp_game_best')||'0',10)||0;
-      if(score>prev) localStorage.setItem('pp_game_best',String(score));
+      var bestKey = currentUser ? ('pp_game_best_'+currentUser.uid) : 'pp_game_best_guest';
+      var prev=parseInt(localStorage.getItem(bestKey)||'0',10)||0;
+      if(score>prev) localStorage.setItem(bestKey,String(score));
     }catch(_){}
     try{ if(window.PPGame && PPGame.setGameScore) PPGame.setGameScore(score); }catch(_){}
     /* compute elapsed clear time in whole seconds */
@@ -4714,6 +5337,1589 @@ runQuickOptimizer = function(){
       });
     });
   }
+})();
+</script>
+
+<!-- ============================================================
+  NEW FEATURES: Friends, Avatar Picker, Bio Sync, Deep Link,
+  Achievements in Community, Enhanced Firebase Sync
+  ============================================================ -->
+<script>
+(function(){
+'use strict';
+
+/* ============================================================
+ *  DEEP LINK: #prompt=ID — open a specific prompt from share link
+ *  If Pro prompt and user not logged in / not Pro, show notice
+ * ============================================================ */
+function handleDeepLink(){
+  var hash=location.hash||'';
+  var m=hash.match(/prompt=(\d+)/);
+  if(!m) return;
+  var pid=parseInt(m[1],10);
+  if(isNaN(pid)) return;
+  /* Wait for data to be available */
+  function tryOpen(){
+    var prompts=getCurrentPrompts();
+    if(!prompts.length){ setTimeout(tryOpen,500); return; }
+    var p=prompts.find(function(x){return x.id===pid;});
+    if(!p){
+      /* Prompt may be in a different language data set, try EN */
+      if(typeof PROMPTS_DATA!=='undefined'){
+        p=PROMPTS_DATA.find(function(x){return x.id===pid;});
+      }
+    }
+    if(!p){ toast('Prompt not found'); return; }
+    if(!p.free && !isPro){
+      if(!currentUser){
+        toast(PPI18n.t('share.login.required','This is a Pro prompt. Please sign in to view it.'),'info');
+        setTimeout(function(){ openAuth(); },800);
+      }else{
+        toast(PPI18n.t('share.pro.required','This is a Pro prompt. Activate Pro to view it.'),'info');
+        setTimeout(function(){ openActivate(); },800);
+      }
+      return;
+    }
+    openPrompt(pid);
+    history.replaceState(null,'',location.pathname+location.search);
+  }
+  setTimeout(tryOpen,1500);
+}
+if(document.readyState!=='loading') handleDeepLink();
+else document.addEventListener('DOMContentLoaded',handleDeepLink);
+
+/* ============================================================
+ *  ENHANCED FIREBASE SYNC: ensure bio, coins, level, avatar,
+ *  Pro days, game credits all persist to cloud
+ * ============================================================ */
+var _origCloudSavePro = cloudSavePro;
+cloudSavePro = function(){
+  if(!(fbReady && currentUser)) return;
+  var gameData = (window.PPGame && PPGame.exportState) ? PPGame.exportState() : {};
+  userDocRef().set({
+    pro:(proUntil()===0 && isPro),
+    proUntil:proUntil(),
+    trialUsed:!!lsGet('pp_trial_used'),
+    proCode:lsGet('pp_pro_code')||'',
+    bio:document.getElementById('setBio')?document.getElementById('setBio').value.trim():userBio,
+    game:gameData,
+    updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+  },{merge:true}).catch(function(e){console.warn('save pro+game',e);});
+  /* Also sync public profile when Pro state changes (avatar/level may have changed) */
+  if(typeof syncPublicProfile === 'function') syncPublicProfile();
+};
+
+/* Save bio + game state together */
+function cloudSaveBio(){
+  if(!(fbReady && currentUser)) return;
+  var bio=document.getElementById('setBio')?document.getElementById('setBio').value.trim():'';
+  var gameData=(window.PPGame && PPGame.exportState)?PPGame.exportState():{};
+  userDocRef().set({
+    bio:bio,
+    game:gameData,
+    updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+  },{merge:true}).catch(function(e){console.warn('save bio',e);});
+}
+
+/* ============================================================
+ *  AVATAR PICKER — click avatar badge to open picker
+ * ============================================================ */
+function openAvatarPicker(){
+  var grid=document.getElementById('avatarGrid');
+  if(!grid) return;
+  var html='';
+  for(var i=0;i<200;i++){
+    var st=(window.PPGame && PPGame.avatarStatus)?PPGame.avatarStatus(i):{locked:i>=15};
+    var svg=(window.PPGame && PPGame.avatarSVG)?PPGame.avatarSVG(i):'';
+    var lockTag=st.locked?'<div style="position:absolute;top:0;right:0;font-size:8px;background:rgba(0,0,0,.6);padding:1px 3px;border-radius:3px">🔒</div>':'';
+    var equipped=(window.PPGame && PPGame.exportState && PPGame.exportState().avatar===i);
+    var border=equipped?'2px solid var(--accent2)':'2px solid transparent';
+    html+='<div data-ava="'+i+'" style="position:relative;width:48px;height:48px;border-radius:10px;overflow:hidden;border:'+border+';cursor:pointer;opacity:'+(st.locked?'0.5':'1')+'">'+svg+lockTag+'</div>';
+  }
+  grid.innerHTML=html;
+  grid.querySelectorAll('[data-ava]').forEach(function(el){
+    el.addEventListener('click',function(){
+      var idx=parseInt(this.getAttribute('data-ava'),10);
+      if(window.PPGame && PPGame.tapAvatar) PPGame.tapAvatar(idx);
+      openAvatarPicker();
+    });
+  });
+  document.getElementById('avatarOverlay').classList.add('show');
+}
+
+/* Wire avatar badge click */
+document.addEventListener('DOMContentLoaded',function(){
+  var badge=document.getElementById('planBadge');
+  if(badge){
+    badge.style.cursor='pointer';
+    badge.addEventListener('click',function(){
+      if(window.PPGame && PPGame.exportState){
+        openAvatarPicker();
+      }
+    });
+  }
+});
+
+/* ============================================================
+ *  FRIENDS SYSTEM — QQ-Style — Firestore + Realtime Database
+ *  Search users, friend requests, online status, RTDB chat
+ *  Tab navigation: Chats / Contacts / Discover
+ * ============================================================ */
+var _chatFriendUid=null;
+var _chatUnsubscribe=null;
+var _friendsListUnsubscribe=null;
+var _friendReqUnsubscribe=null;
+var _convUnsubscribe=null;
+var _totalUnread=0;
+var _origTitle=document.title;
+var _currentFriendsTab='chats';
+var _contactReqOpen=false;
+
+/* Helper: get chat room ID for two users */
+function getChatRoomId(uid1,uid2){
+  return [uid1,uid2].sort().join('_');
+}
+
+/* ---- Tab switching ---- */
+function switchFriendsTab(tab){
+  _currentFriendsTab=tab;
+  var tabs=document.querySelectorAll('#friendsTabBar .qq-tab');
+  tabs.forEach(function(t){
+    if(t.getAttribute('data-tab')===tab){
+      t.style.color='var(--accent2)';
+      t.style.borderBottom='2px solid var(--accent2)';
+    }else{
+      t.style.color='var(--muted)';
+      t.style.borderBottom='2px solid transparent';
+    }
+  });
+  document.getElementById('tabChats').style.display=tab==='chats'?'block':'none';
+  document.getElementById('tabContacts').style.display=tab==='contacts'?'block':'none';
+  document.getElementById('tabDiscover').style.display=tab==='discover'?'block':'none';
+  /* Load data for the tab */
+  if(tab==='chats'){loadConversations();}
+  if(tab==='contacts'){loadFriendsList();loadFriendRequests();}
+  if(tab==='discover'){loadSuggestedUsers();}
+}
+
+/* ---- Toggle contact request section ---- */
+function toggleContactReqSection(){
+  _contactReqOpen=!_contactReqOpen;
+  var list=document.getElementById('contactReqList');
+  var arrow=document.getElementById('contactReqArrow');
+  list.style.display=_contactReqOpen?'block':'none';
+  arrow.textContent=_contactReqOpen?'▲':'▼';
+}
+
+/* ---- Toggle friends panel ---- */
+function toggleFriendsPanel(){
+  var p=document.getElementById('friendsPanel');
+  if(p.style.display==='none'||!p.style.display){
+    p.style.display='flex';
+    switchFriendsTab(_currentFriendsTab);
+    loadFriendsList();
+    loadFriendRequests();
+    listenForConversations();
+  }else{
+    p.style.display='none';
+    closeChatWindow();
+    if(_friendsListUnsubscribe){_friendsListUnsubscribe();_friendsListUnsubscribe=null;}
+    if(_friendReqUnsubscribe){_friendReqUnsubscribe();_friendReqUnsubscribe=null;}
+    if(_convUnsubscribe){_convUnsubscribe();_convUnsubscribe=null;}
+  }
+}
+
+/* ---- Chat window: minimize / close ---- */
+function toggleChatMinimize(){
+  var body=document.getElementById('chatMessages');
+  var input=document.getElementById('chatInputRow');
+  if(body.style.display==='none'){
+    body.style.display='flex'; input.style.display='flex';
+  }else{
+    body.style.display='none'; input.style.display='none';
+  }
+}
+function closeChatWindow(){
+  var cw=document.getElementById('chatWindow');
+  if(cw) cw.style.cssText='display:none!important;position:fixed;bottom:20px;right:380px;width:360px;max-width:90vw;background:var(--panel);border:1px solid var(--border);border-radius:16px;z-index:10001;box-shadow:0 8px 32px rgba(0,0,0,.5);overflow:hidden;resize:both;min-width:280px;min-height:340px';
+  if(_chatUnsubscribe){
+    try{_chatUnsubscribe();}catch(e){}
+    _chatUnsubscribe=null;
+  }
+  _chatFriendUid=null;
+}
+
+/* ---- Search users by username or email ---- */
+async function searchUsers(){
+  if(!fbReady||!currentUser){toast('Please sign in first','info');return;}
+  var query=document.getElementById('friendSearchInput').value.trim();
+  if(!query){document.getElementById('friendSearchResults').innerHTML='';return;}
+  var results=document.getElementById('friendSearchResults');
+  results.innerHTML='<div style="color:var(--muted);font-size:12px;padding:12px;text-align:center">Searching...</div>';
+  try{
+    var html='';
+    var seen={};
+    var users=[];
+    /* Search by email (exact match) in users collection */
+    try{
+      var snap1=await db.collection('users').where('email','==',query).limit(5).get();
+      snap1.forEach(function(d){if(!seen[d.id]&&d.id!==currentUser.uid){seen[d.id]=1;users.push({uid:d.id,data:d.data()});}});
+    }catch(e){console.warn('email search',e);}
+    /* Search by displayName prefix in pp_public (populated by syncPublicProfile) */
+    try{
+      var snap2=await db.collection('pp_public').where('name','>=',query).where('name','<=',query+'\uf8ff').limit(10).get();
+      snap2.forEach(function(d){
+        if(!seen[d.id]&&d.id!==currentUser.uid){
+          seen[d.id]=1;
+          var dd=d.data()||{};
+          users.push({uid:d.id,data:{displayName:dd.name,email:dd.email||'',avatar:dd.avatar||0,lvl:dd.lvl||1,bio:dd.bio||''}});
+        }
+      });
+    }catch(e){console.warn('name search pp_public',e);}
+    /* Search by email prefix in pp_public */
+    try{
+      var snap3=await db.collection('pp_public').where('email','>=',query).where('email','<=',query+'\uf8ff').limit(10).get();
+      snap3.forEach(function(d){
+        if(!seen[d.id]&&d.id!==currentUser.uid){
+          seen[d.id]=1;
+          var dd=d.data()||{};
+          users.push({uid:d.id,data:{displayName:dd.name,email:dd.email||'',avatar:dd.avatar||0,lvl:dd.lvl||1,bio:dd.bio||''}});
+        }
+      });
+    }catch(e){console.warn('email prefix search pp_public',e);}
+    /* Fallback: try displayName in users collection */
+    try{
+      var snap4=await db.collection('users').where('displayName','>=',query).where('displayName','<=',query+'\uf8ff').limit(10).get();
+      snap4.forEach(function(d){if(!seen[d.id]&&d.id!==currentUser.uid){seen[d.id]=1;users.push({uid:d.id,data:d.data()});}});
+    }catch(e){console.warn('displayname search',e);}
+    /* Search game-related user data: try users where game.displayName matches */
+    try{
+      var snap5=await db.collection('users').where('game.displayName','>=',query).where('game.displayName','<=',query+'\uf8ff').limit(10).get();
+      snap5.forEach(function(d){
+        if(!seen[d.id]&&d.id!==currentUser.uid){
+          seen[d.id]=1;
+          var dd=d.data()||{};
+          var gd=dd.game||{};
+          users.push({uid:d.id,data:{displayName:gd.displayName||dd.displayName||dd.email||'User',email:dd.email||'',avatar:gd.avatar||0,lvl:gd.lvl||1,bio:dd.bio||''}});
+        }
+      });
+    }catch(e){console.warn('game displayname search',e);}
+    /* FALLBACK: If no Firestore query returned results (possibly due to
+     * missing indexes), try getting all users and filtering client-side.
+     * This is less efficient but ensures search works even without
+     * Firestore composite indexes configured. */
+    if(!users.length && query.length >= 2){
+      try{
+        var allUsersSnap = await db.collection('users').limit(50).get();
+        var ql = query.toLowerCase();
+        allUsersSnap.forEach(function(d){
+          if(seen[d.id] || d.id===currentUser.uid) return;
+          var dd = d.data()||{};
+          var gd = dd.game||{};
+          var name = dd.displayName || gd.displayName || dd.email || '';
+          if(name.toLowerCase().indexOf(ql) >= 0 || (dd.email||'').toLowerCase().indexOf(ql) >= 0){
+            seen[d.id]=1;
+            users.push({uid:d.id, data:{
+              displayName: name,
+              email: dd.email||'',
+              avatar: gd.avatar||0,
+              lvl: gd.lvl||1,
+              bio: dd.bio||''
+            }});
+          }
+        });
+      }catch(e){console.warn('client-side search fallback',e);}
+    }
+    /* Also try pp_public client-side fallback if no results */
+    if(!users.length && query.length >= 2){
+      try{
+        var allPubSnap = await db.collection('pp_public').limit(50).get();
+        var ql = query.toLowerCase();
+        allPubSnap.forEach(function(d){
+          if(seen[d.id] || d.id===currentUser.uid) return;
+          var dd = d.data()||{};
+          var name = dd.name || dd.email || '';
+          if(name.toLowerCase().indexOf(ql) >= 0 || (dd.email||'').toLowerCase().indexOf(ql) >= 0){
+            seen[d.id]=1;
+            users.push({uid:d.id, data:{
+              displayName: name,
+              email: dd.email||'',
+              avatar: dd.avatar||0,
+              lvl: dd.lvl||1,
+              bio: dd.bio||''
+            }});
+          }
+        });
+      }catch(e){console.warn('pp_public client-side search fallback',e);}
+    }
+    /* Also search demo/fake users from PPDemo — appear identical to real users */
+    if(window.PPDemo&&PPDemo.users){
+      var ql=query.toLowerCase();
+      PPDemo.users.forEach(function(u){
+        if(seen[u._uid]) return;
+        var nm=(u.name||'').toLowerCase();
+        if(nm.indexOf(ql)>=0){
+          seen[u._uid]=1;
+          users.push({uid:u._uid,data:{displayName:u.name,email:'',avatar:u.avatar||0,lvl:u.lvl||1,bio:''},demo:true});
+        }
+      });
+    }
+    if(!users.length){results.innerHTML='<div style="color:var(--muted);font-size:12px;padding:12px;text-align:center">No users found for "'+esc(query)+'"</div>';return;}
+    users.forEach(function(u){
+      var d=u.data||{};
+      var name=d.displayName||d.email||'User';
+      var email=d.email||'';
+      var avatar=d.avatar||0;
+      var bio=d.bio||'';
+      var isDemo=u.demo||false;
+      var svg=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(avatar):'';
+      var btnId='addBtn_'+u.uid.replace(/[^a-zA-Z0-9]/g,'_');
+      var subLine=isDemo?'':'<div style="font-size:11px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(email)+'</div>';
+      var bioLine=(!isDemo&&bio)?'<div style="font-size:10px;color:var(--muted);font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(bio.substring(0,40))+'</div>':'';
+      /* Check if demo user already has a sent request */
+      var alreadySent=isDemo&&_demoSentHas(u.uid);
+      var btnHtml=alreadySent?
+        '<button id="'+btnId+'" style="background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.3);color:var(--accent2);padding:4px 10px;border-radius:6px;font-size:11px;cursor:default" disabled>Sent</button>':
+        '<button id="'+btnId+'" onclick="event.stopPropagation();sendFriendRequestTo(\''+u.uid+'\',\''+esc(name).replace(/'/g,"\\'")+'\',\''+btnId+'\')" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer">+ Add</button>';
+      html+='<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;border:1px solid var(--border);margin-bottom:6px;background:var(--panel2);transition:background .15s" onmouseenter="this.style.background=\'rgba(124,92,255,.08)\'" onmouseleave="this.style.background=\'var(--panel2)\'">'+
+        '<div style="width:36px;height:36px;border-radius:10px;overflow:hidden;border:1px solid var(--border);cursor:pointer;transition:transform .15s" onclick="viewSearchUser(\''+u.uid+'\',\''+esc(name).replace(/'/g,"\\'")+'\')" onmouseenter="this.style.transform=\'scale(1.12)\'" onmouseleave="this.style.transform=\'scale(1)\'">'+svg+'</div>'+
+        '<div style="flex:1;min-width:0;cursor:pointer" onclick="viewSearchUser(\''+u.uid+'\',\''+esc(name).replace(/'/g,"\\'")+'\')"><div style="font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(name)+'</div>'+
+        subLine+bioLine+
+        '</div>'+
+        btnHtml+
+      '</div>';
+    });
+    results.innerHTML=html;
+  }catch(e){console.warn('search users',e);results.innerHTML='<div style="color:var(--muted);font-size:12px;padding:12px;text-align:center">Error searching. Try again.</div>';}
+}
+
+/* ---- Load suggested users for Discover tab ---- */
+function loadSuggestedUsers(){
+  var container=document.getElementById('suggestedUsers');
+  if(!container) return;
+  if(window.PPDemo&&PPDemo.users&&PPDemo.users.length){
+    var html='';
+    PPDemo.users.slice(0,5).forEach(function(u){
+      var svg=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(u.avatar||0):'';
+      var alreadySent=_demoSentHas(u._uid);
+      var btnId='sugBtn_'+u._uid.replace(/[^a-zA-Z0-9]/g,'_');
+      var btnHtml=alreadySent?
+        '<button id="'+btnId+'" style="background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.3);color:var(--accent2);padding:4px 10px;border-radius:6px;font-size:11px;cursor:default" disabled>Sent</button>':
+        '<button id="'+btnId+'" onclick="sendFriendRequestTo(\''+u._uid+'\',\''+esc(u.name).replace(/'/g,"\\'")+'\',\''+btnId+'\')" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer">+ Add</button>';
+      html+='<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)">'+
+        '<div style="width:34px;height:34px;border-radius:10px;overflow:hidden;border:1px solid var(--border)">'+svg+'</div>'+
+        '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(u.name)+'</div>'+
+        '<div style="font-size:10px;color:var(--muted)">Lvl '+(u.lvl||1)+'</div></div>'+
+        btnHtml+
+      '</div>';
+    });
+    container.innerHTML=html;
+  }else{
+    container.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:10px">No suggestions yet</div>';
+  }
+}
+
+/* View a searched user's profile summary in a popup */
+function viewSearchUser(uid,name){
+  /* Create a mini profile overlay */
+  var overlay=document.getElementById('searchUserProfile');
+  if(!overlay){
+    overlay=document.createElement('div');
+    overlay.id='searchUserProfile';
+    overlay.className='overlay';
+    overlay.innerHTML='<div class="modal sm" style="max-width:360px"><button class="x" data-close>&times;</button><div id="searchUserProfileContent"></div></div>';
+    document.body.appendChild(overlay);
+    overlay.querySelector('[data-close]').addEventListener('click',function(){overlay.classList.remove('show');});
+    overlay.addEventListener('click',function(e){if(e.target===overlay)overlay.classList.remove('show');});
+  }
+  var content=document.getElementById('searchUserProfileContent');
+
+  /* Demo user: show profile with stats like community panel */
+  if(uid.indexOf('demo_')===0){
+    var demoUser=null;
+    if(window.PPDemo&&PPDemo.users){
+      for(var i=0;i<PPDemo.users.length;i++){
+        if(PPDemo.users[i]._uid===uid){demoUser=PPDemo.users[i];break;}
+      }
+    }
+    var dName=demoUser?demoUser.name:name||'User';
+    var dAvatar=demoUser?demoUser.avatar||0:0;
+    var dLvl=demoUser?demoUser.lvl||1:1;
+    var dXp=demoUser?demoUser.xp||0:0;
+    var dCoins=demoUser?demoUser.coins||0:0;
+    var dBest=demoUser?demoUser.best||0:0;
+    var svg=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(dAvatar):'';
+    var dRankInfo=(window.PPGame&&PPGame.rankOf)?PPGame.rankOf(dLvl):{name:'Bronze',color:'#cd7f32'};
+    var dTitleInfo=(window.PPGame&&PPGame.levelTitle)?PPGame.levelTitle(dLvl):'Newcomer';
+    var fakeBios=[
+      "just here for the prompts lol",
+      "AI enthusiast \ud83e\udd16 coffee addict \u2615",
+      "writing prompts at 3am like always",
+      "trying to make ChatGPT do my job",
+      "prompt engineering is my cardio",
+      "living that AI life \u2728",
+      "i asked AI to write this bio",
+      "professional prompt wrangler \ud83e\udd20",
+      "lost in a sea of tokens",
+      "will prompt for food \ud83c\udf55",
+      "my prompts > your prompts",
+      "here for the vibes and the AI",
+      "prompt go brrrr \ud83d\ude80",
+      "caffeinated prompt engineer",
+      "just a human training AI \ud83e\udde0",
+      "in my prompt era \ud83d\udc85"
+    ];
+    var idx=0;for(var c=0;c<uid.length;c++) idx+=uid.charCodeAt(c);
+    var bio=fakeBios[idx%fakeBios.length];
+    var demoAlreadySent=_demoSentHas(uid);
+    var profileBtnHtml=demoAlreadySent?
+      '<button id="profileAddBtn" style="margin-top:12px;background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.3);color:var(--accent2);padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:default" disabled>Sent</button>':
+      '<button id="profileAddBtn" onclick="sendFriendRequestTo(\''+uid+'\',\''+esc(dName).replace(/'/g,"\\'")+'\',\'profileAddBtn\');document.getElementById(\'searchUserProfile\').classList.remove(\'show\')" style="margin-top:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">+ Add Friend</button>';
+    content.innerHTML='<div style="text-align:center">'+
+      '<div style="width:80px;height:80px;border-radius:16px;overflow:hidden;border:1px solid var(--border);margin:0 auto 8px">'+svg+'</div>'+
+      '<div style="font-size:16px;font-weight:800">'+esc(dName)+'</div>'+
+      '<div style="font-size:11px;color:var(--muted)">'+esc(dTitleInfo)+' <span style="border:1px solid '+dRankInfo.color+';color:'+dRankInfo.color+';padding:1px 6px;border-radius:10px;font-size:10px">'+esc(dRankInfo.name)+'</span></div>'+
+      '<div style="display:flex;gap:8px;justify-content:center;margin-top:8px">'+
+        '<div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:4px 10px;text-align:center"><div style="font-size:12px;font-weight:700">Lv '+dLvl+'</div><div style="font-size:9px;color:var(--muted)">Level</div></div>'+
+        '<div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:4px 10px;text-align:center"><div style="font-size:12px;font-weight:700">🪙 '+dCoins+'</div><div style="font-size:9px;color:var(--muted)">Coins</div></div>'+
+        '<div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:4px 10px;text-align:center"><div style="font-size:12px;font-weight:700">🔥 '+dBest+'</div><div style="font-size:9px;color:var(--muted)">Streak</div></div>'+
+      '</div>'+
+      '<div style="margin-top:8px;font-size:13px;color:var(--text);font-style:italic;padding:8px;border-top:1px solid var(--border)">"'+esc(bio)+'"</div>'+
+      profileBtnHtml+
+    '</div>';
+    overlay.classList.add('show');
+    return;
+  }
+
+  if(!fbReady){
+    /* Not ready yet — show minimal profile with just the name */
+    content.innerHTML='<div style="text-align:center">'+
+      '<div style="font-size:16px;font-weight:800">'+esc(name)+'</div>'+
+      '<div style="font-size:12px;color:var(--muted);margin-top:8px">Loading profile...</div>'+
+    '</div>';
+    overlay.classList.add('show');
+    return;
+  }
+  db.collection('users').doc(uid).get().then(async function(doc){
+    /* Helper: check friend status for the current user vs this uid */
+    var friendStatus='none';
+    if(fbReady&&currentUser){
+      try{
+        var friendDoc=await db.collection('friends').doc(currentUser.uid).collection('list').doc(uid).get();
+        if(friendDoc.exists){
+          var fs=friendDoc.data().status;
+          if(fs==='accepted') friendStatus='accepted';
+          else if(fs==='pending_sent') friendStatus='sent';
+          else if(fs==='pending_received') friendStatus='received';
+        }
+      }catch(e){}
+      /* Also check notifications for a pending request FROM this user */
+      if(friendStatus==='none'){
+        try{
+          var notifCheck=await db.collection('notifications').doc(currentUser.uid).collection('items')
+            .where('type','==','friend_request')
+            .where('from','==',uid)
+            .where('status','==','pending')
+            .get();
+          if(!notifCheck.empty) friendStatus='received';
+        }catch(e){}
+      }
+    }
+    function profileBtnHtml(btnUid,btnName){
+      if(friendStatus==='accepted') return '<button id="profileAddBtn" style="margin-top:12px;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);color:#7ee2a4;padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:default" disabled>Already Friends</button>';
+      if(friendStatus==='sent') return '<button id="profileAddBtn" style="margin-top:12px;background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.3);color:var(--accent2);padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:default" disabled>Sent</button>';
+      if(friendStatus==='received') return '<button id="profileAddBtn" style="margin-top:12px;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);color:#7ee2a4;padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:default" disabled>Request Received</button>';
+      return '<button id="profileAddBtn" onclick="sendFriendRequestTo(\''+btnUid+'\',\''+esc(btnName).replace(/'/g,"\\'")+'\',\'profileAddBtn\');document.getElementById(\'searchUserProfile\').classList.remove(\'show\')" style="margin-top:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">+ Add Friend</button>';
+    }
+    if(!doc.exists){
+      /* User doc doesn't exist — try pp_public as fallback */
+      db.collection('pp_public').doc(uid).get().then(function(pubDoc){
+        var pd=pubDoc.data()||{};
+        var bio=pd.bio||'';
+        var displayName=pd.name||name||'User';
+        var email=pd.email||'';
+        var avatar=pd.avatar||0;
+        var svg=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(avatar):'';
+        content.innerHTML='<div style="text-align:center">'+
+          '<div style="width:80px;height:80px;border-radius:16px;overflow:hidden;border:1px solid var(--border);margin:0 auto 8px">'+svg+'</div>'+
+          '<div style="font-size:16px;font-weight:800">'+esc(displayName)+'</div>'+
+          '<div style="font-size:12px;color:var(--muted)">'+esc(email)+'</div>'+
+          (bio?'<div style="margin-top:8px;font-size:13px;color:var(--text);font-style:italic;padding:8px;border-top:1px solid var(--border)">"'+esc(bio)+'"</div>':'')+
+          profileBtnHtml(uid,displayName)+
+        '</div>';
+        overlay.classList.add('show');
+      }).catch(function(e2){
+        console.warn('view user pp_public fallback',e2);
+        /* Last resort: show minimal profile */
+        content.innerHTML='<div style="text-align:center">'+
+          '<div style="font-size:16px;font-weight:800">'+esc(name)+'</div>'+
+          profileBtnHtml(uid,name)+
+        '</div>';
+        overlay.classList.add('show');
+      });
+      return;
+    }
+    var d=doc.data()||{};
+    var bio=d.bio||'';
+    var displayName=d.displayName||name||'User';
+    var email=d.email||'';
+    var avatar=0;
+    var lvl=1, xp=0, coins=0, bestStreak=0;
+    try{
+      if(d.game&&d.game.avatar) avatar=d.game.avatar;
+      if(d.game&&d.game.lvl) lvl=d.game.lvl;
+      if(d.game&&d.game.xp) xp=d.game.xp;
+      if(d.game&&d.game.coins) coins=d.game.coins;
+      if(d.game&&d.game.best) bestStreak=d.game.best;
+    }catch(e){}
+    var svg=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(avatar):'';
+    var rankInfo=(window.PPGame&&PPGame.rankOf)?PPGame.rankOf(lvl):{name:'Bronze',color:'#cd7f32'};
+    var titleInfo=(window.PPGame&&PPGame.levelTitle)?PPGame.levelTitle(lvl):'Newcomer';
+    content.innerHTML='<div style="text-align:center">'+
+      '<div style="width:80px;height:80px;border-radius:16px;overflow:hidden;border:1px solid var(--border);margin:0 auto 8px">'+svg+'</div>'+
+      '<div style="font-size:16px;font-weight:800">'+esc(displayName)+'</div>'+
+      '<div style="font-size:11px;color:var(--muted)">'+esc(titleInfo)+' <span style="border:1px solid '+rankInfo.color+';color:'+rankInfo.color+';padding:1px 6px;border-radius:10px;font-size:10px">'+esc(rankInfo.name)+'</span></div>'+
+      '<div style="font-size:12px;color:var(--muted)">'+esc(email)+'</div>'+
+      '<div style="display:flex;gap:8px;justify-content:center;margin-top:8px">'+
+        '<div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:4px 10px;text-align:center"><div style="font-size:12px;font-weight:700">Lv '+lvl+'</div><div style="font-size:9px;color:var(--muted)">Level</div></div>'+
+        '<div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:4px 10px;text-align:center"><div style="font-size:12px;font-weight:700">🪙 '+coins+'</div><div style="font-size:9px;color:var(--muted)">Coins</div></div>'+
+        '<div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:4px 10px;text-align:center"><div style="font-size:12px;font-weight:700">🔥 '+bestStreak+'</div><div style="font-size:9px;color:var(--muted)">Streak</div></div>'+
+      '</div>'+
+      (bio?'<div style="margin-top:8px;font-size:13px;color:var(--text);font-style:italic;padding:8px;border-top:1px solid var(--border)">"'+esc(bio)+'"</div>':'')+
+      profileBtnHtml(uid,displayName)+
+    '</div>';
+    overlay.classList.add('show');
+  }).catch(function(e){
+    console.warn('view user',e);
+    /* Instead of just showing "Could not load profile", try pp_public as fallback */
+    db.collection('pp_public').doc(uid).get().then(function(pubDoc){
+      var pd=pubDoc.data()||{};
+      var pName=pd.name||name||'User';
+      var pEmail=pd.email||'';
+      var pAvatar=pd.avatar||0;
+      var pBio=pd.bio||'';
+      var svg=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(pAvatar):'';
+      content.innerHTML='<div style="text-align:center">'+
+        '<div style="width:80px;height:80px;border-radius:16px;overflow:hidden;border:1px solid var(--border);margin:0 auto 8px">'+svg+'</div>'+
+        '<div style="font-size:16px;font-weight:800">'+esc(pName)+'</div>'+
+        '<div style="font-size:12px;color:var(--muted)">'+esc(pEmail)+'</div>'+
+        (pBio?'<div style="margin-top:8px;font-size:13px;color:var(--text);font-style:italic;padding:8px;border-top:1px solid var(--border)">"'+esc(pBio)+'"</div>':'')+
+        profileBtnHtml(uid,pName)+
+      '</div>';
+      overlay.classList.add('show');
+    }).catch(function(e2){
+      console.warn('view user pp_public fallback also failed',e2);
+      toast('Could not load profile','info');
+    });
+  });
+}
+
+/* ---- Demo user friend request local storage ---- */
+function _demoSentMap(){
+  try{var s=localStorage.getItem('pp_demo_sent');return s?JSON.parse(s):{};}catch(e){return{};}
+}
+function _demoSentSave(uid,name){
+  var m=_demoSentMap();m[uid]={name:name,at:Date.now()};localStorage.setItem('pp_demo_sent',JSON.stringify(m));
+}
+function _demoSentHas(uid){return !!_demoSentMap()[uid];}
+
+/* ---- Set button to "Sent" state (used by sendFriendRequestTo) ---- */
+function _setBtnSent(btnId,isProfileBtn){
+  var btn=document.getElementById(btnId);
+  if(btn){
+    if(isProfileBtn){
+      btn.textContent='Sent';
+      btn.style.cssText='margin-top:12px;background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.3);color:var(--accent2);padding:8px 20px;border-radius:10px;font-size:13px;font-weight:700;cursor:default';
+    }else{
+      btn.textContent='Sent';
+      btn.style.cssText='background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.3);color:var(--accent2);padding:4px 10px;border-radius:6px;font-size:11px;cursor:default';
+    }
+    btn.disabled=true;
+    btn.onclick=null;
+  }
+  /* Also update the other button type if it exists */
+  if(!isProfileBtn){
+    var pBtn=document.getElementById('profileAddBtn');
+    if(pBtn){_setBtnSent('profileAddBtn',true);}
+  }else{
+    /* Try updating search result buttons too */
+    var allBtns=document.querySelectorAll('[id^="addBtn_"]');
+    allBtns.forEach(function(b){_setBtnSent(b.id,false);});
+  }
+}
+
+/* ---- Revert button to "+ Add" state on error ---- */
+function _revertBtnAdd(btnId){
+  var btn=document.getElementById(btnId);
+  if(btn){
+    btn.textContent='+ Add';
+    btn.style.cssText='background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer';
+    btn.disabled=false;
+  }
+}
+
+/* ---- Send friend request ---- */
+async function sendFriendRequestTo(uid,name,btnId){
+  if(!fbReady||!currentUser){toast('Please sign in first','info');return;}
+  if(uid===currentUser.uid){toast('Cannot add yourself','info');return;}
+  /* Demo/fake user: save locally only, no Firestore write needed */
+  if(uid.indexOf('demo_')===0){
+    if(_demoSentHas(uid)){toast('Request already sent','info');return;}
+    _demoSentSave(uid,name);
+    /* Update ALL buttons to "Sent" state immediately */
+    _setBtnSent(btnId,btnId==='profileAddBtn');
+    toast('Friend request sent to '+name);
+    loadFriendsList();
+    return;
+  }
+  /* Real user: Immediately update button to "Sent" state BEFORE async write */
+  _setBtnSent(btnId,btnId==='profileAddBtn');
+  try{
+    /* Check if already friends in our own list */
+    var existing=await db.collection('friends').doc(currentUser.uid).collection('list').doc(uid).get();
+    if(existing.exists){
+      var st=existing.data().status;
+      if(st==='pending_sent'||st==='pending_received'){toast('Request already sent','info');return;}
+      if(st==='accepted'){toast('Already friends','info');return;}
+    }
+
+    /* Check if there's already a pending request in the global collection */
+    var existingReq=await db.collection('friend_requests')
+      .where('from','==',currentUser.uid)
+      .where('to','==',uid)
+      .where('status','==','pending')
+      .get();
+    if(!existingReq.empty){
+      toast('Request already sent','info');
+      return;
+    }
+
+    /* Also check for a reverse pending request (they sent us one first) */
+    var reverseReq=await db.collection('friend_requests')
+      .where('from','==',uid)
+      .where('to','==',currentUser.uid)
+      .where('status','==','pending')
+      .get();
+    if(!reverseReq.empty){
+      toast('This user already sent you a request — check your incoming requests!','info');
+      return;
+    }
+
+    var myName=currentUser.displayName||currentUser.email.split('@')[0];
+
+    /* Write to our own friends list as "pending_sent" FIRST (this should
+     * always work since Firestore rules allow users to write to their own
+     * friends subcollection). */
+    try{
+      await db.collection('friends').doc(currentUser.uid).collection('list').doc(uid).set({
+        uid:uid,name:name,status:'pending_sent',addedAt:firebase.firestore.FieldValue.serverTimestamp()
+      },{merge:true});
+    }catch(selfWriteErr){
+      console.warn('Could not write to own friends list:', selfWriteErr);
+    }
+
+    /* Write a friend request to the GLOBAL friend_requests collection.
+     * If this fails (e.g., Firestore rules), the request still exists
+     * in our own friends list so we can track it. */
+    try{
+      await db.collection('friend_requests').add({
+        from: currentUser.uid,
+        fromName: myName,
+        to: uid,
+        toName: name,
+        status: 'pending',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }catch(globalWriteErr){
+      console.warn('Could not write to global friend_requests (non-critical):', globalWriteErr);
+    }
+
+    /* Write a notification to the top-level notifications collection so the
+     * target user can see the friend request even if the friends subcollection
+     * write fails due to Firestore rules.
+     * Firestore rules recommendation:
+     *   match /notifications/{userId}/items/{itemId} {
+     *     allow read: if request.auth != null && request.auth.uid == userId;
+     *     allow create: if request.auth != null;
+     *   }
+     */
+    try{
+      await db.collection('notifications').doc(uid).collection('items').add({
+        type:'friend_request',
+        from:currentUser.uid,
+        fromName:myName,
+        status:'pending',
+        createdAt:firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }catch(notifErr){
+      console.warn('Could not write notification (non-critical):', notifErr);
+    }
+
+    /* Also write a pending_received entry in the target user's friends list
+     * so they can see the request even without the global collection.
+     * This may fail due to Firestore rules — the notifications collection
+     * above is the reliable fallback. */
+    try{
+      await db.collection('friends').doc(uid).collection('list').doc(currentUser.uid).set({
+        uid:currentUser.uid,name:myName,status:'pending_received',addedAt:firebase.firestore.FieldValue.serverTimestamp()
+      },{merge:true});
+    }catch(otherWriteErr){
+      console.warn('Could not write to other user friends list (expected — they will use notifications collection):', otherWriteErr);
+    }
+
+    toast('Friend request sent to '+name);
+    loadFriendsList();
+    loadFriendRequests();
+  }catch(e){
+    console.warn('send friend req',e);
+    toast('Error sending request','info');
+    /* Revert button on error */
+    _revertBtnAdd(btnId);
+  }
+}
+
+/* ---- Load friend requests ---- */
+async function loadFriendRequests(){
+  if(!fbReady||!currentUser) return;
+  var list=document.getElementById('contactReqList');
+  var countEl=document.getElementById('contactReqCount');
+  try{
+    var items=[];
+
+    /* Method 1: Read from global friend_requests collection (primary) */
+    try{
+      var reqSnap=await db.collection('friend_requests')
+        .where('to','==',currentUser.uid)
+        .where('status','==','pending')
+        .get();
+      reqSnap.forEach(function(doc){
+        var d=doc.data();
+        items.push({uid:d.from,name:d.fromName||'User',addedAt:d.createdAt||null,requestDocId:doc.id});
+      });
+    }catch(reqErr){
+      console.warn('friend_requests query failed, trying fallback',reqErr);
+    }
+
+    /* Method 2: Also check own friends list for pending_received (legacy) */
+    try{
+      var snap=await db.collection('friends').doc(currentUser.uid).collection('list').get();
+      snap.forEach(function(doc){
+        var d=doc.data();
+        if(d.status==='pending_received'){
+          /* Avoid duplicates */
+          var alreadyExists=items.some(function(it){return it.uid===(d.uid||doc.id);});
+          if(!alreadyExists){
+            items.push({uid:d.uid||doc.id,name:d.name||'User',addedAt:d.addedAt||null,requestDocId:null});
+          }
+        }
+      });
+    }catch(e1){
+      console.warn('friends list pending_received query failed',e1);
+    }
+
+    /* Method 3: Also check notifications collection for friend_request notifications */
+    try{
+      var notifSnap=await db.collection('notifications').doc(currentUser.uid).collection('items')
+        .where('type','==','friend_request')
+        .where('status','==','pending')
+        .get();
+      notifSnap.forEach(function(doc){
+        var d=doc.data();
+        var notifUid=d.from||'';
+        /* Avoid duplicates with methods 1 & 2 */
+        var alreadyExists=items.some(function(it){return it.uid===notifUid;});
+        if(!alreadyExists&&notifUid){
+          items.push({uid:notifUid,name:d.fromName||'User',addedAt:d.createdAt||null,requestDocId:null,notifDocId:doc.id});
+        }
+      });
+    }catch(notifErr){
+      console.warn('notifications query failed',notifErr);
+    }
+
+    /* Sort client-side by addedAt descending */
+    items.sort(function(a,b){
+      var ta=a.addedAt?((a.addedAt.toDate?a.addedAt.toDate():a.addedAt).getTime()):0;
+      var tb=b.addedAt?((b.addedAt.toDate?b.addedAt.toDate():b.addedAt).getTime()):0;
+      return tb-ta;
+    });
+    updateReqBadge(items.length);
+    if(countEl) countEl.textContent=items.length?'('+items.length+')':'';
+    if(!items.length){
+      list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:10px">No pending requests</div>';
+      return;
+    }
+    var html='';
+    items.forEach(function(item){
+      html+='<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:10px;border:1px solid var(--border);margin-bottom:4px;background:var(--panel2)">'+
+        '<div style="flex:1;font-size:13px;font-weight:600">'+esc(item.name)+'</div>'+
+        '<button onclick="acceptFriendRequest(\''+item.uid+'\',\''+esc(item.name).replace(/'/g,"\\'")+'\',\''+(item.requestDocId||'')+'\')" style="background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);color:#7ee2a4;padding:5px 12px;border-radius:8px;font-size:11px;cursor:pointer;font-weight:600">Accept</button>'+
+        '<button onclick="declineFriendRequest(\''+item.uid+'\',\''+(item.requestDocId||'')+'\')" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:#ef4444;padding:5px 12px;border-radius:8px;font-size:11px;cursor:pointer;font-weight:600">Decline</button>'+
+      '</div>';
+    });
+    list.innerHTML=html;
+  }catch(e){
+    console.warn('load req',e);
+    list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:10px">Could not load requests</div>';
+  }
+}
+
+function updateReqBadge(count){
+  var badge=document.getElementById('friendReqBadge');
+  if(!badge) return;
+  if(count>0){badge.style.display='block';badge.textContent=count;}
+  else{badge.style.display='none';}
+}
+
+/* Accept friend request */
+async function acceptFriendRequest(uid,name,requestDocId){
+  if(!fbReady||!currentUser) return;
+  var myName=currentUser.displayName||currentUser.email.split('@')[0];
+  try{
+    /* Write to our own friends list as "accepted" */
+    await db.collection('friends').doc(currentUser.uid).collection('list').doc(uid).set({
+      uid:uid,name:name,status:'accepted',addedAt:firebase.firestore.FieldValue.serverTimestamp()
+    },{merge:true});
+
+    /* Try to write to the other user's friends list too (may fail due to rules) */
+    try{
+      await db.collection('friends').doc(uid).collection('list').doc(currentUser.uid).set({
+        uid:currentUser.uid,name:myName,status:'accepted',addedAt:firebase.firestore.FieldValue.serverTimestamp()
+      },{merge:true});
+    }catch(otherWriteErr){
+      console.warn('Could not write to other user friends list (non-critical):', otherWriteErr);
+    }
+
+    /* Update the friend_requests document to "accepted" */
+    if(requestDocId){
+      try{
+        await db.collection('friend_requests').doc(requestDocId).update({status:'accepted'});
+      }catch(reqUpdateErr){
+        console.warn('Could not update friend_requests doc (non-critical):', reqUpdateErr);
+      }
+    }else{
+      /* No requestDocId — try to find and update the request */
+      try{
+        var reqSnap=await db.collection('friend_requests')
+          .where('from','==',uid)
+          .where('to','==',currentUser.uid)
+          .where('status','==','pending')
+          .get();
+        reqSnap.forEach(function(doc){
+          doc.ref.update({status:'accepted'});
+        });
+      }catch(e){}
+    }
+
+    /* Also mark the notification as accepted */
+    try{
+      var notifSnap=await db.collection('notifications').doc(currentUser.uid).collection('items')
+        .where('type','==','friend_request')
+        .where('from','==',uid)
+        .where('status','==','pending')
+        .get();
+      notifSnap.forEach(function(doc){
+        doc.ref.update({status:'accepted'});
+      });
+    }catch(e){}
+
+    toast(name+' is now your friend!');
+    loadFriendRequests();
+    loadFriendsList();
+  }catch(e){
+    console.warn('accept friend',e);
+    toast('Error accepting request','info');
+  }
+}
+
+/* Decline friend request */
+async function declineFriendRequest(uid,requestDocId){
+  if(!fbReady||!currentUser) return;
+  try{
+    /* Remove from our own friends list */
+    try{
+      await db.collection('friends').doc(currentUser.uid).collection('list').doc(uid).delete();
+    }catch(e){}
+
+    /* Update the friend_requests document to "declined" */
+    if(requestDocId){
+      try{
+        await db.collection('friend_requests').doc(requestDocId).update({status:'declined'});
+      }catch(e){}
+    }else{
+      /* No requestDocId — try to find and update the request */
+      try{
+        var reqSnap=await db.collection('friend_requests')
+          .where('from','==',uid)
+          .where('to','==',currentUser.uid)
+          .where('status','==','pending')
+          .get();
+        reqSnap.forEach(function(doc){
+          doc.ref.update({status:'declined'});
+        });
+      }catch(e){}
+    }
+
+    /* Also mark the notification as declined */
+    try{
+      var notifSnap2=await db.collection('notifications').doc(currentUser.uid).collection('items')
+        .where('type','==','friend_request')
+        .where('from','==',uid)
+        .where('status','==','pending')
+        .get();
+      notifSnap2.forEach(function(doc){
+        doc.ref.update({status:'declined'});
+      });
+    }catch(e){}
+
+    loadFriendRequests();
+    loadFriendsList();
+  }catch(e){
+    console.warn('decline friend',e);
+  }
+}
+
+/* ---- Cancel/withdraw a sent friend request ---- */
+async function cancelFriendRequest(uid,name){
+  if(!currentUser) return;
+  /* Demo user: remove from localStorage only */
+  if(uid.indexOf('demo_')===0){
+    var m=_demoSentMap();
+    delete m[uid];
+    localStorage.setItem('pp_demo_sent',JSON.stringify(m));
+    toast('Friend request to '+(name||'user')+' withdrawn');
+    loadFriendsList();
+    return;
+  }
+  if(!fbReady) return;
+  try{
+    /* Remove from our own friends list */
+    await db.collection('friends').doc(currentUser.uid).collection('list').doc(uid).delete();
+    /* Update any matching friend_requests to "cancelled" */
+    try{
+      var reqSnap=await db.collection('friend_requests')
+        .where('from','==',currentUser.uid)
+        .where('to','==',uid)
+        .where('status','==','pending')
+        .get();
+      reqSnap.forEach(function(doc){
+        doc.ref.update({status:'cancelled'});
+      });
+    }catch(e){}
+    /* Also mark the notification as cancelled so the other user stops seeing it */
+    try{
+      var notifSnap=await db.collection('notifications').doc(uid).collection('items')
+        .where('type','==','friend_request')
+        .where('from','==',currentUser.uid)
+        .where('status','==','pending')
+        .get();
+      notifSnap.forEach(function(doc){
+        doc.ref.update({status:'cancelled'});
+      });
+    }catch(e){}
+    /* Also try to remove the pending_received entry from the other user's list */
+    try{
+      await db.collection('friends').doc(uid).collection('list').doc(currentUser.uid).delete();
+    }catch(e){}
+    toast('Friend request to '+(name||'user')+' withdrawn');
+    loadFriendsList();
+    loadFriendRequests();
+  }catch(e){
+    console.warn('cancel friend req',e);
+    toast('Error cancelling request','info');
+  }
+}
+window.cancelFriendRequest = cancelFriendRequest;
+
+/* ---- Load friends list with online/offline (Contacts tab) ---- */
+async function loadFriendsList(){
+  var list=document.getElementById('contactFriendsList');
+  if(!fbReady||!currentUser){
+    list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">Sign in to see friends</div>';
+    return;
+  }
+  list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">Loading...</div>';
+  try{
+    /* Load accepted friends — NO orderBy (avoids composite index requirement) */
+    var snap;
+    try{
+      snap=await db.collection('friends').doc(currentUser.uid).collection('list').where('status','==','accepted').get();
+    }catch(e1){
+      console.warn('accepted query failed, trying fallback',e1);
+      /* Fallback: get all and filter client-side */
+      var allSnap=await db.collection('friends').doc(currentUser.uid).collection('list').get();
+      var filteredDocs=[];
+      allSnap.forEach(function(doc){
+        if(doc.data().status==='accepted') filteredDocs.push(doc);
+      });
+      snap={docs:filteredDocs,forEach:function(cb){filteredDocs.forEach(cb);}};
+    }
+    /* Load pending sent requests — NO orderBy */
+    var pendingSnap;
+    try{
+      pendingSnap=await db.collection('friends').doc(currentUser.uid).collection('list').where('status','==','pending_sent').get();
+    }catch(e2){
+      console.warn('pending_sent query failed, trying fallback',e2);
+      var allSnap2=await db.collection('friends').doc(currentUser.uid).collection('list').get();
+      var filteredDocs2=[];
+      allSnap2.forEach(function(doc){
+        if(doc.data().status==='pending_sent') filteredDocs2.push(doc);
+      });
+      pendingSnap={docs:filteredDocs2,forEach:function(cb){filteredDocs2.forEach(cb);}};
+    }
+    var pending=[];
+    pendingSnap.forEach(function(doc){
+      var d=doc.data();
+      pending.push({uid:d.uid||doc.id,name:d.name||'User',avatar:0,addedAt:d.addedAt||null});
+    });
+    /* Sort pending client-side */
+    pending.sort(function(a,b){
+      var ta=a.addedAt?((a.addedAt.toDate?a.addedAt.toDate():a.addedAt).getTime()):0;
+      var tb=b.addedAt?((b.addedAt.toDate?b.addedAt.toDate():b.addedAt).getTime()):0;
+      return tb-ta;
+    });
+    /* Also include demo user pending requests from localStorage */
+    var demoMap=_demoSentMap();
+    var demoUids=Object.keys(demoMap);
+    for(var di=0;di<demoUids.length;di++){
+      var dUid=demoUids[di];
+      var alreadyInPending=false;
+      for(var pi=0;pi<pending.length;pi++){if(pending[pi].uid===dUid){alreadyInPending=true;break;}}
+      if(!alreadyInPending){
+        var dAvatar=0;
+        if(window.PPDemo&&PPDemo.users){
+          for(var dj=0;dj<PPDemo.users.length;dj++){
+            if(PPDemo.users[dj]._uid===dUid){dAvatar=PPDemo.users[dj].avatar||0;break;}
+          }
+        }
+        pending.push({uid:dUid,name:demoMap[dUid].name||'User',avatar:dAvatar,demo:true});
+      }
+    }
+    /* Show pending section */
+    var pendingSection=document.getElementById('contactPendingSection');
+    var pendingListEl=document.getElementById('contactPendingList');
+    if(pending.length&&pendingSection&&pendingListEl){
+      pendingSection.style.display='block';
+      var ph='';
+      pending.forEach(function(f){
+        var fSvg=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(f.avatar||0):'';
+        var isDemo=f.demo||false;
+        var cancelBtn='<button onclick="cancelFriendRequest(\''+f.uid+'\',\''+esc(f.name).replace(/'/g,"\\'")+'\')" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:#ef4444;padding:2px 8px;border-radius:6px;font-size:10px;cursor:pointer;font-weight:600;margin-left:4px">Withdraw</button>';
+        ph+='<div style="display:flex;align-items:center;gap:8px;padding:6px 4px;border-radius:8px;opacity:.6">'+
+          '<div style="width:28px;height:28px;border-radius:8px;overflow:hidden;border:1px solid var(--border)">'+fSvg+'</div>'+
+          '<span style="font-size:13px;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(f.name)+'</span>'+
+          '<span style="font-size:10px;color:var(--gold);font-style:italic">Sent</span>'+
+          cancelBtn+
+        '</div>';
+      });
+      pendingListEl.innerHTML=ph;
+    }else if(pendingSection){
+      pendingSection.style.display='none';
+    }
+
+    var online=[];
+    var offline=[];
+    for(var i=0;i<snap.docs.length;i++){
+      var d=snap.docs[i].data();
+      var fUid=d.uid||snap.docs[i].id;
+      var fName=d.name||'User';
+      var fAvatar=0;
+      var isOnline=false;
+      try{
+        var pubSnap=await db.collection('pp_public').doc(fUid).get();
+        var pub=pubSnap.data()||{};
+        fName=pub.name||fName;
+        fAvatar=pub.avatar||0;
+        var lastUpd=pub.updatedAt;
+        if(lastUpd&&lastUpd.toDate){isOnline=(Date.now()-lastUpd.toDate().getTime())<300000;}
+      }catch(e){}
+      var fObj={uid:fUid,name:fName,avatar:fAvatar,online:isOnline};
+      if(isOnline) online.push(fObj);
+      else offline.push(fObj);
+    }
+    var html='';
+    if(online.length){
+      html+='<div style="font-size:11px;color:var(--accent2);font-weight:700;padding:10px 14px 4px">🟢 ONLINE ('+online.length+')</div>';
+      online.forEach(function(f){html+=friendRow(f);});
+    }
+    if(offline.length){
+      html+='<div style="font-size:11px;color:var(--muted);font-weight:700;padding:10px 14px 4px">⚫ OFFLINE ('+offline.length+')</div>';
+      offline.forEach(function(f){html+=friendRow(f);});
+    }
+    if(!online.length&&!offline.length&&!pending.length){
+      list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:30px 14px">No friends yet.<br>Go to Discover tab to find and add friends!</div>';
+    }else{
+      list.innerHTML=html;
+    }
+  }catch(e){
+    console.warn('load friends',e);
+    /* Graceful fallback — don't show scary error */
+    list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:30px 14px">Could not load friends list.<br>Please try again later.</div>';
+  }
+}
+
+/* ---- Load conversations (Chats tab) ---- */
+async function loadConversations(){
+  var list=document.getElementById('conversationsList');
+  if(!list) return;
+  if(!fbReady||!currentUser||!rtdb){
+    list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:30px">Sign in to see chats</div>';
+    return;
+  }
+  list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">Loading...</div>';
+  try{
+    var convRef=rtdb.ref('user_conversations/'+currentUser.uid).orderByChild('lastMessageTime');
+    convRef.once('value',function(snap){
+      var convs=[];
+      snap.forEach(function(child){
+        var c=child.val();
+        if(c.friendId&&c.friendName) convs.push(c);
+      });
+      /* Reverse to show most recent first */
+      convs.reverse();
+      if(!convs.length){
+        list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:30px 14px">No conversations yet.<br>Start a chat from Contacts!</div>';
+        return;
+      }
+      var html='';
+      convs.forEach(function(c){
+        var unread=(c.unreadCount&&c.unreadCount>0)?c.unreadCount:0;
+        var badge=unread?'<div style="min-width:18px;height:18px;border-radius:9px;background:#ef4444;color:#fff;font-size:10px;font-weight:700;text-align:center;line-height:18px;padding:0 4px;flex-shrink:0">'+unread+'</div>':'';
+        var lastMsg=c.lastMessage||'';
+        if(lastMsg.length>30) lastMsg=lastMsg.substring(0,30)+'...';
+        var ts=c.lastMessageTime?new Date(c.lastMessageTime):null;
+        var timeStr=ts?ts.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'';
+        var dateStr='';
+        if(ts){
+          var today=new Date();
+          if(ts.toDateString()===today.toDateString()) dateStr=timeStr;
+          else dateStr=ts.toLocaleDateString([],{month:'short',day:'numeric'});
+        }
+        html+='<div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;transition:background .15s" onmouseenter="this.style.background=\'rgba(124,92,255,.08)\'" onmouseleave="this.style.background=\'transparent\'" onclick="openChatWith(\''+c.friendId+'\',\''+esc(c.friendName).replace(/'/g,"\\'")+'\',0)">'+
+          '<div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,rgba(124,92,255,.2),rgba(34,211,238,.1));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">💬</div>'+
+          '<div style="flex:1;min-width:0">'+
+            '<div style="display:flex;justify-content:space-between;align-items:center">'+
+              '<span style="font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(c.friendName)+'</span>'+
+              '<span style="font-size:10px;color:var(--muted);flex-shrink:0;margin-left:8px">'+dateStr+'</span>'+
+            '</div>'+
+            '<div style="font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px">'+esc(lastMsg)+'</div>'+
+          '</div>'+
+          badge+
+        '</div>';
+      });
+      list.innerHTML=html;
+    },function(e){
+      console.warn('load convs',e);
+      list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">Could not load conversations</div>';
+    });
+  }catch(e){
+    console.warn('load convs',e);
+    list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">Could not load conversations</div>';
+  }
+}
+
+function friendRow(f){
+  var dot=f.online?'#22d3ee':'#555';
+  var svg=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(f.avatar||0):'';
+  return '<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;border-radius:0;cursor:pointer;transition:background .15s;border-bottom:1px solid rgba(255,255,255,.03)" onmouseenter="this.style.background=\'rgba(124,92,255,.08)\'" onmouseleave="this.style.background=\'transparent\'" onclick="openChatWith(\''+f.uid+'\',\''+esc(f.name).replace(/'/g,"\\'")+'\','+f.avatar+')">'+
+    '<div style="width:36px;height:36px;border-radius:10px;overflow:hidden;border:1px solid var(--border);position:relative">'+svg+
+    '<span style="position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;border-radius:50%;background:'+dot+';border:2px solid var(--panel)"></span></div>'+
+    '<span style="font-size:13px;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500">'+esc(f.name)+'</span>'+
+    '<span style="font-size:10px;color:var(--muted)">💬</span>'+
+  '</div>';
+}
+
+/* ---- Open chat with friend (RTDB) ---- */
+window.openChatWith=function(fUid,fName,fAvatar){
+  _chatFriendUid=fUid;
+  document.getElementById('chatFriendName').textContent=fName;
+  document.getElementById('chatFriendSub').textContent='Chat';
+  /* Set avatar */
+  var avEl=document.getElementById('chatFriendAvatar');
+  var svg=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(fAvatar||0):'';
+  avEl.innerHTML=svg;
+  document.getElementById('chatWindow').style.cssText='display:block!important;position:fixed;bottom:20px;right:380px;width:360px;max-width:90vw;background:var(--panel);border:1px solid var(--border);border-radius:16px;z-index:10001;box-shadow:0 8px 32px rgba(0,0,0,.5);overflow:hidden;resize:both;min-width:280px;min-height:340px';
+  document.getElementById('chatMessages').style.display='flex';
+  document.getElementById('chatInputRow').style.display='flex';
+  document.getElementById('chatMessages').innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">Loading messages...</div>';
+  /* Listen for messages in Realtime Database */
+  if(_chatUnsubscribe) _chatUnsubscribe();
+  var chatId=getChatRoomId(currentUser.uid,fUid);
+  if(!rtdb){console.warn('RTDB not initialized');return;}
+  var msgRef=rtdb.ref('chat_rooms/'+chatId+'/messages').orderByChild('timestamp').limitToLast(100);
+  _chatUnsubscribe=msgRef.on('value',function(snap){
+    var html='';
+    snap.forEach(function(child){
+      var m=child.val();
+      var isMe=m.senderId===currentUser.uid;
+      var align=isMe?'right':'left';
+      var bg=isMe?'rgba(124,92,255,.15)':'rgba(34,211,238,.08)';
+      var ts=m.timestamp?new Date(m.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'';
+      html+='<div style="align-self:'+align+';max-width:80%;padding:8px 12px;border-radius:12px;background:'+bg+';font-size:13px">'+
+        '<div>'+esc(m.text||'')+'</div>'+
+        '<div style="font-size:9px;color:var(--muted);margin-top:3px">'+ts+'</div>'+
+      '</div>';
+    });
+    var el=document.getElementById('chatMessages');
+    el.innerHTML=html||'<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">No messages yet. Say hi!</div>';
+    el.scrollTop=el.scrollHeight;
+  },function(e){console.warn('chat listen',e);});
+  /* Mark messages as read */
+  rtdb.ref('user_conversations/'+currentUser.uid+'/'+chatId).update({unreadCount:0}).catch(function(){});
+  /* Also refresh conversations list if on chats tab */
+  if(_currentFriendsTab==='chats') loadConversations();
+};
+
+/* ---- Send chat message (RTDB) ---- */
+window.sendChatMessage=async function(){
+  if(!fbReady||!currentUser||!_chatFriendUid||!rtdb) return;
+  var input=document.getElementById('chatInput');
+  var text=input.value.trim();
+  if(!text) return;
+  input.value='';
+  var chatId=getChatRoomId(currentUser.uid,_chatFriendUid);
+  var msgRef=rtdb.ref('chat_rooms/'+chatId+'/messages').push();
+  var ts=Date.now();
+  try{
+    await msgRef.set({senderId:currentUser.uid,text:text,timestamp:ts});
+    /* Update chat room info */
+    await rtdb.ref('chat_rooms/'+chatId+'/info').set({
+      participants:[currentUser.uid,_chatFriendUid],
+      lastMessage:text,
+      lastMessageTime:ts,
+      lastMessageSender:currentUser.uid
+    });
+    /* Update my conversation index */
+    var myName=currentUser.displayName||currentUser.email.split('@')[0];
+    await rtdb.ref('user_conversations/'+currentUser.uid+'/'+chatId).set({
+      friendId:_chatFriendUid,
+      friendName:document.getElementById('chatFriendName').textContent,
+      lastMessage:text,
+      lastMessageTime:ts,
+      unreadCount:0
+    });
+    /* Update friend's conversation index with unread count */
+    await rtdb.ref('user_conversations/'+_chatFriendUid+'/'+chatId).update({
+      friendId:currentUser.uid,
+      friendName:myName,
+      lastMessage:text,
+      lastMessageTime:ts
+    });
+    /* Increment friend's unread count atomically */
+    var friendConvRef=rtdb.ref('user_conversations/'+_chatFriendUid+'/'+chatId+'/unreadCount');
+    rtdb.ref('user_conversations/'+_chatFriendUid+'/'+chatId+'/unreadCount').transaction(function(current){
+      return (current||0)+1;
+    }).catch(function(){});
+  }catch(e){console.warn('send msg',e);}
+};
+
+/* ---- Listen for conversations (unread count, new message notifications) ---- */
+function listenForConversations(){
+  if(!fbReady||!currentUser||!rtdb) return;
+  if(_convUnsubscribe) _convUnsubscribe();
+  var convRef=rtdb.ref('user_conversations/'+currentUser.uid);
+  _convUnsubscribe=convRef.on('value',function(snap){
+    _totalUnread=0;
+    snap.forEach(function(child){
+      var conv=child.val();
+      if(conv.unreadCount&&conv.unreadCount>0) _totalUnread+=conv.unreadCount;
+    });
+    /* Update unread indicator */
+    var ind=document.getElementById('unreadIndicator');
+    if(_totalUnread>0){
+      ind.style.display='block';
+      ind.textContent=_totalUnread+' unread message'+(_totalUnread>1?'s':'');
+      /* Flash browser tab title */
+      if(document.hidden) document.title='('+_totalUnread+') '+_origTitle;
+    }else{
+      ind.style.display='none';
+      document.title=_origTitle;
+    }
+    /* Update friends button badge */
+    var btn=document.getElementById('friendsBtn');
+    if(btn){
+      var existingBadge=btn.querySelector('.unread-dot');
+      if(_totalUnread>0){
+        if(!existingBadge){
+          var dot=document.createElement('span');
+          dot.className='unread-dot';
+          dot.style.cssText='position:absolute;top:-2px;right:-2px;width:16px;height:16px;border-radius:50%;background:#ef4444;color:#fff;font-size:9px;font-weight:700;text-align:center;line-height:16px';
+          dot.textContent=_totalUnread;
+          btn.style.position='relative';
+          btn.appendChild(dot);
+        }else{
+          existingBadge.textContent=_totalUnread;
+        }
+      }else if(existingBadge){
+        existingBadge.remove();
+      }
+    }
+    /* Refresh conversations list if on chats tab */
+    if(_currentFriendsTab==='chats'&&document.getElementById('friendsPanel').style.display==='flex'){
+      loadConversations();
+    }
+  },function(e){console.warn('conv listen',e);});
+}
+
+/* ---- Set online status ---- */
+function setOnlineStatus(){
+  if(!fbReady||!currentUser) return;
+  db.collection('users').doc(currentUser.uid).set({online:true,lastSeen:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).catch(function(){});
+  /* Set offline on page unload */
+  window.addEventListener('beforeunload',function(){
+    db.collection('users').doc(currentUser.uid).set({online:false,lastSeen:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).catch(function(){});
+  });
+}
+
+/* ---- Wire up UI events ---- */
+document.getElementById('chatInput').addEventListener('keydown',function(e){
+  if(e.key==='Enter'){e.preventDefault();sendChatMessage();}
+});
+document.getElementById('friendSearchBtn').addEventListener('click',searchUsers);
+document.getElementById('friendSearchInput').addEventListener('keydown',function(e){
+  if(e.key==='Enter'){e.preventDefault();searchUsers();}
+});
+/* Tab bar clicks */
+document.querySelectorAll('#friendsTabBar .qq-tab').forEach(function(tab){
+  tab.addEventListener('click',function(){
+    switchFriendsTab(this.getAttribute('data-tab'));
+  });
+});
+document.getElementById('unreadIndicator').addEventListener('click',function(){
+  /* Open the conversation with unread messages */
+  if(!rtdb||!currentUser) return;
+  rtdb.ref('user_conversations/'+currentUser.uid).orderByChild('lastMessageTime').limitToLast(1).once('value',function(snap){
+    snap.forEach(function(child){
+      var conv=child.val();
+      if(conv.unreadCount>0) openChatWith(conv.friendId,conv.friendName,0);
+    });
+  });
+});
+document.getElementById('friendsBtn').addEventListener('click',toggleFriendsPanel);
+document.getElementById('friendsPanelClose').addEventListener('click',function(){
+  var p=document.getElementById('friendsPanel');
+  if(p){p.style.display='none';}
+  closeChatWindow();
+  if(_friendsListUnsubscribe){try{_friendsListUnsubscribe();}catch(e){}_friendsListUnsubscribe=null;}
+  if(_friendReqUnsubscribe){try{_friendReqUnsubscribe();}catch(e){}_friendReqUnsubscribe=null;}
+  if(_convUnsubscribe){try{_convUnsubscribe();}catch(e){}_convUnsubscribe=null;}
+});
+document.getElementById('chatWindowClose').addEventListener('click',function(){
+  closeChatWindow();
+});
+
+/* Update friends button visibility */
+function updateFriendsBtn(){
+  var btn=document.getElementById('friendsBtn');
+  if(btn){
+    btn.style.display=fbReady&&currentUser?'inline-flex':'none';
+  }
+}
+
+/* ============================================================
+ *  COMMUNITY ENHANCEMENTS: avatar viewer
+ *  (Bio display + achievements button handled in social.js showUser)
+ * ============================================================ */
+/* Patch showUser in social.js to add avatar viewer */
+var _origShowUser=window.showUser;
+if(typeof _origShowUser==='function'){
+  window.showUser=async function(uid){
+    _origShowUser(uid);
+    var isDemo = uid.indexOf('demo_')===0;
+    if(!isDemo && fbReady){
+      try{
+        var pubDoc=await db.collection('pp_public').doc(uid).get();
+        var pubData=pubDoc.data()||{};
+        var profileEl=document.querySelector('.sc-prof');
+        if(!profileEl) return;
+        /* Make avatar clickable to view other user's unlocked avatars */
+        var avatarEl=profileEl.querySelector('.sc-prof-av');
+        if(avatarEl){
+          avatarEl.style.cursor='pointer';
+          avatarEl.title='View unlocked avatars';
+          avatarEl.addEventListener('click',function(){
+            openOtherUserAvatarGrid(uid,pubData.name||'User');
+          });
+        }
+      }catch(e){console.warn('profile enhance',e);}
+    } else if(isDemo){
+      var profileEl2=document.querySelector('.sc-prof');
+      if(profileEl2){
+        var avatarEl2=profileEl2.querySelector('.sc-prof-av');
+        if(avatarEl2){
+          avatarEl2.style.cursor='default';
+          avatarEl2.title='Demo user — no avatar data';
+        }
+      }
+    }
+  };
+}
+
+/* View other user's unlocked avatars in a grid */
+function openOtherUserAvatarGrid(uid,name){
+  var overlay=document.getElementById('otherAvatarOverlay');
+  if(!overlay){
+    overlay=document.createElement('div');
+    overlay.id='otherAvatarOverlay';
+    overlay.className='overlay';
+    overlay.innerHTML='<div class="modal" style="max-width:580px"><button class="x" data-close>&times;</button><h2 id="otherAvatarTitle">Avatars</h2><div id="otherAvatarGrid" style="display:grid;grid-template-columns:repeat(10,1fr);gap:4px;margin-top:12px"></div></div>';
+    document.body.appendChild(overlay);
+    overlay.querySelector('[data-close]').addEventListener('click',function(){overlay.classList.remove('show');});
+    overlay.addEventListener('click',function(e){if(e.target===overlay)overlay.classList.remove('show');});
+  }
+  document.getElementById('otherAvatarTitle').textContent=name+"'s Avatars";
+  var grid=document.getElementById('otherAvatarGrid');
+  grid.innerHTML='<div style="color:var(--muted);text-align:center;padding:20px;grid-column:1/-1">Loading...</div>';
+  overlay.classList.add('show');
+  /* Fetch the user's game state from Firestore */
+  db.collection('users').doc(uid).get().then(function(doc){
+    var data=doc.data()||{};
+    var game=data.game||{};
+    var unlockedAvatars=game.unlockedAvatars||[];
+    var equippedAvatar=game.avatar||0;
+    var html='';
+    for(var i=0;i<200;i++){
+      var isUnlocked=unlockedAvatars.indexOf(i)>=0;
+      var isEquipped=i===equippedAvatar;
+      var svg=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(i):'';
+      var bg=isEquipped?'rgba(124,92,255,.25)':isUnlocked?'rgba(34,211,238,.08)':'var(--panel2)';
+      var border=isEquipped?'2px solid var(--accent2)':isUnlocked?'1px solid rgba(34,211,238,.3)':'1px solid var(--border)';
+      var opacity=isUnlocked||isEquipped?'1':'0.35';
+      var tag=isEquipped?'<div style="position:absolute;bottom:0;left:0;right:0;font-size:7px;background:rgba(124,92,255,.8);color:#fff;text-align:center;padding:1px 0">EQUIPPED</div>':isUnlocked?'':'<div style="position:absolute;top:0;right:0;font-size:8px;background:rgba(0,0,0,.6);padding:1px 3px;border-radius:3px">🔒</div>';
+      html+='<div style="position:relative;width:42px;height:42px;border-radius:8px;overflow:hidden;border:'+border+';background:'+bg+';opacity:'+opacity+'">'+svg+tag+'</div>';
+    }
+    grid.innerHTML=html;
+  }).catch(function(e){
+    console.warn('load other avatars',e);
+    grid.innerHTML='<div style="color:var(--muted);text-align:center;padding:20px;grid-column:1/-1">Error loading avatars</div>';
+  });
+}
+
+/* View other user's achievements */
+function openOtherUserAchievements(uid,name,achN){
+  var overlay=document.getElementById('otherAchOverlay');
+  if(!overlay){
+    overlay=document.createElement('div');
+    overlay.id='otherAchOverlay';
+    overlay.className='overlay';
+    overlay.innerHTML='<div class="modal" style="max-width:460px"><button class="x" data-close>&times;</button><h2 id="otherAchTitle">Achievements</h2><div id="otherAchList" style="margin-top:12px"></div></div>';
+    document.body.appendChild(overlay);
+    overlay.querySelector('[data-close]').addEventListener('click',function(){overlay.classList.remove('show');});
+    overlay.addEventListener('click',function(e){if(e.target===overlay)overlay.classList.remove('show');});
+  }
+  document.getElementById('otherAchTitle').textContent=name+"'s Achievements";
+  var list=document.getElementById('otherAchList');
+  list.innerHTML='<div style="color:var(--muted);text-align:center;padding:20px">Loading...</div>';
+  overlay.classList.add('show');
+
+  /* Demo user: generate fake achievements */
+  if(uid.indexOf('demo_')===0){
+    var fakeAchPool=['First Prompt','Streak Master','Speed Demon','Coin Hunter','Level 5','Level 10','Level 25','Explorer','Night Owl','Early Bird','Perfectionist','Marathon Runner','Quick Thinker','Puzzle Pro','Community Star','Dedicated User','Prompt Guru','AI Whisperer','Category King','Streak Legend','Matrix Master','XP Champion','Coin Baron','Deep Diver','Knowledge Seeker'];
+    var idx=0;for(var c=0;c<uid.length;c++) idx+=uid.charCodeAt(c);
+    var count=Math.min(achN||0,fakeAchPool.length);
+    var shuffled=fakeAchPool.slice().sort(function(a,b){return ((idx+a.length)%3)-((idx+b.length)%3);});
+    var achList=shuffled.slice(0,count);
+    if(!achList.length){
+      list.innerHTML='<div style="color:var(--muted);text-align:center;padding:20px">No achievements unlocked yet</div>';
+      return;
+    }
+    var html='<div style="font-size:13px;color:var(--accent2);margin-bottom:8px;font-weight:700">🏆 '+achList.length+' Achievements Unlocked</div><div style="display:flex;flex-wrap:wrap;gap:6px">';
+    achList.forEach(function(a){
+      html+='<span style="display:inline-block;font-size:11px;background:rgba(124,92,255,.15);border:1px solid rgba(124,92,255,.2);padding:4px 10px;border-radius:8px">'+esc(a)+'</span>';
+    });
+    html+='</div>';
+    list.innerHTML=html;
+    return;
+  }
+
+  db.collection('users').doc(uid).get().then(function(doc){
+    var data=doc.data()||{};
+    var game=data.game||{};
+    var achList=game.ach||[];
+    if(!achList.length){
+      list.innerHTML='<div style="color:var(--muted);text-align:center;padding:20px">No achievements unlocked yet</div>';
+      return;
+    }
+    var html='<div style="font-size:13px;color:var(--accent2);margin-bottom:8px;font-weight:700">🏆 '+achList.length+' Achievements Unlocked</div><div style="display:flex;flex-wrap:wrap;gap:6px">';
+    achList.forEach(function(a){
+      html+='<span style="display:inline-block;font-size:11px;background:rgba(124,92,255,.15);border:1px solid rgba(124,92,255,.2);padding:4px 10px;border-radius:8px">'+esc(a)+'</span>';
+    });
+    html+='</div>';
+    list.innerHTML=html;
+  }).catch(function(e){
+    console.warn('load other ach',e);
+    list.innerHTML='<div style="color:var(--muted);text-align:center;padding:20px">Error loading achievements</div>';
+  });
+}
+
+/* ============================================================
+ *  INIT: show friends button, sync data on auth change
+ * ============================================================ */
+var _origHandleAuthChange=handleAuthChange;
+handleAuthChange=async function(user){
+  await _origHandleAuthChange(user);
+  updateFriendsBtn();
+  /* Re-sync full game state to cloud on login */
+  if(currentUser){
+    cloudSaveBio();
+    setOnlineStatus();
+    listenForConversations();
+    /* Sync public profile so other users can find this user by name/email */
+    if(typeof syncPublicProfile === 'function') syncPublicProfile();
+  }
+};
+
+/* Also save bio when account settings are saved */
+var _origSaveAccount=saveAccountSettings;
+saveAccountSettings=async function(){
+  await _origSaveAccount();
+  cloudSaveBio();
+  syncPublicProfile();
+};
+
+/* ---- Sync public profile to pp_public collection ----
+ * The pp_public collection is used for friend search. It stores a
+ * lightweight, publicly-readable document for each user with their
+ * displayName, email, avatar, level, and online status.
+ * This MUST be called whenever the user's profile changes. */
+function syncPublicProfile(){
+  if(!fbReady || !currentUser || !db) return;
+  var gameData = (window.PPGame && PPGame.exportState) ? PPGame.exportState() : {};
+  var displayName = currentUser.displayName || (currentUser.email ? currentUser.email.split('@')[0] : 'User');
+  var email = currentUser.email || '';
+  var avatar = gameData.avatar || 0;
+  var lvl = gameData.lvl || 1;
+  var bio = document.getElementById('setBio') ? document.getElementById('setBio').value.trim() : userBio;
+  db.collection('pp_public').doc(currentUser.uid).set({
+    name: displayName,
+    email: email,
+    avatar: avatar,
+    lvl: lvl,
+    bio: bio || '',
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  },{merge:true}).catch(function(e){
+    console.warn('syncPublicProfile', e);
+  });
+}
+
+/* ---- Expose friend/chat functions to global scope ----
+ * These functions are called from onclick handlers in HTML generated
+ * by the friends panel. They MUST be on window for the onclick to work. */
+window.searchUsers = searchUsers;
+window.sendFriendRequestTo = sendFriendRequestTo;
+window.acceptFriendRequest = acceptFriendRequest;
+window.declineFriendRequest = declineFriendRequest;
+window.viewSearchUser = viewSearchUser;
+window.switchFriendsTab = switchFriendsTab;
+window.toggleFriendsPanel = toggleFriendsPanel;
+window.openChatWith = openChatWith;
+window.closeChatWindow = closeChatWindow;
+window.sendChatMessage = sendChatMessage;
+window.loadSuggestedUsers = loadSuggestedUsers;
+window.loadFriendsList = loadFriendsList;
+window.loadFriendRequests = loadFriendRequests;
+window.loadConversations = loadConversations;
+window.syncPublicProfile = syncPublicProfile;
+
 })();
 </script>
 </body>

@@ -313,7 +313,7 @@ function paintBoard(kind){
     rows.forEach(function(r,i){
       var n=i+1, l=r.lvl||1;
       var medal = n===1?'🥇':n===2?'🥈':n===3?'🥉':n;
-      var val = kind==='coin' ? ('🪙 '+(r.coins||0)) : kind==='game' ? ('🎮 '+(r.gameScore||0)) : kind==='time' ? ('⏱️ '+fmtTime(r.gameTime)) : ('Lv '+l);
+      var val = kind==='coin' ? ('🪙 '+(r.coins||0)) : kind==='game' ? ('🎮 '+(r.gameScore||0)) : kind==='time' ? ('⏱️ '+fmtTime(r.gameTime) + (r.gameDiff ? ' (' + ['Easy','Normal','Hard','Very Hard','Hell','Impossible'][Math.min(r.gameDiff,5)] + ')' : '')) : ('Lv '+l);
       h += '<div class="sc-row'+(r._uid===mine?' me':'')+'" data-uid="'+esc(r._uid)+'">'
         + '<div class="sc-rank">'+medal+'</div>'
         + '<div class="sc-av">'+av(r.avatar||0)+'</div>'
@@ -343,6 +343,29 @@ function showUser(uid){
   var body = elById('ppComBody');
   var l = r.lvl||1, rk = rankOf(l);
   var _m = PPI18n.t('community.member');
+  /* Random bios for demo users */
+  var fakeBios = [
+    "just here for the prompts lol",
+    "AI enthusiast 🤖 coffee addict ☕",
+    "writing prompts at 3am like always",
+    "trying to make ChatGPT do my job",
+    "prompt engineering is my cardio",
+    "living that AI life ✨",
+    "i asked AI to write this bio",
+    "professional prompt wrangler 🤠",
+    "making robots smarter one prompt at a time",
+    "lost in a sea of tokens",
+    "will prompt for food 🍕",
+    "my prompts > your prompts",
+    "here for the vibes and the AI",
+    "serendipity driven developer",
+    "prompt go brrrr 🚀",
+    " caffeinated prompt engineer",
+    "just a human training AI 🧠",
+    "I put the 'pro' in prompt engineering",
+    "leveling up one prompt at a time",
+    "in my prompt era 💅"
+  ];
   body.innerHTML = '<button class="sc-back" id="ppComBack">'+PPI18n.t('community.back')+'</button>'
     + '<div class="sc-prof"><div class="sc-prof-av">'+av(r.avatar||0)+'</div>'
     + '<div class="sc-prof-nm">'+esc(r.name||_m)+'</div>'
@@ -354,11 +377,52 @@ function showUser(uid){
     + '<div class="statpill"><b>'+(r.xp||0)+'</b><span>'+PPI18n.t('community.totalxp')+'</span></div>'
     + '<div class="statpill"><b>🪙 '+(r.coins||0)+'</b><span>'+PPI18n.t('community.coins')+'</span></div></div>'
     + '<div class="statpills">'
-    + '<div class="statpill"><b>'+(r.achN||0)+'</b><span>'+PPI18n.t('community.achievements')+'</span></div>'
+    + '<div class="statpill" style="cursor:pointer;transition:.15s;border-color:rgba(124,92,255,.3);position:relative" id="achStatPill" data-uid="'+esc(uid)+'" data-name="'+esc(r.name||_m)+'" data-ach="'+(r.achN||0)+'" onmouseenter="this.style.borderColor=\'rgba(124,92,255,.6)\';this.style.background=\'rgba(124,92,255,.08)\'" onmouseleave="this.style.borderColor=\'rgba(124,92,255,.3)\';this.style.background=\'var(--panel2)\'"><b>🏆 '+(r.achN||0)+'</b><span>'+PPI18n.t('community.achievements')+'</span><div style="position:absolute;bottom:2px;right:6px;font-size:8px;color:var(--accent2)">VIEW ▸</div></div>'
     + '<div class="statpill"><b>🔥 '+(r.best||0)+'</b><span>'+PPI18n.t('community.beststreak')+'</span></div>'
     + '<div class="statpill"><b>🎮 '+(r.gameScore||0)+'</b><span>'+PPI18n.t('community.matrixbest')+'</span></div>'
-    + '<div class="statpill"><b>⏱️ '+fmtTime(r.gameTime||0)+'</b><span>'+PPI18n.t('community.fastestclear')+'</span></div></div>';
+    + '<div class="statpill"><b>⏱️ '+fmtTime(r.gameTime||0)+'</b><span>'+PPI18n.t('community.fastestclear')+(r.gameDiff ? ' ('+['Easy','Normal','Hard','Very Hard','Hell','Impossible'][Math.min(r.gameDiff,5)]+')' : '')+'</span></div></div>'
+    + '<div id="ppBioSection" style="padding:10px 0;margin-top:4px;border-top:1px solid var(--border);text-align:center"></div>';
   elById('ppComBack').addEventListener('click', function(){ paintCommunity(); });
+  /* Make achievements pill clickable */
+  var achPill=elById('achStatPill');
+  if(achPill){
+    achPill.addEventListener('click',function(){
+      var uid=this.getAttribute('data-uid');
+      var name=this.getAttribute('data-name');
+      var achN=parseInt(this.getAttribute('data-ach'))||0;
+      if(typeof window.openOtherUserAchievements==='function'){
+        window.openOtherUserAchievements(uid,name,achN);
+      }
+    });
+  }
+  /* Load bio: for demo users, use random fake bio; for real users, fetch from Firestore */
+  var bioEl = elById('ppBioSection');
+  if(r.demo){
+    /* Demo user: pick a deterministic but random-looking bio based on uid */
+    var idx = 0;
+    for(var c=0;c<uid.length;c++) idx += uid.charCodeAt(c);
+    var bio = fakeBios[idx % fakeBios.length];
+    bioEl.innerHTML = '<div style="font-size:13px;color:var(--text);font-style:italic">"'+esc(bio)+'"</div><div style="font-size:10px;color:var(--muted);margin-top:2px">Short Bio</div>';
+  } else {
+    /* Real user: fetch bio from Firestore */
+    bioEl.innerHTML = '<div style="font-size:12px;color:var(--muted)">Loading bio...</div>';
+    var database = db();
+    if(database){
+      database.collection('users').doc(uid).get().then(function(doc){
+        var d = doc.data()||{};
+        var bio = d.bio||'';
+        if(bio){
+          bioEl.innerHTML = '<div style="font-size:13px;color:var(--text);font-style:italic">"'+esc(bio)+'"</div><div style="font-size:10px;color:var(--muted);margin-top:2px">Short Bio</div>';
+        } else {
+          bioEl.innerHTML = '<div style="font-size:12px;color:var(--muted);font-style:italic">No bio yet</div>';
+        }
+      }).catch(function(){
+        bioEl.innerHTML = '<div style="font-size:12px;color:var(--muted);font-style:italic">No bio yet</div>';
+      });
+    } else {
+      bioEl.innerHTML = '';
+    }
+  }
 }
 function paintMoodWall(){
   var body = elById('ppComBody');
