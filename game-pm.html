@@ -1926,6 +1926,9 @@ function backToStart(){
   document.getElementById('gameOverScreen').style.display='none';
   document.getElementById('gameScreen').style.display='none';
   document.getElementById('multiplayerScreen').style.display='none';
+  document.getElementById('mapSelectScreen').style.display='none';
+  closeTableRoom();
+  removeLobbyStatusBar();
   leaveLobby();
   closeShop();stopBGM();gState='start';
   document.getElementById('startScreen').style.display='flex';
@@ -1934,6 +1937,9 @@ function backToStart(){
 function backToModeSelect(){
   document.getElementById('diffScreen').style.display='none';
   document.getElementById('multiplayerScreen').style.display='none';
+  document.getElementById('mapSelectScreen').style.display='none';
+  closeTableRoom();
+  removeLobbyStatusBar();
   leaveLobby();
   document.getElementById('modeScreen').style.display='flex';
 }
@@ -2195,12 +2201,140 @@ function sitDown(tableNum,seatNum){
     mpIsReady=false;
 
     tableRef.child('seat'+seatNum).onDisconnect().remove();
+    /* Show the table room view so the player can see who's seated and wait */
+    showTableRoom(tableNum);
   }).catch(function(e){
     console.error('[MP] sitDown error details:', e);
     toast('Could not join table: '+(e.message||'unknown error'),'info');
     startSoloWhileWaiting(tableNum,seatNum);
   });
 }
+
+/* Show detailed room view after sitting at a table */
+function showTableRoom(tableNum){
+  var rtdb=getRtdb();
+  if(!rtdb) return;
+  var tableRef=rtdb.ref('lobby/'+mpMode+'/tables/'+tableNum);
+  
+  /* Create/update room overlay */
+  var roomEl=document.getElementById('tableRoomView');
+  if(!roomEl){
+    roomEl=document.createElement('div');
+    roomEl.id='tableRoomView';
+    roomEl.style.cssText='position:fixed;inset:0;z-index:89;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(160deg,#060610,#0a0612,#060610);overflow:hidden';
+    document.body.appendChild(roomEl);
+  }
+  roomEl.style.display='flex';
+  
+  /* Listen to this specific table for changes */
+  if(window._tableRoomListener){
+    try{ rtdb.ref('lobby/'+mpMode+'/tables/'+window._tableRoomTable).off('value',window._tableRoomListener); }catch(e){}
+  }
+  window._tableRoomTable=tableNum;
+  window._tableRoomListener=tableRef.on('value',function(snap){
+    var data=snap.val()||{};
+    var seat1=data.seat1||null;
+    var seat2=data.seat2||null;
+    var s1Ready=seat1&&seat1.ready;
+    var s2Ready=seat2&&seat2.ready;
+    var bothReady=s1Ready&&s2Ready&&seat1&&seat2;
+    var isFull=seat1&&seat2;
+    var amSeated=(seat1&&seat1.uid===getMyUid())||(seat2&&seat2.uid===getMyUid());
+    var onlyMe=amSeated&&!isFull;
+    
+    /* Get avatar SVGs */
+    var s1Svg='',s2Svg='';
+    try{
+      if(window.parent&&window.parent.PPGame&&window.parent.PPGame.avatarSVG){
+        /* Try to get avatar from game state - default to 0 for now */
+        s1Svg=seat1?'<div style="width:48px;height:48px;border-radius:12px;overflow:hidden;border:2px solid '+(s1Ready?'#00ff88':'#50b4ff')+'">'+window.parent.PPGame.avatarSVG(0)+'</div>':'';
+        s2Svg=seat2?'<div style="width:48px;height:48px;border-radius:12px;overflow:hidden;border:2px solid '+(s2Ready?'#00ff88':'#ff9650')+'">'+window.parent.PPGame.avatarSVG(0)+'</div>':'';
+      }
+    }catch(e){}
+    
+    var modeLabel=mpMode==='coop'?'🤝 Co-op':'⚔️ Versus';
+    var modeColor=mpMode==='coop'?'#50b4ff':'#ff5050';
+    
+    var h='<div style="text-align:center;position:relative;z-index:10;max-width:400px;width:90%">';
+    h+='<div style="font-family:\'Orbitron\',sans-serif;font-size:1.2rem;font-weight:700;color:#888;letter-spacing:.1em;margin-bottom:.3rem">TABLE '+tableNum+'</div>';
+    h+='<div style="font-size:.7rem;padding:.2rem .6rem;border-radius:4px;background:'+(mpMode==='coop'?'rgba(80,180,255,.15)':'rgba(255,80,80,.15)')+';color:'+modeColor+';display:inline-block;margin-bottom:1.5rem">'+modeLabel+'</div>';
+    
+    /* Seats display */
+    h+='<div style="display:flex;gap:1.5rem;justify-content:center;margin-bottom:1.5rem">';
+    
+    /* Seat 1 */
+    h+='<div style="background:rgba(255,255,255,.03);border:1px solid '+(seat1?(s1Ready?'rgba(0,255,136,.4)':'rgba(80,180,255,.3)'):'rgba(255,255,255,.08)')+';border-radius:12px;padding:1.2rem 1.5rem;min-width:140px;text-align:center">';
+    h+='<div style="font-size:.55rem;color:#888;margin-bottom:.5rem">SEAT 1</div>';
+    if(seat1){
+      h+='<div style="font-size:1.5rem;margin-bottom:.3rem">👤</div>';
+      h+='<div style="font-size:.75rem;color:'+(s1Ready?'#00ff88':'#50b4ff')+';font-weight:700;margin-bottom:.3rem">'+escMp(seat1.name)+'</div>';
+      if(s1Ready) h+='<div style="font-size:.55rem;color:#00ff88">✅ Ready</div>';
+      else if(seat1.uid===getMyUid()) h+='<button onclick="toggleReady('+tableNum+')" style="margin-top:.3rem;padding:5px 16px;border-radius:6px;background:linear-gradient(135deg,#ffd700,#ffaa00);color:#050508;font-size:.6rem;font-weight:700;cursor:pointer;border:none;font-family:\'Orbitron\',sans-serif;letter-spacing:.05em">✋ READY</button>';
+    }else{
+      h+='<div style="font-size:1.5rem;margin-bottom:.3rem;opacity:.3">🪑</div>';
+      h+='<div style="font-size:.65rem;color:#555">Empty</div>';
+    }
+    h+='</div>';
+    
+    /* VS / & divider */
+    h+='<div style="display:flex;align-items:center;font-family:\'Orbitron\',sans-serif;font-size:1rem;font-weight:700;color:'+(modeColor)+';opacity:.5">'+(mpMode==='coop'?'&':'VS')+'</div>';
+    
+    /* Seat 2 */
+    h+='<div style="background:rgba(255,255,255,.03);border:1px solid '+(seat2?(s2Ready?'rgba(0,255,136,.4)':'rgba(255,150,80,.3)'):'rgba(255,255,255,.08)')+';border-radius:12px;padding:1.2rem 1.5rem;min-width:140px;text-align:center">';
+    h+='<div style="font-size:.55rem;color:#888;margin-bottom:.5rem">SEAT 2</div>';
+    if(seat2){
+      h+='<div style="font-size:1.5rem;margin-bottom:.3rem">👤</div>';
+      h+='<div style="font-size:.75rem;color:'+(s2Ready?'#00ff88':'#ff9650')+';font-weight:700;margin-bottom:.3rem">'+escMp(seat2.name)+'</div>';
+      if(s2Ready) h+='<div style="font-size:.55rem;color:#00ff88">✅ Ready</div>';
+      else if(seat2.uid===getMyUid()) h+='<button onclick="toggleReady('+tableNum+')" style="margin-top:.3rem;padding:5px 16px;border-radius:6px;background:linear-gradient(135deg,#ffd700,#ffaa00);color:#050508;font-size:.6rem;font-weight:700;cursor:pointer;border:none;font-family:\'Orbitron\',sans-serif;letter-spacing:.05em">✋ READY</button>';
+    }else{
+      h+='<div style="font-size:1.5rem;margin-bottom:.3rem;opacity:.3">🪑</div>';
+      h+='<div style="font-size:.65rem;color:#555">Empty</div>';
+    }
+    h+='</div>';
+    h+='</div>';
+    
+    /* Status and action buttons */
+    if(bothReady){
+      h+='<div style="font-size:.8rem;color:#00ff88;font-weight:700;animation:sPulse 1s ease-in-out infinite;margin-bottom:1rem">▶ STARTING GAME...</div>';
+    }else if(isFull){
+      h+='<div style="font-size:.7rem;color:#ffd700;margin-bottom:1rem">Waiting for both players to be ready...</div>';
+    }else if(onlyMe){
+      h+='<div style="font-size:.7rem;color:#888;margin-bottom:.8rem">⏳ Waiting for opponent...</div>';
+      h+='<button onclick="closeTableRoom();startSoloWhileWaiting('+tableNum+','+mpMySeat+')" style="padding:8px 24px;border-radius:8px;background:linear-gradient(135deg,#50b4ff,#7c5cff);color:#fff;font-size:.7rem;font-weight:700;cursor:pointer;border:none;font-family:\'Orbitron\',sans-serif;letter-spacing:.05em;margin-bottom:.5rem">🎮 Play Solo While Waiting</button>';
+    }
+    
+    /* Leave button */
+    if(amSeated){
+      h+='<div style="margin-top:.5rem"><button onclick="standUp('+tableNum+');closeTableRoom()" style="padding:6px 20px;border-radius:6px;background:rgba(255,100,100,.15);color:#ff6666;border:1px solid rgba(255,100,100,.3);cursor:pointer;font-size:.6rem;font-family:\'Orbitron\',sans-serif">✕ Leave Table</button></div>';
+    }
+    
+    h+='</div>';
+    roomEl.innerHTML=h;
+    
+    /* Hide the lobby list behind the room view */
+    document.getElementById('multiplayerScreen').style.display='none';
+  });
+}
+
+/* Close the table room view and go back to lobby */
+function closeTableRoom(){
+  var roomEl=document.getElementById('tableRoomView');
+  if(roomEl) roomEl.style.display='none';
+  /* Show lobby screen again */
+  document.getElementById('multiplayerScreen').style.display='flex';
+  /* Clean up listener */
+  if(window._tableRoomListener){
+    var rtdb=getRtdb();
+    if(rtdb){
+      try{ rtdb.ref('lobby/'+mpMode+'/tables/'+window._tableRoomTable).off('value',window._tableRoomListener); }catch(e){}
+    }
+    window._tableRoomListener=null;
+  }
+}
+
+/* Escape helper for multiplayer */
+function escMp(s){ return String(s==null?'':s).replace(/[&<>]/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;'})[c];}); }
 
 /* Stand up from a table */
 function standUp(tableNum){
@@ -2212,6 +2346,8 @@ function standUp(tableNum){
     rtdb.ref('lobby/'+mpMode+'/tables/'+tableNum+'/seat'+mpMySeat).onDisconnect().cancel();
   }
   mpMyTable=-1;mpMySeat=-1;mpIsReady=false;
+  /* Close table room view if open */
+  closeTableRoom();
 }
 
 /* Toggle ready state */
@@ -2242,6 +2378,8 @@ function listenToLobby(){
         var s1=tableData.seat1;
         var s2=tableData.seat2;
         if(s1&&s2&&s1.ready&&s2.ready&&s1.uid&&s2.uid){
+          /* Close table room view if open */
+          closeTableRoom();
           /* If playing solo-while-waiting, notify and transition */
           if(mpSoloWhileWaiting){
             mpSoloWhileWaiting=false;
@@ -2362,8 +2500,9 @@ function getFirestore(){
 /* Start a solo game while waiting for an opponent at a lobby table */
 function startSoloWhileWaiting(tableNum,seatNum){
   mpSoloWhileWaiting=true;
-  /* Hide lobby screen, show game */
+  /* Hide lobby screen and table room view */
   document.getElementById('multiplayerScreen').style.display='none';
+  closeTableRoom();
   /* Start the game in single-player mode with current difficulty */
   showDiffSelect(savedMode||'defense');
   /* Add a floating status bar to indicate we're waiting for opponent */
@@ -2395,12 +2534,16 @@ function returnToLobbyFromSolo(tableNum){
   if(typeof stopGame==='function') stopGame();
   /* Clean up multiplayer state if active */
   if(mpGameId) cleanupMpGameState();
-  /* Show lobby again */
+  /* Show lobby again - if still seated, show table room view */
   document.getElementById('gameScreen').style.display='none';
   document.getElementById('diffScreen').style.display='none';
   document.getElementById('modeScreen').style.display='none';
   document.getElementById('gameOverScreen').style.display='none';
-  document.getElementById('multiplayerScreen').style.display='flex';
+  if(mpMyTable>0){
+    showTableRoom(mpMyTable);
+  }else{
+    document.getElementById('multiplayerScreen').style.display='flex';
+  }
 }
 
 /* Start a multiplayer game when both players are ready */
@@ -2474,8 +2617,15 @@ function startMultiplayerGame(tableNum,uid1,uid2){
   mpMyTable=-1;mpMySeat=-1;mpIsReady=false;
   mpSyncTimer=0;
   stopLobbyListener();
-  /* Hide lobby, show map selection before difficulty */
+  /* Close table room view if still open */
+  closeTableRoom();
+  /* Remove lobby status bar if present */
+  removeLobbyStatusBar();
+  /* Hide all screens, then show map selection */
   document.getElementById('multiplayerScreen').style.display='none';
+  document.getElementById('gameScreen').style.display='none';
+  document.getElementById('diffScreen').style.display='none';
+  document.getElementById('gameOverScreen').style.display='none';
   document.getElementById('mapSelectScreen').style.display='flex';
 }
 

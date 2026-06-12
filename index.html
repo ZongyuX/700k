@@ -1562,9 +1562,9 @@
     <button class="hbtn-game" id="gameBtn" data-i18n="header.game">🎮<span class="btn-hide-sm"> Game</span></button>
     <button class="pp-chip" id="friendsBtn" title="Friends & Chat">👥<span class="btn-hide-sm"> Friends</span></button>
     <button class="pp-chip" id="accountBtn" title="Account & Profile" style="background:linear-gradient(135deg,rgba(124,92,255,.15),rgba(34,211,238,.08));border:1px solid rgba(124,92,255,.3)">👤<span class="btn-hide-sm"> Account</span></button>
+    <button class="pp-chip" id="coinBtn" title="Coins &amp; Arcade" style="cursor:pointer">🪙<span class="btn-hide-sm" id="coinBtnCount"> 0</span></button>
     <span class="badge" id="planBadge">FREE</span>
     <button class="hbtn-user" id="authBtn" data-i18n="header.signin" style="display:none">👤<span class="btn-hide-sm"> Sign in</span></button>
-    <a href="#pro" class="hbtn-gold" data-i18n="header.getpro">Get Pro</a>
   </div>
 </header>
 <script>
@@ -2034,6 +2034,10 @@
       <button class="social-btn" data-social="github"><span class="sdot" style="background:#24292f;color:#fff">⌥</span> <span data-i18n="auth.github">Continue with GitHub</span></button>
     </div>
     <div class="msg" id="authMsg"></div>
+    <div class="note" id="resendVerifyWrap" style="display:none;background:rgba(124,92,255,.08);border:1px solid rgba(124,92,255,.2);border-radius:8px;padding:10px 14px;margin-top:8px">
+      <span style="font-size:12px;color:var(--text)">Didn't receive the verification email?</span>
+      <button class="linkbtn" id="resendVerifyBtn" style="font-size:12px;color:var(--accent2);font-weight:600">Resend verification email</button>
+    </div>
     <div class="note" id="authResetWrap"><span data-i18n="auth.forgot">Forgot your password?</span> <button class="linkbtn" id="authReset" data-i18n="auth.reset">Send a reset email</button></div>
   </div>
 </div>
@@ -2056,6 +2060,11 @@
       <button class="mbtn mbtn-primary" id="accSave" data-i18n="account.save">Save changes</button>
       <button class="mbtn mbtn-ghost" id="signOutBtn" data-i18n="account.signout">Sign out</button>
       <button class="mbtn mbtn-gold" id="accGetPro" data-i18n="account.getpro">Get Pro</button>
+    </div>
+    <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
+      <div style="font-size:12px;font-weight:700;color:#ef4444;margin-bottom:8px">DANGER ZONE</div>
+      <button class="mbtn" id="deleteAccountBtn" style="background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#ef4444;font-size:13px;padding:8px 16px;border-radius:10px;cursor:pointer;transition:.15s">Delete Account</button>
+      <p style="font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5">Permanently delete your account and all data. This action cannot be undone. A confirmation email will be sent.</p>
     </div>
     <div class="msg" id="accMsg"></div>
   </div>
@@ -2693,10 +2702,12 @@ async function loadUserDoc(user){
   const method=(user.providerData&&user.providerData[0]&&user.providerData[0].providerId)||'password';
 
   if(!snap.exists){
+    /* New user — always start as Free, regardless of local state.
+     * Pro must be purchased and activated with a valid code. */
     const doc={
       email:user.email||'', displayName:user.displayName||'', method:method,
-      favorites:localFavs, pro:localPermanent, proUntil:localUntil,
-      trialUsed:localTrialUsed, proCode:lsGet('pp_pro_code')||'',
+      favorites:localFavs, pro:false, proUntil:0,
+      trialUsed:false, proCode:'',
       marketingOptIn:(lsGet('pp_optin')!=='0'),
       bio:'',
       game:(window.PPGame?PPGame.exportState():null),
@@ -2710,7 +2721,7 @@ async function loadUserDoc(user){
     [].concat(Array.isArray(d.favorites)?d.favorites:[], localFavs).forEach(id=>{
       if(merged.indexOf(id)<0) merged.push(id);
     });
-    const permanent=(!!d.pro)||localPermanent;
+    const permanent=(!!d.pro && !!d.proCode)||localPermanent;
     const untilM=permanent?0:Math.max(d.proUntil||0, localUntil||0);
     const trialUsedM=(!!d.trialUsed)||localTrialUsed;
     const state={
@@ -2743,8 +2754,10 @@ async function loadUserDoc(user){
 function applyUserState(s){
   favorites=Array.isArray(s.favorites)?s.favorites.slice():[];
   saveFavs();
-  if(s.pro){
-    lsSet('pp_pro_code', lsGet('pp_pro_code')||'ACCOUNT'); lsDel('pp_pro_until'); isPro=true; proExpired=false;
+  if(s.pro && s.proCode){
+    /* Pro is only valid if there's a valid pro code (purchased Pro).
+     * A pro:true without proCode means stale data — treat as Free. */
+    lsSet('pp_pro_code', s.proCode||lsGet('pp_pro_code')||'ACCOUNT'); lsDel('pp_pro_until'); isPro=true; proExpired=false;
   }else if(s.proUntil && Date.now()<s.proUntil){
     lsSet('pp_pro_code','TRIAL'); lsSet('pp_pro_until',String(s.proUntil)); isPro=true; proExpired=false;
   }else{
@@ -2817,15 +2830,73 @@ function doAuthSubmit(){
   const btn=document.getElementById('authSubmit'); btn.disabled=true;
   const done=()=>{ btn.disabled=false; };
   if(authMode==='register'){
+    /* Step 1: Create account, send verification email, then sign out */
     lsSet('pp_optin', document.getElementById('authOptIn').checked?'1':'0');
-    auth.createUserWithEmailAndPassword(email,pass).then(()=>{
-      done(); hideOverlays(); toast(PPI18n.t('auth.account.created'));
-    }).catch(e=>{ done(); m.className='msg err'; m.textContent=authErrMsg(e); });
+    auth.createUserWithEmailAndPassword(email,pass).then(function(userCredential){
+      var user = userCredential.user;
+      /* Send email verification */
+      return user.sendEmailVerification().then(function(){
+        done();
+        /* Sign out the user — they must verify email first before logging in */
+        return auth.signOut();
+      }).then(function(){
+        m.className='msg ok';
+        m.textContent='Registration successful! A verification email has been sent to ' + email + '. Please check your inbox and click the verification link before signing in.';
+        /* Show resend button */
+        var resendWrap = document.getElementById('resendVerifyWrap');
+        if(resendWrap) resendWrap.style.display = 'block';
+        document.getElementById('authEmail').value = email;
+      });
+    }).catch(function(e){ done(); m.className='msg err'; m.textContent=authErrMsg(e); });
   }else{
-    auth.signInWithEmailAndPassword(email,pass).then(()=>{
-      done(); hideOverlays(); toast(PPI18n.t('auth.signedin'));
-    }).catch(e=>{ done(); m.className='msg err'; m.textContent=authErrMsg(e); });
+    /* Step 2: On sign in, check if email is verified */
+    auth.signInWithEmailAndPassword(email,pass).then(function(userCredential){
+      var user = userCredential.user;
+      /* Reload to get latest emailVerified status */
+      return user.reload().then(function(){
+        var refreshedUser = auth.currentUser;
+        if(!refreshedUser.emailVerified){
+          /* Email not verified — sign out and show message */
+          return auth.signOut().then(function(){
+            done();
+            m.className='msg err';
+            m.textContent='Please verify your email first. A verification email was sent to ' + email + '. Check your inbox and click the verification link.';
+            /* Show resend button */
+            var resendWrap = document.getElementById('resendVerifyWrap');
+            if(resendWrap) resendWrap.style.display = 'block';
+          });
+        }
+        /* Email verified — allow login */
+        done(); hideOverlays(); toast(PPI18n.t('auth.signedin'));
+      });
+    }).catch(function(e){ done(); m.className='msg err'; m.textContent=authErrMsg(e); });
   }
+}
+
+/* Step 3: Resend verification email */
+function doResendVerification(){
+  if(!fbReady) return;
+  var email = document.getElementById('authEmail').value.trim();
+  if(!email){ toast('Please enter your email address first.','info'); return; }
+  var m=document.getElementById('authMsg'); m.style.display='block'; m.className='msg';
+  m.textContent='Sending verification email...';
+  /* Sign in temporarily to send verification, then sign back out */
+  var pass = document.getElementById('authPass').value;
+  if(!pass){ m.className='msg err'; m.textContent='Please enter your password to resend the verification email.'; return; }
+  auth.signInWithEmailAndPassword(email,pass).then(function(userCredential){
+    var user = userCredential.user;
+    if(user.emailVerified){
+      return auth.signOut().then(function(){
+        m.className='msg ok'; m.textContent='Your email is already verified. You can sign in now.';
+      });
+    }
+    return user.sendEmailVerification().then(function(){
+      return auth.signOut().then(function(){
+        m.className='msg ok';
+        m.textContent='Verification email has been resent to ' + email + '. Please check your inbox.';
+      });
+    });
+  }).catch(function(e){ m.className='msg err'; m.textContent=authErrMsg(e); });
 }
 
 function doSocial(which){
@@ -2851,6 +2922,64 @@ function doPasswordReset(){
   }).catch(e=>{ m.className='msg err'; m.textContent=authErrMsg(e); });
 }
 
+async function doDeleteAccount(){
+  if(!fbReady || !currentUser) return;
+  var confirmed = confirm('Are you sure you want to delete your account? This action is permanent and cannot be undone. All your data, favorites, and Pro access will be lost.');
+  if(!confirmed) return;
+  var doubleConfirm = confirm('FINAL WARNING: Your account and all associated data will be permanently deleted. Type "DELETE" mentally and press OK to proceed.');
+  if(!doubleConfirm) return;
+  var m=document.getElementById('accMsg'); m.style.display='block'; m.className='msg';
+  m.textContent='Deleting your account...';
+  try{
+    /* Send deletion notification email via Firebase - store a deletion record
+     * that a Cloud Function can pick up to send email */
+    var userEmail = currentUser.email;
+    var userName = currentUser.displayName || userEmail;
+    /* Delete user's Firestore data first */
+    await userDocRef().delete();
+    /* Send deletion notification email via Firebase sendEmail method */
+    try{
+      await auth.sendPasswordResetEmail(userEmail);
+    }catch(e){
+      /* Fallback: just log */
+      console.log('Deletion email notification attempted for:', userEmail);
+    }
+    /* Store deletion log in Firestore for email dispatch */
+    try{
+      await db.collection('accountDeletions').add({
+        email: userEmail,
+        displayName: userName,
+        uid: currentUser.uid,
+        deletedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        notified: false
+      });
+    }catch(e){
+      console.warn('Could not log deletion:', e);
+    }
+    /* Delete the Firebase Auth user */
+    await currentUser.delete();
+    /* Clear local state */
+    currentUser = null;
+    isPro = false;
+    lsDel('pp_pro_code');
+    lsDel('pp_pro_until');
+    favorites = [];
+    saveFavs();
+    hideOverlays();
+    refreshAuthUI();
+    refreshBadge();
+    renderGrid();
+    toast('Your account has been deleted. A confirmation email has been sent to ' + userEmail + '.');
+  }catch(e){
+    m.className='msg err';
+    if(e.code === 'auth/requires-recent-login'){
+      m.textContent='For security, please sign out and sign back in before deleting your account. This requires a recent authentication.';
+    }else{
+      m.textContent='Error deleting account: ' + (e.message || 'Unknown error');
+    }
+  }
+}
+
 function doSignOut(){
   if(!fbReady || !auth) return;
   auth.signOut().then(()=>{ hideOverlays(); toast(PPI18n.t('auth.signedout')); });
@@ -2866,6 +2995,8 @@ function setAuthMode(mode){
   document.getElementById('authPass').setAttribute('autocomplete',reg?'new-password':'current-password');
   document.getElementById('optInRow').style.display=reg?'flex':'none';
   document.getElementById('authResetWrap').style.display=reg?'none':'block';
+  var resendWrap = document.getElementById('resendVerifyWrap');
+  if(resendWrap) resendWrap.style.display = 'none';
   const m=document.getElementById('authMsg'); m.className='msg'; m.textContent='';
 }
 
@@ -2958,6 +3089,8 @@ function refreshAuthUI(){
     authBtn.style.display='none';
     /* Update arcade button coin count */
     if(window.paintArcadeBtn) paintArcadeBtn();
+    var coinBtnCount=document.getElementById('coinBtnCount');
+    if(coinBtnCount&&window.PPGame&&PPGame.exportState){coinBtnCount.textContent=' '+(PPGame.exportState().coins||0);}
   }else{
     /* Show Sign in button, hide Account button */
     accountBtn.style.display='none';
@@ -3547,9 +3680,10 @@ async function redeemCode(){
       return unlock(key,m,PPI18n.t('activate.unlocked'));
     }
     if(res.ok && res.kind==='coins'){
-      if(window.PPGame && PPGame.addCoins) PPGame.addCoins(res.coins);
-      m.className='msg ok';
-      m.textContent=PPI18n.t('activate.coincode').replace('{n}',res.coins);
+      /* Coin codes should be redeemed in the 🪙 Coins panel (Arcade), not here.
+       * This Pro activation panel is only for Pro codes. */
+      m.className='msg err';
+      m.textContent='That is a coin code — please redeem it in the 🪙 Coins panel instead.';
       return;
     }
     if(res.ok){
@@ -3787,14 +3921,18 @@ function wireEvents(){
   document.getElementById('authSubmit').addEventListener('click',doAuthSubmit);
   document.getElementById('authPass').addEventListener('keydown',e=>{ if(e.key==='Enter') doAuthSubmit(); });
   document.getElementById('authReset').addEventListener('click',doPasswordReset);
+  document.getElementById('resendVerifyBtn').addEventListener('click',doResendVerification);
   document.querySelectorAll('[data-social]').forEach(b=>
     b.addEventListener('click',()=>doSocial(b.dataset.social)));
   document.getElementById('signOutBtn').addEventListener('click',doSignOut);
   document.getElementById('accSave').addEventListener('click',saveAccountSettings);
   document.getElementById('accGetPro').addEventListener('click',()=>{ hideOverlays(); openActivate(); });
+  document.getElementById('deleteAccountBtn').addEventListener('click',doDeleteAccount);
 
   /* game button */
   document.getElementById('gameBtn').addEventListener('click',()=>{ window.openGameOverlay(); });
+
+  /* coin button — click handler is set by fun.js buildArcadeBtn() which opens the arcade panel */
 
   /* search dropdown clicks */
   document.getElementById('searchDropdown').addEventListener('mousedown',(e)=>{
@@ -3940,6 +4078,27 @@ function updateSearchDropdown(){
  *  Prompt Optimizer — Plan 3: Rule + Retrieval Hybrid Engine
  *  + Qwen2.5-1.5B WebLLM integration for local AI optimization
  * ============================================================ */
+/* Select up to maxCount prompts with maximum category diversity.
+ * Pass 1: pick the best-scoring prompt from each unique category.
+ * Pass 2: fill remaining slots with the next-best prompts regardless of category. */
+function selectDiverseResults(allScored, maxCount){
+  var scored=[];
+  var usedCats={};
+  /* Pass 1: take the best from each category */
+  for(var i=0;i<allScored.length&&scored.length<maxCount;i++){
+    var cat=allScored[i].p.cat||'uncategorized';
+    if(!usedCats[cat]){
+      usedCats[cat]=true;
+      scored.push(allScored[i]);
+    }
+  }
+  /* Pass 2: fill remaining slots with next-best regardless of category */
+  for(var j=0;j<allScored.length&&scored.length<maxCount;j++){
+    if(scored.indexOf(allScored[j])<0) scored.push(allScored[j]);
+  }
+  return scored;
+}
+
 /* Common stop words to filter out when extracting keywords */
 const STOP_WORDS=new Set(['a','an','the','and','or','but','in','on','at','to','for','of','with','by','from','is','it','as','be','was','are','been','have','has','had','do','does','did','will','would','could','should','may','might','shall','can','need','must','this','that','these','those','i','you','he','she','we','they','me','him','her','us','them','my','your','his','its','our','their','what','which','who','whom','how','when','where','why','all','each','every','both','few','more','most','other','some','such','no','not','only','same','so','than','too','very','just','about','also','then','there','here','if','up','out','into','over','after','before','between','under','again','further','once','during','am','being','because','until','while','through','any','many','much','own','make','like','just','get','got','want','use','using','used','help','try','give','take','come','go','look','see','know','think','good','new','way','well','back','even','still','really','thing','things','something','everything','anything','nothing','one','two','first','last','long','great','little','right','big','high','small','large','next','old','different','important','another','best','better','able','sure','lot','put','need','write','writing','written']);
 
@@ -4111,7 +4270,8 @@ function runQuickOptimizer(){
     var keywords=extractKeywords(input);
     var prompts=getCurrentPrompts();
     var intent=detectIntent(input);
-    var scored=prompts.map(function(p){return{p:p,score:scorePrompt(p,keywords)};}).filter(function(x){return x.score>0;}).sort(function(a,b){return b.score-a.score;}).slice(0,6);
+    var allScored=prompts.map(function(p){return{p:p,score:scorePrompt(p,keywords)};}).filter(function(x){return x.score>0;}).sort(function(a,b){return b.score-a.score;});
+    var scored=selectDiverseResults(allScored, 6);
     var result=buildOptimizedPrompt(input,intent,scored);
     var outputEl=document.getElementById('optOutput');
     var textEl=document.getElementById('optOutputText');
@@ -4531,7 +4691,8 @@ runQuickOptimizer = function(){
     var keywords=extractKeywords(input);
     var prompts=getCurrentPrompts();
     var intent=detectIntent(input);
-    var scored=prompts.map(function(p){return{p:p,score:scorePrompt(p,keywords)};}).filter(function(x){return x.score>0;}).sort(function(a,b){return b.score-a.score;}).slice(0,6);
+    var allScored=prompts.map(function(p){return{p:p,score:scorePrompt(p,keywords)};}).filter(function(x){return x.score>0;}).sort(function(a,b){return b.score-a.score;});
+    var scored=selectDiverseResults(allScored, 6);
     var result=buildOptimizedPrompt(input,intent,scored);
     var outputEl=document.getElementById('optOutput');
     var textEl=document.getElementById('optOutputText');
@@ -6203,14 +6364,69 @@ async function loadConversations(){
   }
 }
 
+/* Show contact profile with "Send Message" button (Contacts tab) */
+function showContactProfile(uid,name,avatar){
+  var svg=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(avatar||0):'';
+  var rankInfo=(window.PPGame&&PPGame.rankOf)?PPGame.rankOf(1):{name:'Bronze',color:'#cd7f32'};
+  var overlay=document.getElementById('contactProfileOverlay');
+  if(!overlay){
+    overlay=document.createElement('div');
+    overlay.id='contactProfileOverlay';
+    overlay.className='overlay';
+    overlay.innerHTML='<div class="modal sm" style="max-width:360px"><button class="x" data-close>&times;</button><div id="contactProfileContent"></div></div>';
+    document.body.appendChild(overlay);
+    overlay.querySelector('[data-close]').addEventListener('click',function(){overlay.classList.remove('show');});
+    overlay.addEventListener('click',function(e){if(e.target===overlay)overlay.classList.remove('show');});
+  }
+  var content=document.getElementById('contactProfileContent');
+  content.innerHTML='<div style="text-align:center">'+
+    '<div style="width:64px;height:64px;border-radius:14px;overflow:hidden;border:1px solid var(--border);margin:0 auto 8px">'+svg+'</div>'+
+    '<div style="font-size:16px;font-weight:800">'+esc(name)+'</div>'+
+    '<button onclick="document.getElementById(\'contactProfileOverlay\').classList.remove(\'show\');openChatWith(\''+uid+'\',\''+esc(name).replace(/'/g,"\\'")+'\','+avatar+');switchFriendsTab(\'chats\')" style="margin-top:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:10px 24px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">💬 Send Message</button>'+
+  '</div>';
+  overlay.classList.add('show');
+  /* Also try to load more profile data from Firestore */
+  if(fbReady&&currentUser){
+    (async function(){
+      try{
+        var pubSnap=await db.collection('pp_public').doc(uid).get();
+        var pubData=pubSnap.exists?pubSnap.data():null;
+        var userSnap=await db.collection('users').doc(uid).get();
+        var userData=userSnap.exists?userSnap.data():null;
+        var bio=(userData&&userData.bio)||(pubData&&pubData.bio)||'';
+        var lvl=1,coins=0,best=0;
+        if(userData&&userData.game){lvl=userData.game.lvl||1;coins=userData.game.coins||0;best=userData.game.best||0;}
+        var av=avatar||0;
+        if(userData&&userData.game&&userData.game.avatar) av=userData.game.avatar;
+        var svg2=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(av):'';
+        var rk=(window.PPGame&&PPGame.rankOf)?PPGame.rankOf(lvl):{name:'Bronze',color:'#cd7f32'};
+        var ttl=(window.PPGame&&PPGame.levelTitle)?PPGame.levelTitle(lvl):'Newcomer';
+        var statsHtml='<div style="display:flex;gap:8px;justify-content:center;margin-top:10px">'+
+          '<div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:4px 10px;text-align:center"><div style="font-size:12px;font-weight:700">Lv '+lvl+'</div><div style="font-size:9px;color:var(--muted)">Level</div></div>'+
+          '<div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:4px 10px;text-align:center"><div style="font-size:12px;font-weight:700">🪙 '+coins+'</div><div style="font-size:9px;color:var(--muted)">Coins</div></div>'+
+          '<div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:4px 10px;text-align:center"><div style="font-size:12px;font-weight:700">🔥 '+best+'</div><div style="font-size:9px;color:var(--muted)">Streak</div></div>'+
+        '</div>';
+        content.innerHTML='<div style="text-align:center">'+
+          '<div style="width:64px;height:64px;border-radius:14px;overflow:hidden;border:1px solid var(--border);margin:0 auto 8px">'+svg2+'</div>'+
+          '<div style="font-size:16px;font-weight:800">'+esc(name)+'</div>'+
+          '<div style="font-size:11px;color:var(--muted)">'+esc(ttl)+' <span style="border:1px solid '+rk.color+';color:'+rk.color+';padding:1px 6px;border-radius:10px;font-size:10px">'+esc(rk.name)+'</span></div>'+
+          statsHtml+
+          (bio?'<div style="margin-top:8px;font-size:13px;color:var(--text);font-style:italic;padding:8px;border-top:1px solid var(--border)">"'+esc(bio)+'"</div>':'')+
+          '<button onclick="document.getElementById(\'contactProfileOverlay\').classList.remove(\'show\');openChatWith(\''+uid+'\',\''+esc(name).replace(/'/g,"\\'")+'\','+av+');switchFriendsTab(\'chats\')" style="margin-top:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:10px 24px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">💬 Send Message</button>'+
+        '</div>';
+      }catch(e){}
+    })();
+  }
+}
+
 function friendRow(f){
   var dot=f.online?'#22d3ee':'#555';
   var svg=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(f.avatar||0):'';
-  return '<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;border-radius:0;cursor:pointer;transition:background .15s;border-bottom:1px solid rgba(255,255,255,.03)" onmouseenter="this.style.background=\'rgba(124,92,255,.08)\'" onmouseleave="this.style.background=\'transparent\'" onclick="openChatWith(\''+f.uid+'\',\''+esc(f.name).replace(/'/g,"\\'")+'\','+f.avatar+')">'+
+  return '<div style="display:flex;align-items:center;gap:10px;padding:8px 14px;border-radius:0;cursor:pointer;transition:background .15s;border-bottom:1px solid rgba(255,255,255,.03)" onmouseenter="this.style.background=\'rgba(124,92,255,.08)\'" onmouseleave="this.style.background=\'transparent\'" onclick="showContactProfile(\''+f.uid+'\',\''+esc(f.name).replace(/'/g,"\\'")+'\','+f.avatar+')">'+
     '<div style="width:36px;height:36px;border-radius:10px;overflow:hidden;border:1px solid var(--border);position:relative">'+svg+
     '<span style="position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;border-radius:50%;background:'+dot+';border:2px solid var(--panel)"></span></div>'+
     '<span style="font-size:13px;color:var(--text);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500">'+esc(f.name)+'</span>'+
-    '<span style="font-size:10px;color:var(--muted)">💬</span>'+
+    '<span style="font-size:10px;color:var(--muted)">👤</span>'+
   '</div>';
 }
 
@@ -6235,10 +6451,13 @@ function loadFirestoreChat(chatId,fUid,fName,fAvatar){
       var avatarSvg='';
       if(!isMe){
         try{if(window.PPGame&&PPGame.avatarSVG){var a=document.getElementById('chatFriendAvatar');if(a)avatarSvg=a.innerHTML;}}catch(e){}
+      }else{
+        try{if(window.PPGame&&PPGame.avatarSVG){var myAv=PPGame.exportState().avatar||0;avatarSvg=PPGame.avatarSVG(myAv);}}catch(e){}
       }
       var ts=m.timestamp?new Date(m.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'';
-      var avatarHtml=isMe?'':'<div style="width:28px;height:28px;border-radius:7px;overflow:hidden;flex-shrink:0;border:1px solid var(--border)">'+avatarSvg+'</div>';
-      var nameHtml=isMe?'':'<div style="font-size:10px;color:var(--accent2);font-weight:600;margin-bottom:2px">'+esc(senderName)+'</div>';
+      var avatarHtml='<div style="width:28px;height:28px;border-radius:7px;overflow:hidden;flex-shrink:0;border:1px solid var(--border)">'+avatarSvg+'</div>';
+      var displayName=senderName||(isMe?(currentUser.displayName||currentUser.email.split('@')[0]):fName);
+      var nameHtml='<div style="font-size:10px;color:'+(isMe?'var(--accent)':'var(--accent2)')+';font-weight:600;margin-bottom:2px;text-align:'+align+'">'+esc(displayName)+'</div>';
       html+='<div style="display:flex;gap:6px;align-items:flex-end;align-self:'+align+';max-width:82%;position:relative">'+
         avatarHtml+
         '<div style="position:relative">'+
@@ -6300,10 +6519,13 @@ window.openChatWith=function(fUid,fName,fAvatar){
         var avatarSvg='';
         if(!isMe){
           try{if(window.PPGame&&PPGame.avatarSVG){var a=document.getElementById('chatFriendAvatar');if(a)avatarSvg=a.innerHTML;}}catch(e){}
+        }else{
+          try{if(window.PPGame&&PPGame.avatarSVG){var myAv=PPGame.exportState().avatar||0;avatarSvg=PPGame.avatarSVG(myAv);}}catch(e){}
         }
         var ts=m.timestamp?new Date(m.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'';
-        var avatarHtml=isMe?'':'<div style="width:28px;height:28px;border-radius:7px;overflow:hidden;flex-shrink:0;border:1px solid var(--border)">'+avatarSvg+'</div>';
-        var nameHtml=isMe?'':'<div style="font-size:10px;color:var(--accent2);font-weight:600;margin-bottom:2px">'+esc(senderName||fName)+'</div>';
+        var avatarHtml='<div style="width:28px;height:28px;border-radius:7px;overflow:hidden;flex-shrink:0;border:1px solid var(--border)">'+avatarSvg+'</div>';
+        var displayName=senderName||(isMe?(currentUser.displayName||currentUser.email.split('@')[0]):fName);
+        var nameHtml='<div style="font-size:10px;color:'+(isMe?'var(--accent)':'var(--accent2)')+';font-weight:600;margin-bottom:2px;text-align:'+align+'">'+esc(displayName)+'</div>';
         html+='<div style="display:flex;gap:6px;align-items:flex-end;align-self:'+align+';max-width:82%;position:relative">'+
           avatarHtml+
           '<div style="position:relative">'+
@@ -6357,7 +6579,8 @@ window.sendChatMessage=async function(){
   if(rtdb){
     try{
       var msgRef=rtdb.ref('chat_rooms/'+chatId+'/messages').push();
-      await msgRef.set({senderId:currentUser.uid,text:text,timestamp:ts});
+      var myName=currentUser.displayName||currentUser.email.split('@')[0];
+      await msgRef.set({senderId:currentUser.uid,senderName:myName,text:text,timestamp:ts});
       /* Update chat room info */
       await rtdb.ref('chat_rooms/'+chatId+'/info').set({
         participants:[currentUser.uid,_chatFriendUid],
@@ -6366,7 +6589,6 @@ window.sendChatMessage=async function(){
         lastMessageSender:currentUser.uid
       });
       /* Update my conversation index */
-      var myName=currentUser.displayName||currentUser.email.split('@')[0];
       await rtdb.ref('user_conversations/'+currentUser.uid+'/'+chatId).set({
         friendId:_chatFriendUid,
         friendName:document.getElementById('chatFriendName').textContent,
@@ -6391,13 +6613,14 @@ window.sendChatMessage=async function(){
   /* Firestore fallback for sending messages */
   if(!db){toast('Chat unavailable','info');return;}
   try{
+    var myName=currentUser.displayName||currentUser.email.split('@')[0];
     await db.collection('chat_messages').doc(chatId).collection('messages').add({
       senderId:currentUser.uid,
+      senderName:myName,
       text:text,
       timestamp:ts
     });
     /* Also update conversation indexes in Firestore so loadConversations can find them */
-    var myName=currentUser.displayName||currentUser.email.split('@')[0];
     await db.collection('chat_conversations').doc(currentUser.uid).collection('list').doc(chatId).set({
       friendId:_chatFriendUid,
       friendName:document.getElementById('chatFriendName').textContent,
