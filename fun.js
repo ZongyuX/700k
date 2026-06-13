@@ -1873,9 +1873,16 @@ async function redeemCoinCode(){
           1136121: 3800, 1092744: 3800   // Credits 3800
         };
         creditAmount = creditMap[res.productId] || 1200;
+        console.log('[Redeem] Credit amount from product_id map:', creditAmount);
       }
       
-      console.log('[Redeem] Credit amount:', creditAmount);
+      // 如果还是没有，默认 3800（因为这是 3800 产品）
+      if(creditAmount === 0 && (res.productId === 1136121 || res.productId === 1092744)){
+        creditAmount = 3800;
+        console.log('[Redeem] Credit amount forced to 3800 by product_id');
+      }
+      
+      console.log('[Redeem] Final credit amount:', creditAmount);
       
       var curCreds = parseInt(localStorage.getItem('pm_unlock_credits') || '0', 10);
       var newCreds = curCreds + creditAmount;
@@ -1890,12 +1897,22 @@ async function redeemCoinCode(){
             type: 'add_credits',
             amount: creditAmount
           }, '*');
+          console.log('[Redeem] Sent add_credits message to game iframe');
+        } else {
+          console.log('[Redeem] Game iframe not found');
         }
-      } catch(e){}
+      } catch(e){
+        console.warn('[Redeem] Failed to notify game iframe:', e);
+      }
       
       m.className = 'msg ok';
       m.textContent = 'Successfully added ' + creditAmount.toLocaleString() + ' game credits!';
       if(typeof ppToast === 'function') ppToast('+' + creditAmount.toLocaleString() + ' credits!');
+      
+      // 刷新游戏积分显示
+      var shopCreditsEl = document.getElementById('shopCredits');
+      if(shopCreditsEl) shopCreditsEl.textContent = newCreds.toLocaleString();
+      
       setTimeout(paintArcade, 900);
       return;
     }
