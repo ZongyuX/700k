@@ -1965,6 +1965,8 @@ var mpIsHost=false;       /* Whether the current player is the host (seat 1) */
 var mpSyncTimer=0;        /* Timer for periodic state sync */
 var mpSyncInterval=2000;  /* Sync every 2 seconds to avoid excessive writes */
 var mpOpponentState=null; /* Last received opponent state */
+var mpOpponentTowers=null; /* Opponent's tower data for versus mode */
+var mpOpponentMonsters=null; /* Opponent's monster data for versus mode */
 var mpGameStateRef=null;  /* Reference to the game state in RTDB */
 var mpStateListener=null; /* Listener for opponent state changes */
 
@@ -2015,80 +2017,91 @@ function renderLobbyTables(){
 
 /* Build HTML for a single table */
 function buildTableHTML(tableNum,state){
-  state=state||{seat1:null,seat2:null,mode:mpMode};
-  var isCoop=state.mode==='coop';
-  var seat1=state.seat1;
-  var seat2=state.seat2;
-  var seat1Name=seat1?seat1.name:'— Empty —';
-  var seat2Name=seat2?seat2.name:'— Empty —';
-  var seat1Ready=seat1&&seat1.ready;
-  var seat2Ready=seat2&&seat2.ready;
-  var seat1Class=seat1?'occupied':'empty';
-  var seat2Class=seat2?'occupied':'empty';
-  var isFull=seat1&&seat2;
-  var bothReady=seat1Ready&&seat2Ready&&isFull;
-
-  /* Determine table border color based on state */
-  var borderCol='rgba(255,255,255,0.08)';
-  if(bothReady) borderCol=isCoop?'rgba(0,255,136,0.6)':'rgba(255,80,0,0.6)';
-  else if(isFull) borderCol=isCoop?'rgba(80,180,255,0.4)':'rgba(255,80,80,0.4)';
-
-  var modeLabel=isCoop?'🤝 Co-op':'⚔️ Versus';
-  var modeColor=isCoop?'#50b4ff':'#ff5050';
-
-  var html='<div class="lobby-table" id="table_'+tableNum+'" style="background:rgba(255,255,255,0.02);border:1px solid '+borderCol+';border-radius:10px;padding:.6rem .7rem;transition:all .2s;cursor:default;min-height:90px;position:relative">';
-
-  /* Table number + mode badge */
-  html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">';
-  html+='<span style="font-family:\'Orbitron\',sans-serif;font-size:.6rem;font-weight:700;color:#888;letter-spacing:.05em">TABLE '+tableNum+'</span>';
-  html+='<span style="font-size:.5rem;padding:.1rem .4rem;border-radius:3px;background:'+(isCoop?'rgba(80,180,255,0.15)':'rgba(255,80,80,0.15)')+';color:'+modeColor+';border:1px solid '+modeColor+'33">'+modeLabel+'</span>';
-  html+='</div>';
-
-  /* Two seats */
-  html+='<div style="display:flex;gap:.5rem">';
-
-  /* Seat 1 */
-  var s1Bg=seat1?(seat1Ready?'rgba(0,255,136,0.08)':'rgba(80,180,255,0.08)'):'rgba(255,255,255,0.02)';
-  var s1Border=seat1?(seat1Ready?'rgba(0,255,136,0.4)':'rgba(80,180,255,0.25)'):'rgba(255,255,255,0.06)';
-  var s1Color=seat1?(seat1Ready?'#00ff88':'#50b4ff'):'#555';
-  html+='<div onclick="sitDown('+tableNum+',1)" style="flex:1;padding:.35rem .4rem;border-radius:6px;background:'+s1Bg+';border:1px solid '+s1Border+';text-align:center;cursor:'+(seat1?'default':'pointer')+';transition:all .15s;min-height:40px;display:flex;flex-direction:column;justify-content:center" onmouseenter="if(!this.dataset.occupied)this.style.borderColor=\'rgba(0,255,136,0.4)\'" onmouseleave="if(!this.dataset.occupied)this.style.borderColor=\''+s1Border+'\'" data-occupied="'+(seat1?'1':'0')+'">';
-  html+='<div style="font-size:.5rem;color:'+s1Color+';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(seat1?(seat1Ready?'✅ ':'👤 ')+seat1Name:'🪑 Sit')+'</div>';
-  if(seat1&&!seat1Ready&&seat1.uid===getMyUid()){
-    html+='<button onclick="event.stopPropagation();toggleReady('+tableNum+')" style="margin-top:4px;padding:4px 12px;border-radius:6px;background:linear-gradient(135deg,#ffd700,#ffaa00);color:#050508;font-size:.55rem;font-weight:700;cursor:pointer;border:none;font-family:\'Orbitron\',sans-serif;letter-spacing:.05em">✋ READY</button>';
-  }
-  html+='</div>';
-
-  /* Seat 2 */
-  var s2Bg=seat2?(seat2Ready?'rgba(0,255,136,0.08)':'rgba(255,150,80,0.08)'):'rgba(255,255,255,0.02)';
-  var s2Border=seat2?(seat2Ready?'rgba(0,255,136,0.4)':'rgba(255,150,80,0.25)'):'rgba(255,255,255,0.06)';
-  var s2Color=seat2?(seat2Ready?'#00ff88':'#ff9650'):'#555';
-  html+='<div onclick="sitDown('+tableNum+',2)" style="flex:1;padding:.35rem .4rem;border-radius:6px;background:'+s2Bg+';border:1px solid '+s2Border+';text-align:center;cursor:'+(seat2?'default':'pointer')+';transition:all .15s;min-height:40px;display:flex;flex-direction:column;justify-content:center" onmouseenter="if(!this.dataset.occupied)this.style.borderColor=\'rgba(0,255,136,0.4)\'" onmouseleave="if(!this.dataset.occupied)this.style.borderColor=\''+s2Border+'\'" data-occupied="'+(seat2?'1':'0')+'">';
-  html+='<div style="font-size:.5rem;color:'+s2Color+';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(seat2?(seat2Ready?'✅ ':'👤 ')+seat2Name:'🪑 Sit')+'</div>';
-  if(seat2&&!seat2Ready&&seat2.uid===getMyUid()){
-    html+='<button onclick="event.stopPropagation();toggleReady('+tableNum+')" style="margin-top:4px;padding:4px 12px;border-radius:6px;background:linear-gradient(135deg,#ffd700,#ffaa00);color:#050508;font-size:.55rem;font-weight:700;cursor:pointer;border:none;font-family:\'Orbitron\',sans-serif;letter-spacing:.05em">✋ READY</button>';
-  }
-  html+='</div>';
-
-  html+='</div>';
-
-  /* Status bar + Solo button */
-  var amSeated=(seat1&&seat1.uid===getMyUid())||(seat2&&seat2.uid===getMyUid());
-  var onlyMeSeated=amSeated&&!isFull;
+  state = state || {seat1:null,seat2:null,mode:mpMode};
+  var isCoop = state.mode === 'coop';
+  var seat1 = state.seat1;
+  var seat2 = state.seat2;
+  
+  // 处理空座位
+  var seat1Name = (seat1 && seat1.name) ? seat1.name : '— Empty —';
+  var seat2Name = (seat2 && seat2.name) ? seat2.name : '— Empty —';
+  var seat1Ready = seat1 ? (seat1.ready || false) : false;
+  var seat2Ready = seat2 ? (seat2.ready || false) : false;
+  var isFull = (seat1 && seat2);
+  var bothReady = seat1Ready && seat2Ready && isFull;
+  
+  // 确定边框颜色
+  var borderCol = 'rgba(255,255,255,0.08)';
   if(bothReady){
-    html+='<div style="text-align:center;margin-top:.3rem;font-size:.45rem;color:#00ff88;font-weight:700;animation:sPulse 1s ease-in-out infinite">▶ STARTING...</div>';
-  }else if(isFull){
-    html+='<div style="text-align:center;margin-top:.3rem;font-size:.45rem;color:#ffd700">Waiting for ready...</div>';
-  }else if(onlyMeSeated){
-    html+='<div style="text-align:center;margin-top:.3rem;font-size:.45rem;color:#888">Waiting for opponent...</div>';
-    html+='<button onclick="event.stopPropagation();startSoloWhileWaiting('+tableNum+','+mpMySeat+')" style="margin-top:4px;padding:5px 14px;border-radius:8px;background:linear-gradient(135deg,#50b4ff,#7c5cff);color:#fff;font-size:.6rem;font-weight:700;cursor:pointer;border:none;font-family:\'Orbitron\',sans-serif;letter-spacing:.05em;text-shadow:0 1px 2px rgba(0,0,0,.3)">🎮 Start Solo</button>';
+    borderCol = isCoop ? 'rgba(0,255,136,0.6)' : 'rgba(255,80,0,0.6)';
+  } else if(isFull){
+    borderCol = isCoop ? 'rgba(80,180,255,0.4)' : 'rgba(255,80,80,0.4)';
+  } else if(seat1 || seat2){
+    borderCol = isCoop ? 'rgba(80,180,255,0.25)' : 'rgba(255,80,80,0.25)';
   }
-
-  /* Leave button (only if I'm seated at this table) */
+  
+  var modeLabel = isCoop ? '🤝 Co-op' : '⚔️ Versus';
+  var modeColor = isCoop ? '#50b4ff' : '#ff5050';
+  
+  var myUid = getMyUid();
+  var amSeated1 = (seat1 && seat1.uid === myUid);
+  var amSeated2 = (seat2 && seat2.uid === myUid);
+  
+  var html = '<div class="lobby-table" id="table_' + tableNum + '" style="background:rgba(255,255,255,0.02);border:1px solid ' + borderCol + ';border-radius:10px;padding:.6rem .7rem;transition:all .2s;cursor:default;min-height:90px;position:relative">';
+  
+  /* Table number + mode badge */
+  html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">';
+  html += '<span style="font-family:\'Orbitron\',sans-serif;font-size:.6rem;font-weight:700;color:#888;letter-spacing:.05em">TABLE ' + tableNum + '</span>';
+  html += '<span style="font-size:.5rem;padding:.1rem .4rem;border-radius:3px;background:' + (isCoop ? 'rgba(80,180,255,0.15)' : 'rgba(255,80,80,0.15)') + ';color:' + modeColor + ';border:1px solid ' + modeColor + '33">' + modeLabel + '</span>';
+  html += '</div>';
+  
+  /* Two seats */
+  html += '<div style="display:flex;gap:.5rem">';
+  
+  /* Seat 1 */
+  var s1Bg = seat1 ? (seat1Ready ? 'rgba(0,255,136,0.08)' : 'rgba(80,180,255,0.08)') : 'rgba(255,255,255,0.02)';
+  var s1Border = seat1 ? (seat1Ready ? 'rgba(0,255,136,0.4)' : 'rgba(80,180,255,0.25)') : 'rgba(255,255,255,0.06)';
+  var s1Color = seat1 ? (seat1Ready ? '#00ff88' : '#50b4ff') : '#555';
+  html += '<div onclick="sitDown(' + tableNum + ',1)" style="flex:1;padding:.35rem .4rem;border-radius:6px;background:' + s1Bg + ';border:1px solid ' + s1Border + ';text-align:center;cursor:' + (seat1 ? 'default' : 'pointer') + ';transition:all .15s;min-height:40px;display:flex;flex-direction:column;justify-content:center" data-occupied="' + (seat1 ? '1' : '0') + '">';
+  html += '<div style="font-size:.5rem;color:' + s1Color + ';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (seat1 ? (seat1Ready ? '✅ ' : '👤 ') + escMp(seat1Name) : '🪑 Sit') + '</div>';
+  if(seat1 && !seat1Ready && seat1.uid === myUid){
+    html += '<button onclick="event.stopPropagation();toggleReady(' + tableNum + ')" style="margin-top:4px;padding:4px 12px;border-radius:6px;background:linear-gradient(135deg,#ffd700,#ffaa00);color:#050508;font-size:.55rem;font-weight:700;cursor:pointer;border:none;font-family:\'Orbitron\',sans-serif;letter-spacing:.05em">✋ READY</button>';
+  }
+  html += '</div>';
+  
+  /* VS / & divider */
+  html += '<div style="display:flex;align-items:center;font-family:\'Orbitron\',sans-serif;font-size:.7rem;font-weight:700;color:' + modeColor + ';opacity:.5">' + (isCoop ? '&' : 'VS') + '</div>';
+  
+  /* Seat 2 */
+  var s2Bg = seat2 ? (seat2Ready ? 'rgba(0,255,136,0.08)' : 'rgba(255,150,80,0.08)') : 'rgba(255,255,255,0.02)';
+  var s2Border = seat2 ? (seat2Ready ? 'rgba(0,255,136,0.4)' : 'rgba(255,150,80,0.25)') : 'rgba(255,255,255,0.06)';
+  var s2Color = seat2 ? (seat2Ready ? '#00ff88' : '#ff9650') : '#555';
+  html += '<div onclick="sitDown(' + tableNum + ',2)" style="flex:1;padding:.35rem .4rem;border-radius:6px;background:' + s2Bg + ';border:1px solid ' + s2Border + ';text-align:center;cursor:' + (seat2 ? 'default' : 'pointer') + ';transition:all .15s;min-height:40px;display:flex;flex-direction:column;justify-content:center" data-occupied="' + (seat2 ? '1' : '0') + '">';
+  html += '<div style="font-size:.5rem;color:' + s2Color + ';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (seat2 ? (seat2Ready ? '✅ ' : '👤 ') + escMp(seat2Name) : '🪑 Sit') + '</div>';
+  if(seat2 && !seat2Ready && seat2.uid === myUid){
+    html += '<button onclick="event.stopPropagation();toggleReady(' + tableNum + ')" style="margin-top:4px;padding:4px 12px;border-radius:6px;background:linear-gradient(135deg,#ffd700,#ffaa00);color:#050508;font-size:.55rem;font-weight:700;cursor:pointer;border:none;font-family:\'Orbitron\',sans-serif;letter-spacing:.05em">✋ READY</button>';
+  }
+  html += '</div>';
+  
+  html += '</div>';
+  
+  /* Status info */
+  var amSeated = amSeated1 || amSeated2;
+  var onlyMeSeated = amSeated && !isFull;
+  if(bothReady){
+    html += '<div style="text-align:center;margin-top:.3rem;font-size:.45rem;color:#00ff88;font-weight:700;animation:sPulse 1s ease-in-out infinite">▶ STARTING...</div>';
+  } else if(isFull){
+    html += '<div style="text-align:center;margin-top:.3rem;font-size:.45rem;color:#ffd700">Waiting for ready...</div>';
+  } else if(onlyMeSeated){
+    html += '<div style="text-align:center;margin-top:.3rem;font-size:.45rem;color:#888">Waiting for opponent...</div>';
+    html += '<button onclick="event.stopPropagation();startSoloWhileWaiting(' + tableNum + ',' + (amSeated1 ? 1 : 2) + ')" style="margin-top:4px;padding:5px 14px;border-radius:8px;background:linear-gradient(135deg,#50b4ff,#7c5cff);color:#fff;font-size:.6rem;font-weight:700;cursor:pointer;border:none;font-family:\'Orbitron\',sans-serif;letter-spacing:.05em">🎮 Start Solo</button>';
+  }
+  
   if(amSeated){
-    html+='<div style="text-align:center;margin-top:.2rem"><span style="font-size:.4rem;color:#ff6666;cursor:pointer" onclick="event.stopPropagation();standUp('+tableNum+')">✕ Leave</span></div>';
+    html += '<div style="text-align:center;margin-top:.2rem"><span style="font-size:.4rem;color:#ff6666;cursor:pointer" onclick="event.stopPropagation();standUp(' + tableNum + ')">✕ Leave</span></div>';
   }
-
-  html+='</div>';
+  
+  html += '</div>';
   return html;
 }
 
@@ -2440,37 +2453,68 @@ function listenToLobby(){
 function updateLobbyUI(data){
   var container=document.getElementById('lobbyTables');
   if(!container)return;
-  /* For each of the 50 tables, get its state or use empty */
+  
+  console.log('[MP] Updating lobby UI with data:', data);
+  
   for(var i=1;i<=50;i++){
     var tableEl=document.getElementById('table_'+i);
     if(!tableEl)continue;
     var tableData=data[i]||data[''+i]||{};
-    /* Clean up: if a seat has no uid, treat as empty */
-    var seat1=tableData.seat1&&tableData.seat1.uid?tableData.seat1:null;
-    var seat2=tableData.seat2&&tableData.seat2.uid?tableData.seat2:null;
-    var state={seat1:seat1,seat2:seat2,mode:tableData.mode||mpMode};
-    var newHTML=buildTableHTML(i,state);
-    /* Only update if changed (compare innerHTML) */
-    var tempDiv=document.createElement('div');
-    tempDiv.innerHTML=newHTML;
-    var newInner=tempDiv.firstChild.innerHTML;
-    if(tableEl.innerHTML!==newInner){
-      tableEl.innerHTML=newInner;
-      tableEl.style.borderColor=tempDiv.firstChild.style.borderColor;
+    
+    // 确保正确解析座位数据
+    var seat1=null;
+    var seat2=null;
+    
+    if(tableData.seat1 && tableData.seat1.uid){
+      seat1 = {
+        uid: tableData.seat1.uid,
+        name: tableData.seat1.name || 'Player',
+        ready: tableData.seat1.ready || false
+      };
     }
-  }
-  /* Update status */
-  var statusEl=document.getElementById('mpLobbyStatus');
-  if(statusEl){
-    var totalPlayers=0;
-    for(var i=1;i<=50;i++){
-      var t=data[i]||data[''+i];
-      if(t){
-        if(t.seat1&&t.seat1.uid)totalPlayers++;
-        if(t.seat2&&t.seat2.uid)totalPlayers++;
+    if(tableData.seat2 && tableData.seat2.uid){
+      seat2 = {
+        uid: tableData.seat2.uid,
+        name: tableData.seat2.name || 'Player',
+        ready: tableData.seat2.ready || false
+      };
+    }
+    
+    var state = {
+      seat1: seat1,
+      seat2: seat2,
+      mode: tableData.mode || mpMode
+    };
+    
+    var newHTML = buildTableHTML(i, state);
+    var tempDiv = document.createElement('div');
+    tempDiv.innerHTML = newHTML;
+    var newInner = tempDiv.firstChild.innerHTML;
+    
+    if(tableEl.innerHTML !== newInner){
+      tableEl.innerHTML = newInner;
+      // 更新边框颜色
+      if(seat1 && seat2){
+        tableEl.style.borderColor = mpMode === 'coop' ? 'rgba(0,255,136,0.6)' : 'rgba(255,80,0,0.6)';
+      } else if(seat1 || seat2){
+        tableEl.style.borderColor = mpMode === 'coop' ? 'rgba(80,180,255,0.4)' : 'rgba(255,80,80,0.4)';
+      } else {
+        tableEl.style.borderColor = 'rgba(255,255,255,0.08)';
       }
     }
-    statusEl.textContent=totalPlayers+' player'+(totalPlayers!==1?'s':'')+' online';
+  }
+  
+  var statusEl = document.getElementById('mpLobbyStatus');
+  if(statusEl){
+    var totalPlayers = 0;
+    for(var i=1;i<=50;i++){
+      var t = data[i] || data[''+i];
+      if(t){
+        if(t.seat1 && t.seat1.uid) totalPlayers++;
+        if(t.seat2 && t.seat2.uid) totalPlayers++;
+      }
+    }
+    statusEl.textContent = totalPlayers + ' player' + (totalPlayers !== 1 ? 's' : '') + ' online';
   }
 }
 
@@ -2592,14 +2636,140 @@ function returnToLobbyFromSolo(tableNum){
 /* Start a multiplayer game when both players are ready */
 var _mpGameStarting=false;
 function startMultiplayerGame(tableNum,uid1,uid2,name1,name2){
-  /* Guard against double-trigger */
+  /* 防止重复触发 */
   if(_mpGameStarting){
     console.log('[MP] startMultiplayerGame already in progress, skipping duplicate call');
     return;
   }
   _mpGameStarting=true;
   console.log('[MP] startMultiplayerGame called for table',tableNum,'uids:',uid1,uid2);
+  
+  var myUid=getMyUid();
+  var isHost=(myUid===uid1);  // 最先坐下的玩家是 Host（seat 1）
+  
+  /* ===== 难度选择：只有 Host（最先坐下的玩家）可以选择难度 ===== */
+  if(isHost){
+    // Host 选择难度
+    showDifficultySelector().then(function(selectedDifficulty){
+      if(selectedDifficulty===null||selectedDifficulty===undefined){
+        // 用户取消或关闭，不开始游戏
+        _mpGameStarting=false;
+        return;
+      }
+      gDifficulty=selectedDifficulty;
+      // 保存难度到 RTDB
+      var rtdb=getRtdb();
+      if(rtdb){
+        rtdb.ref('game_states/table_'+tableNum).update({
+          difficulty: selectedDifficulty,
+          host: uid1,
+          guest: uid2
+        }).catch(function(e){ console.warn('[MP] Failed to save difficulty:', e); });
+      }
+      proceedWithGameStart(tableNum,uid1,uid2,name1,name2);
+    }).catch(function(){
+      _mpGameStarting=false;
+    });
+  } else {
+    // 非 Host 等待 Host 选择难度
+    showWaitingForHostDifficulty();
+    // 监听 Host 选择的难度
+    var rtdb=getRtdb();
+    if(rtdb){
+      var diffRef=rtdb.ref('game_states/table_'+tableNum);
+      var diffListener=diffRef.on('value',function(snap){
+        var data=snap.val();
+        if(data && data.difficulty!==undefined){
+          gDifficulty=data.difficulty;
+          diffRef.off('value',diffListener);
+          proceedWithGameStart(tableNum,uid1,uid2,name1,name2);
+        }
+      });
+      // 超时处理
+      setTimeout(function(){
+        if(_mpGameStarting){
+          toast('Host did not select difficulty. Please try again.','info');
+          _mpGameStarting=false;
+          var waitingEl=document.getElementById('mpWaitingDifficulty');
+          if(waitingEl) waitingEl.remove();
+          backToModeSelect();
+        }
+      },30000);
+    } else {
+      // 无 RTDB 时直接开始
+      gDifficulty=1;
+      proceedWithGameStart(tableNum,uid1,uid2,name1,name2);
+    }
+  }
+}
 
+/* 显示难度选择器并返回选择的难度索引（0-5）*/
+function showDifficultySelector(){
+  return new Promise(function(resolve){
+    // 创建难度选择弹窗
+    var overlay=document.createElement('div');
+    overlay.id='mpDiffSelector';
+    overlay.style.cssText='position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px)';
+    
+    var html='<div style="background:linear-gradient(160deg,#060610,#0a0612,#060610);border:1px solid rgba(124,92,255,0.3);border-radius:16px;padding:1.5rem;max-width:500px;width:90%;text-align:center">';
+    html+='<h2 style="font-family:\'Orbitron\',sans-serif;font-size:1.2rem;margin-bottom:1rem;color:#fff">SELECT DIFFICULTY</h2>';
+    html+='<p style="font-size:.7rem;color:#aaa;margin-bottom:1rem">You are the host. Choose the challenge level for this match.</p>';
+    html+='<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:0.5rem">';
+    
+    var diffs=[
+      {name:'EASY',emoji:'🌱',color:'#22c55e',desc:'Extra coins & HP, weaker enemies'},
+      {name:'NORMAL',emoji:'⚔️',color:'#3b82f6',desc:'Standard balance'},
+      {name:'HARD',emoji:'🔥',color:'#f97316',desc:'Less coins, stronger enemies'},
+      {name:'VERY HARD',emoji:'💀',color:'#ef4444',desc:'Brutal enemies, quick AI'},
+      {name:'HELL',emoji:'👹',color:'#9333ea',desc:'Extreme challenge'},
+      {name:'IMPOSSIBLE',emoji:'☠️',color:'#dc2626',desc:'Instant AI rebuild, no mercy'}
+    ];
+    
+    diffs.forEach(function(diff,idx){
+      html+='<button data-diff="'+idx+'" style="padding:0.8rem;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid '+diff.color+'33;color:'+diff.color+';cursor:pointer;transition:all .2s;font-family:\'Orbitron\',sans-serif;font-size:.7rem;font-weight:700" onmouseover="this.style.background=\'rgba(255,255,255,0.08)\';this.style.transform=\'scale(1.02)\'" onmouseout="this.style.background=\'rgba(255,255,255,0.03)\';this.style.transform=\'scale(1)\'">'+diff.emoji+' '+diff.name+'<div style="font-size:.55rem;color:#888;margin-top:.2rem">'+diff.desc+'</div></button>';
+    });
+    
+    html+='</div><button id="mpDiffCancel" style="margin-top:1rem;padding:0.5rem 1.5rem;border-radius:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);color:#aaa;cursor:pointer;font-size:.7rem">Cancel</button>';
+    html+='</div>';
+    
+    overlay.innerHTML=html;
+    document.body.appendChild(overlay);
+    
+    overlay.querySelectorAll('[data-diff]').forEach(function(btn){
+      btn.addEventListener('click',function(){
+        var selected=parseInt(this.getAttribute('data-diff'),10);
+        overlay.remove();
+        resolve(selected);
+      });
+    });
+    
+    document.getElementById('mpDiffCancel').addEventListener('click',function(){
+      overlay.remove();
+      resolve(null);
+    });
+  });
+}
+
+function showWaitingForHostDifficulty(){
+  var overlay=document.getElementById('mpWaitingDifficulty');
+  if(overlay) overlay.remove();
+  
+  overlay=document.createElement('div');
+  overlay.id='mpWaitingDifficulty';
+  overlay.style.cssText='position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px)';
+  overlay.innerHTML='<div style="background:linear-gradient(160deg,#060610,#0a0612,#060610);border:1px solid rgba(124,92,255,0.3);border-radius:16px;padding:1.5rem;text-align:center">' +
+    '<div style="font-size:2rem;margin-bottom:0.5rem">⏳</div>' +
+    '<h3 style="font-family:\'Orbitron\',sans-serif;font-size:1rem;margin-bottom:0.5rem;color:#fff">Waiting for host...</h3>' +
+    '<p style="font-size:.7rem;color:#aaa">The host is selecting difficulty level</p>' +
+    '</div>';
+  document.body.appendChild(overlay);
+}
+
+function proceedWithGameStart(tableNum,uid1,uid2,name1,name2){
+  // 移除等待弹窗
+  var waitingEl=document.getElementById('mpWaitingDifficulty');
+  if(waitingEl) waitingEl.remove();
+  
   var myUid=getMyUid();
   /* Determine my role based on mode and seat */
   if(mpMode==='coop'){
@@ -2609,7 +2779,7 @@ function startMultiplayerGame(tableNum,uid1,uid2,name1,name2){
     if(myUid===uid1) savedMode='defense';
     else savedMode='attack';
   }
-  console.log('[MP] My role:', savedMode, 'My UID:', myUid, 'mpMode:', mpMode);
+  console.log('[MP] My role:',savedMode,'My UID:',myUid,'mpMode:',mpMode);
 
   /* Determine host status and opponent */
   mpIsHost=(myUid===uid1);
@@ -2627,6 +2797,8 @@ function startMultiplayerGame(tableNum,uid1,uid2,name1,name2){
       gameStatus:'waiting',
       map:selectedMap||'verdant',
       mode:mpMode,
+      difficulty:gDifficulty,
+      host:uid1,
       lastUpdate:Date.now()
     };
     initialState.players[uid1]={
@@ -2697,8 +2869,7 @@ function startMultiplayerGame(tableNum,uid1,uid2,name1,name2){
   document.getElementById('gameOverScreen').style.display='none';
   document.getElementById('mapSelectScreen').style.display='none';
   document.getElementById('modeScreen').style.display='none';
-  /* Auto-start the multiplayer game */
-  gDifficulty=1; /* Normal difficulty for multiplayer */
+  /* Auto-start the multiplayer game — 使用已选择的难度 */
   unlimitedGold=false;
   gMode=savedMode;
   chI=0;score=0;
@@ -2710,7 +2881,7 @@ function startMultiplayerGame(tableNum,uid1,uid2,name1,name2){
     setTimeout(resizeCanvas, 100);
   });
   gState='playing';
-  console.log('[MP] Game starting! gMode='+gMode+', mpGameId='+mpGameId);
+  console.log('[MP] Game starting! gMode='+gMode+', difficulty='+gDifficulty+', mpGameId='+mpGameId);
   try{
     SFX.resume();startBGM();
     initCh(0);
@@ -2731,7 +2902,11 @@ function syncGameState(){
   var rtdb=getRtdb();
   if(!rtdb||!mpGameId||!mpGameStateRef) return;
   if(gState!=='playing'||gameOver) return;
+  
   var myUid=getMyUid();
+  var now=Date.now();
+  
+  // 基础状态
   var gameState={
     hp:baseHP,
     maxHp:baseMaxHP,
@@ -2740,25 +2915,49 @@ function syncGameState(){
     waveIndex:waveI,
     chapterIndex:chI,
     ready:true,
-    lastUpdate:Date.now()
+    lastUpdate:now
   };
-  /* In versus attack mode, also sync enemy base HP */
+  
+  // 防御模式：同步塔楼信息
+  if(gMode==='defense'){
+    gameState.towerCount=towers.filter(function(t){ return !t.dead && t.isP; }).length;
+    // 同步塔楼位置和类型（用于对方显示）
+    gameState.towers=towers.filter(function(t){ return !t.dead && t.isP; }).map(function(t){
+      return {x:t.x,y:t.y,type:t.type,hp:t.hp};
+    });
+    // 同步敌人信息
+    gameState.enemies=enemies.filter(function(e){ return !e.dead; }).map(function(e){
+      return {type:e.type,x:e.x,y:e.y,hp:e.hp,pi:e.pi,pp:e.pp};
+    });
+  }
+  
+  // 攻击模式：同步敌方堡垒和己方怪物
   if(gMode==='attack'){
     gameState.enemyBaseHP=enemyBaseHP;
     gameState.atkWave=atkWave;
+    gameState.monsters=enemies.filter(function(e){ return !e.dead; }).map(function(e){
+      return {type:e.type,x:e.x,y:e.y,hp:e.hp,pi:e.pi,pp:e.pp};
+    });
   }
-  /* In defense mode, sync tower count for opponent info */
-  if(gMode==='defense'){
-    gameState.towerCount=towers.filter(function(t){return !t.dead}).length;
+  
+  // 波次信息
+  var ch=getCurCh();
+  if(ch&&ch.waves){
+    gameState.waveTotal=ch.waves.length;
+    gameState.waveActive=waveActive;
+    gameState.btwnWaves=btwnWaves;
   }
+  
+  // 同步到 Firebase
   mpGameStateRef.child('players/'+myUid).update(gameState).catch(function(e){
     console.warn('[MP] syncGameState error:',e);
   });
-  /* Also update the shared game status */
+  
+  // 更新共享游戏状态
   mpGameStateRef.update({
     currentWave:Math.max(waveI,0),
     gameStatus:'playing',
-    lastUpdate:Date.now()
+    lastUpdate:now
   }).catch(function(){});
 }
 
@@ -2766,6 +2965,7 @@ function syncGameState(){
 function listenToOpponentState(){
   if(!mpGameStateRef||!mpOpponentUid) return;
   stopOpponentListener();
+  
   var opponentRef=mpGameStateRef.child('players/'+mpOpponentUid);
   mpStateListener=opponentRef.on('value',function(snap){
     var data=snap.val();
@@ -2777,11 +2977,60 @@ function listenToOpponentState(){
       }
       return;
     }
+    
     var prev=mpOpponentState;
     mpOpponentState=data;
-    /* Display opponent info in the game UI */
+    
+    // 更新 UI 显示
     updateOpponentUI(data);
-    /* Check if opponent's HP dropped to 0 (they lost) */
+    
+    // ===== 合作模式（Co-op）：同步对方的状态 =====
+    if(mpMode==='coop'){
+      // 同步对方波次（取最大值）
+      if(data.waveIndex!==undefined && data.waveIndex>waveI){
+        waveI=data.waveIndex;
+        updUI();
+        console.log('[MP] Synced wave from opponent:',waveI);
+      }
+      
+      // 同步对方分数（取最大值，合作模式共享进度）
+      if(data.score!==undefined && data.score>score){
+        score=data.score;
+        updUI();
+      }
+      
+      // 同步对方塔楼（如果对方是防御方）
+      if(data.towers && gMode==='defense'){
+        var myTowerIds={};
+        towers.forEach(function(t){ if(t.isP) myTowerIds[t.x+','+t.y]=true; });
+        
+        data.towers.forEach(function(tower){
+          var key=tower.x+','+tower.y;
+          if(!myTowerIds[key]){
+            var newTower=mkTower(tower.x,tower.y,tower.type);
+            if(newTower){
+              newTower.isP=true;
+              newTower.hp=tower.hp||newTower.hp;
+              towers.push(newTower);
+            }
+          }
+        });
+      }
+    }
+    
+    // ===== 对战模式：显示对手怪物和塔楼 =====
+    if(mpMode==='versus'){
+      // 攻击方：显示对手的塔楼
+      if(gMode==='attack' && data.towers){
+        mpOpponentTowers=data.towers;
+      }
+      // 防御方：显示对手的怪物
+      if(gMode==='defense' && data.monsters){
+        mpOpponentMonsters=data.monsters;
+      }
+    }
+    
+    // Check if opponent's HP dropped to 0 (they lost)
     if(data.hp!==undefined&&data.hp<=0&&(!prev||prev.hp>0)){
       /* Opponent was defeated */
       if(mpMode==='versus'){
