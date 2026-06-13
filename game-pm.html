@@ -2209,13 +2209,7 @@ function sitDown(tableNum,seatNum){
     update['updatedAt']=Date.now();
 
     console.log('[MP] updating table:', update);
-    tableRef.update(update).then(function(){
-      console.log('[MP] Successfully joined table',tableNum,'seat',seatNum);
-    }).catch(function(e){
-      console.error('[MP] Failed to join table:', e);
-      toast('Could not join table: '+(e.message||'write failed'),'info');
-      mpMyTable=-1; mpMySeat=-1;
-    });
+    tableRef.update(update);
 
     mpMyTable=tableNum;
     mpMySeat=seatNum;
@@ -2385,19 +2379,9 @@ function standUp(tableNum){
 /* Toggle ready state */
 function toggleReady(tableNum){
   var rtdb=getRtdb();
-  if(!rtdb||mpMySeat<1){
-    console.warn('[MP] toggleReady failed: rtdb=',!!rtdb,'mpMySeat=',mpMySeat);
-    return;
-  }
+  if(!rtdb||mpMySeat<1)return;
   mpIsReady=!mpIsReady;
-  console.log('[MP] Setting ready state to', mpIsReady, 'for seat', mpMySeat);
-  rtdb.ref('lobby/'+mpMode+'/tables/'+tableNum+'/seat'+mpMySeat+'/ready').set(mpIsReady).then(function(){
-    console.log('[MP] Ready state saved successfully');
-  }).catch(function(e){
-    console.error('[MP] Failed to set ready state:', e);
-    mpIsReady=!mpIsReady; /* Revert local state */
-    toast('Could not set ready state. Check connection.','info');
-  });
+  rtdb.ref('lobby/'+mpMode+'/tables/'+tableNum+'/seat'+mpMySeat+'/ready').set(mpIsReady);
 }
 
 /* Listen to lobby changes via Firebase RTDB */
@@ -2609,8 +2593,6 @@ function startMultiplayerGame(tableNum,uid1,uid2,name1,name2){
     if(myUid===uid1) savedMode='defense';
     else savedMode='attack';
   }
-  console.log('[MP] My role:', savedMode, 'My UID:', myUid, 'mpMode:', mpMode);
-
   /* Determine host status and opponent */
   mpIsHost=(myUid===uid1);
   mpOpponentUid=mpIsHost?uid2:uid1;
@@ -2669,10 +2651,6 @@ function startMultiplayerGame(tableNum,uid1,uid2,name1,name2){
     setTimeout(function(){
       rtdb.ref('lobby/'+mpMode+'/tables/'+tableNum).remove().catch(function(){});
     },2000);
-  }else{
-    console.warn('[MP] No RTDB available, starting local multiplayer game only');
-    mpGameId='local_'+tableNum+'_'+Date.now();
-    mpGameStateRef=null;
   }
   mpMyTable=-1;mpMySeat=-1;mpIsReady=false;
   mpSyncTimer=0;
@@ -2690,7 +2668,6 @@ function startMultiplayerGame(tableNum,uid1,uid2,name1,name2){
   /* Remove lobby status bar if present */
   removeLobbyStatusBar();
   /* Hide ALL screens (including table room overlay) */
-  document.getElementById('startScreen').style.display='none';
   document.getElementById('multiplayerScreen').style.display='none';
   document.getElementById('gameScreen').style.display='none';
   document.getElementById('diffScreen').style.display='none';
@@ -2703,23 +2680,12 @@ function startMultiplayerGame(tableNum,uid1,uid2,name1,name2){
   gMode=savedMode;
   chI=0;score=0;
   document.getElementById('gameScreen').style.display='flex';
-  /* Resize canvas after showing gameScreen — need next frame for layout calculation */
-  requestAnimationFrame(function(){
-    resizeCanvas();
-    /* Also resize once more after a short delay for mobile layout stabilization */
-    setTimeout(resizeCanvas, 100);
-  });
   gState='playing';
   console.log('[MP] Game starting! gMode='+gMode+', mpGameId='+mpGameId);
-  try{
-    SFX.resume();startBGM();
-    initCh(0);
-    /* Show opponent info bar */
-    updateOpponentUI();
-  }catch(e){
-    console.error('[MP] Error starting game:', e);
-    toast('Error starting game: ' + (e.message||'unknown'), 'info');
-  }
+  SFX.resume();startBGM();
+  initCh(0);
+  /* Show opponent info bar */
+  updateOpponentUI();
   /* Reset the starting guard after a delay */
   setTimeout(function(){ _mpGameStarting=false; },5000);
 }

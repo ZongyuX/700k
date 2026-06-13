@@ -2689,15 +2689,9 @@ async function handleAuthChange(user){
       if(currentUser.email) localStorage.setItem('pp_user_email',currentUser.email);
       if(currentUser.uid) localStorage.setItem('pp_user_uid',currentUser.uid);
     }catch(e){}
-    /* Start listening for conversations so unread badge updates in real-time */
-    listenForConversations();
   }else{
     /* Clear stored user info on sign-out */
     try{ localStorage.removeItem('pp_user_name'); localStorage.removeItem('pp_user_email'); localStorage.removeItem('pp_user_uid'); }catch(e){}
-    /* Clear unread badge on sign-out */
-    _totalUnread=0;
-    updateUnreadBadge();
-    if(_convUnsubscribe){_convUnsubscribe();_convUnsubscribe=null;}
   }
   refreshAuthUI();
   refreshBadge();
@@ -2765,51 +2759,18 @@ async function loadUserDoc(user){
     [].concat(Array.isArray(d.favorites)?d.favorites:[], localFavs).forEach(id=>{
       if(merged.indexOf(id)<0) merged.push(id);
     });
-    // Stacking logic: take max of local and cloud
-    var localUntil = proUntil();
-    var cloudUntil = d.proUntil || 0;
-    var cloudIsPro = (!!d.pro && !!d.proCode);
-    var now = Date.now();
-
-    var untilM = 0;
-    var permanent = false;
-
-    if(cloudIsPro && cloudUntil === 0){
-      // Cloud lifetime Pro
-      permanent = true;
-      untilM = 0;
-    } else if(cloudIsPro && cloudUntil > now){
-      // Cloud timed Pro — stack
-      permanent = false;
-      untilM = Math.max(localUntil, cloudUntil);
-    } else if(localUntil > now){
-      // Local Pro
-      permanent = false;
-      untilM = localUntil;
-    } else {
-      permanent = false;
-      untilM = 0;
-    }
-
-    var trialUsedM = (!!d.trialUsed) || localTrialUsed;
-
-    const state = {
-      email: user.email || d.email || '', 
-      method: method,
-      favorites: merged, 
-      pro: permanent, 
-      proUntil: untilM,
-      trialUsed: trialUsedM,
-      marketingOptIn: (d.marketingOptIn !== false),
-      proCode: d.proCode || ''
+    const permanent=(!!d.pro && !!d.proCode)||localPermanent;
+    const untilM=permanent?0:Math.max(d.proUntil||0, localUntil||0);
+    const trialUsedM=(!!d.trialUsed)||localTrialUsed;
+    const state={
+      email:user.email||d.email||'', method:method,
+      favorites:merged, pro:permanent, proUntil:untilM, trialUsed:trialUsedM,
+      marketingOptIn:(d.marketingOptIn!==false)
     };
-
-    console.log('[loadUserDoc] Final proUntil:', untilM ? new Date(untilM).toLocaleString() : 'none', 'permanent:', permanent);
     try{
       await ref.set({
         email:state.email, displayName:user.displayName||d.displayName||'', method:method,
         favorites:merged, pro:permanent, proUntil:untilM, trialUsed:trialUsedM,
-        proCode:d.proCode||'',
         updatedAt:TS
       },{merge:true});
     }catch(e){ console.warn('user doc merge',e); }
@@ -2829,49 +2790,18 @@ async function loadUserDoc(user){
 
 /* push a user-doc state into the running app + local cache */
 function applyUserState(s){
-  favorites = Array.isArray(s.favorites) ? s.favorites.slice() : [];
+  favorites=Array.isArray(s.favorites)?s.favorites.slice():[];
   saveFavs();
-  
-  var localUntil = proUntil();
-  var cloudUntil = s.proUntil || 0;
-  var cloudIsPro = (s.pro && s.proCode);
-  var now = Date.now();
-  
-  console.log('[ApplyUserState] Local until:', localUntil ? new Date(localUntil).toLocaleString() : 'none', 'Cloud until:', cloudUntil ? new Date(cloudUntil).toLocaleString() : 'none');
-  
-  if(cloudIsPro && cloudUntil === 0){
-    // Cloud lifetime Pro
-    isPro = true;
-    proExpired = false;
-    lsSet('pp_pro_code', s.proCode);
-    lsDel('pp_pro_until');
-    console.log('[ApplyUserState] → Lifetime Pro from cloud');
-  } 
-  else if(cloudIsPro && cloudUntil > now){
-    // Cloud timed Pro — take max (stack)
-    isPro = true;
-    proExpired = false;
-    var maxUntil = Math.max(localUntil, cloudUntil);
-    lsSet('pp_pro_code', s.proCode);
-    lsSet('pp_pro_until', String(maxUntil));
-    console.log('[ApplyUserState] → Timed Pro from cloud, stacked until:', new Date(maxUntil).toLocaleString());
+  if(s.pro && s.proCode){
+    /* Pro is only valid if there's a valid pro code (purchased Pro).
+     * A pro:true without proCode means stale data — treat as Free. */
+    lsSet('pp_pro_code', s.proCode||lsGet('pp_pro_code')||'ACCOUNT'); lsDel('pp_pro_until'); isPro=true; proExpired=false;
+  }else if(s.proUntil && Date.now()<s.proUntil){
+    lsSet('pp_pro_code','TRIAL'); lsSet('pp_pro_until',String(s.proUntil)); isPro=true; proExpired=false;
+  }else{
+    lsDel('pp_pro_code'); lsDel('pp_pro_until'); isPro=false;
   }
-  else if(localUntil > now){
-    // Local Pro only, no cloud Pro
-    isPro = true;
-    proExpired = false;
-    console.log('[ApplyUserState] → Pro from local only');
-  }
-  else {
-    // No Pro
-    isPro = false;
-    proExpired = false;
-    lsDel('pp_pro_code');
-    lsDel('pp_pro_until');
-    console.log('[ApplyUserState] → No Pro');
-  }
-  
-  if(s.trialUsed) lsSet('pp_trial_used', '1');
+  if(s.trialUsed) lsSet('pp_trial_used','1');
 }
 
 /* save current favorites / Pro to the signed-in user's cloud doc */
@@ -2884,15 +2814,13 @@ function cloudSaveFavorites(){
 }
 function cloudSavePro(){
   if(!(fbReady && currentUser)) return;
-  var until = proUntil();
-  var now = Date.now();
   userDocRef().set({
-    pro: (until === 0 && isPro),      // Lifetime Pro flag
-    proUntil: until,                   // Expiry timestamp (0 = lifetime)
-    trialUsed: !!lsGet('pp_trial_used'),
-    proCode: lsGet('pp_pro_code') || '',
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-  }, {merge: true}).catch(e => console.warn('save pro', e));
+    pro:(proUntil()===0 && isPro),
+    proUntil:proUntil(),
+    trialUsed:!!lsGet('pp_trial_used'),
+    proCode:lsGet('pp_pro_code')||'',
+    updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+  },{merge:true}).catch(e=>console.warn('save pro',e));
 }
 /* gamification state -> cloud (debounced; called by fun.js) */
 let gameSaveT=null;
@@ -3174,7 +3102,7 @@ function planLabel(){
     }
     return PPI18n.t('plan.pro.full');
   }
-  return PPI18n.t('plan.free');
+  return PPI18n.t('plan.free') + ' ∞';
 }
 function openAccount(){
   if(!currentUser){ if(typeof openAuth==='function') openAuth(); return; }
@@ -3273,12 +3201,11 @@ function refreshBadge(){
       const days=Math.max(1,Math.ceil((until-Date.now())/86400000));
       b.textContent='PRO '+days+'d';
     }else{
-      b.textContent='PRO';
+      b.textContent='PRO ∞';
     }
     b.className='badge on';
   }else{
-    b.textContent='FREE';
-    b.className='badge';
+    b.textContent='FREE ∞'; b.className='badge';
   }
 }
 /* Category cache — rebuilt only when data changes */
@@ -4001,26 +3928,21 @@ function unlock(key,m,text){
 /* Timed unlock: Pro for N days, then reverts to Free.
  * If the user already has Pro time remaining, the new days are ADDED
  * on top of the existing expiry (stacking), not replaced. */
-function unlockTimed(key, m, days, text){
+function unlockTimed(key,m,days,text){
   var existingUntil = proUntil();
-  var now = Date.now();
-  var base = (existingUntil > now) ? existingUntil : now;
+  var base = existingUntil > Date.now() ? existingUntil : Date.now();
   var until = base + days * 86400000;
-  
-  console.log('[Pro] Stacking: existing=' + new Date(existingUntil).toLocaleString() + ', adding=' + days + 'd, new=' + new Date(until).toLocaleString());
-  
   lsSet('pp_pro_code', key);
   lsSet('pp_pro_until', String(until));
   isPro = true;
   proExpired = false;
   if(typeof cloudSavePro === 'function') cloudSavePro();
   m.className = 'msg ok';
-  var totalDays = Math.round((until - now) / 86400000);
-  m.textContent = text + ' (Total: ' + totalDays + ' days remaining)';
+  m.textContent = text;
   if(typeof refreshBadge === 'function') refreshBadge();
   if(typeof renderGrid === 'function') renderGrid();
   setTimeout(function(){ document.getElementById('actOverlay').classList.remove('show'); }, 2000);
-  if(typeof toast === 'function') toast('Pro extended! ' + totalDays + ' days remaining.', 'info');
+  if(typeof toast === 'function') toast('Pro activated for ' + days + ' days!', 'info');
 }
 function startTrial(){
   /* Free trial removed — redirect to Pro plans */
@@ -5455,18 +5377,27 @@ function openAvatarPicker(){
   document.getElementById('avatarOverlay').classList.add('show');
 }
 
-/* Wire badge click — scroll to pricing section */
+/* Wire badge click — show Pro status info */
 document.addEventListener('DOMContentLoaded',function(){
   var badge=document.getElementById('planBadge');
   if(badge){
     badge.style.cursor='pointer';
     badge.addEventListener('click',function(){
-      // Scroll to pricing section
-      var pricingSection = document.getElementById('pro');
-      if(pricingSection){
-        pricingSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      } else {
-        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      if(isPro){
+        var until=proUntil();
+        if(until>0){
+          var daysLeft=Math.max(1,Math.ceil((until-Date.now())/86400000));
+          var hoursLeft=Math.max(0,Math.ceil((until-Date.now())/3600000));
+          if(daysLeft<=1){
+            toast('Pro subscription: '+hoursLeft+' hours remaining','info');
+          }else{
+            toast('Pro subscription: '+daysLeft+' days remaining','info');
+          }
+        }else{
+          toast('Pro: Lifetime access ♾️','info');
+        }
+      }else{
+        toast('Free plan: ♾️ unlimited free days','info');
       }
     });
   }
@@ -5551,7 +5482,7 @@ function toggleFriendsPanel(){
     closeChatWindow();
     if(_friendsListUnsubscribe){_friendsListUnsubscribe();_friendsListUnsubscribe=null;}
     if(_friendReqUnsubscribe){_friendReqUnsubscribe();_friendReqUnsubscribe=null;}
-    /* Keep conversation listener active for unread badge — do NOT unsubscribe _convUnsubscribe */
+    if(_convUnsubscribe){_convUnsubscribe();_convUnsubscribe=null;}
   }
 }
 
