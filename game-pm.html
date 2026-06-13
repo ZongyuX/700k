@@ -234,6 +234,78 @@ body{background:#050508;color:#e0e0e0;font-family:'Share Tech Mono',monospace;ov
     padding: 2px 8px !important;
   }
 }
+/* 手机全屏适配 - 确保所有内容都在屏幕内 */
+#gameScreen {
+  width: 100vw !important;
+  height: 100vh !important;
+  overflow: hidden !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+#gameCanvas {
+  max-width: 100% !important;
+  max-height: 50vh !important;
+  width: auto !important;
+  height: auto !important;
+  object-fit: contain !important;
+}
+#leftPanel, #rightPanel {
+  max-height: 20vh !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  display: flex !important;
+  flex-direction: row !important;
+  white-space: nowrap !important;
+}
+#leftPanel .flex, #rightPanel .flex {
+  flex-direction: row !important;
+}
+.panel-btn, .spell-btn {
+  font-size: 10px !important;
+  padding: 4px 8px !important;
+  white-space: nowrap !important;
+}
+#fortressBar {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  background: rgba(0,0,0,0.8) !important;
+  padding: 4px !important;
+  margin: 0 !important;
+}
+#gameHeader {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  background: rgba(0,0,0,0.8) !important;
+  padding: 4px !important;
+  z-index: 10 !important;
+}
+#canvasWrap {
+  margin-top: 60px !important;
+  margin-bottom: 50px !important;
+  height: calc(100vh - 110px) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+@media (max-width: 768px) {
+  .panel-btn, .spell-btn {
+    font-size: 8px !important;
+    padding: 2px 5px !important;
+  }
+  #gameHeader .flex {
+    font-size: 8px !important;
+  }
+  .gold-display {
+    font-size: 8px !important;
+  }
+}
 </style>
 </head>
 <body>
@@ -1908,14 +1980,21 @@ function init(){
 
 function resizeCanvas(){
   if(!canvas) return;
-  const maxWidth = Math.min(window.innerWidth - 20, 800);
-  const maxHeight = Math.min(window.innerHeight - 200, 510);
-  const ratio = CW/CH;
-  let w = maxWidth;
-  let h = w / ratio;
+  var container = document.getElementById('canvasWrap');
+  if(!container) return;
+  
+  var maxWidth = container.clientWidth - 10;
+  var maxHeight = container.clientHeight - 10;
+  var ratio = CW / CH;
+  
+  var w = Math.min(maxWidth, maxHeight * ratio);
+  var h = w / ratio;
+  
   if(h > maxHeight) { h = maxHeight; w = h * ratio; }
+  
   canvas.style.width = Math.floor(w) + 'px';
   canvas.style.height = Math.floor(h) + 'px';
+  canvas.style.display = 'block';
   canvas.style.margin = '0 auto';
 }
 
@@ -2028,32 +2107,55 @@ function initLobby(){
 
 /* Render 50 empty tables */
 function renderLobbyTables(){
-  var container=document.getElementById('lobbyTables');
+  var container = document.getElementById('lobbyTables');
   if(!container) return;
-  var html='';
-  for(var i=1;i<=30;i++){
-    html+='<div class="lobby-table" id="table_'+i+'" onclick="sitDown('+i+')" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px;margin-bottom:8px;cursor:pointer;transition:all 0.2s">';
-    html+='<div style="display:flex;justify-content:space-between;align-items:center">';
-    html+='<span style="font-weight:bold;color:#aaa">🏆 桌子 '+i+'</span>';
-    html+='<span id="seatStatus_'+i+'" style="font-size:11px;color:#ffd700">🪑 空位</span>';
-    html+='</div>';
-    html+='<div id="seatDetail_'+i+'" style="font-size:10px;color:#888;margin-top:4px"></div>';
-    html+='</div>';
+  
+  var html = '';
+  for(var i = 1; i <= 30; i++){
+    html += '<div class="lobby-table" id="table_' + i + '" onclick="sitDown(' + i + ')" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:10px;margin-bottom:8px;cursor:pointer">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center">';
+    html += '<span style="font-weight:bold;color:#aaa">🏆 桌子 ' + i + '</span>';
+    html += '<span id="seatStatus_' + i + '" style="font-size:10px;color:#ffd700">🪑 空位</span>';
+    html += '</div>';
+    html += '<div id="seatDetail_' + i + '" style="font-size:9px;color:#888;margin-top:4px;display:flex;justify-content:space-between">';
+    html += '<span>👤 <span id="seat1Name_' + i + '">空</span></span>';
+    html += '<span>👤 <span id="seat2Name_' + i + '">空</span></span>';
+    html += '</div>';
+    html += '</div>';
   }
-  container.innerHTML=html;
+  container.innerHTML = html;
 }
 
 function updateTableUI(tableNum, data){
-  var seatEl = document.getElementById('seatStatus_' + tableNum);
-  if(!seatEl) return;
-  var s1 = data && data.seat1, s2 = data && data.seat2;
+  var seat1NameSpan = document.getElementById('seat1Name_' + tableNum);
+  var seat2NameSpan = document.getElementById('seat2Name_' + tableNum);
+  var seatStatusSpan = document.getElementById('seatStatus_' + tableNum);
+  
+  if(!seat1NameSpan) return;
+  
+  var seat1 = data && data.seat1;
+  var seat2 = data && data.seat2;
   var myUid = getMyUid();
-  var status = '';
-  if(s1 && s2) status = '👥 ' + (s1.name||'?') + ' / ' + (s2.name||'?');
-  else if(s1) status = '👤 ' + (s1.name||'?') + (s1.uid===myUid?' (你)':'') + ' · 等待对手';
-  else if(s2) status = '👤 ' + (s2.name||'?') + (s2.uid===myUid?' (你)':'') + ' · 等待对手';
-  else status = '🪑 空位';
-  seatEl.innerText = status;
+  
+  var s1Name = (seat1 && seat1.name) ? seat1.name : '空';
+  var s2Name = (seat2 && seat2.name) ? seat2.name : '空';
+  
+  if(seat1 && seat1.uid === myUid) s1Name += ' (你)';
+  if(seat2 && seat2.uid === myUid) s2Name += ' (你)';
+  
+  seat1NameSpan.textContent = s1Name;
+  seat2NameSpan.textContent = s2Name;
+  
+  if(seat1 && seat2){
+    seatStatusSpan.innerHTML = '👥 已满';
+    seatStatusSpan.style.color = '#ff6666';
+  } else if(seat1 || seat2){
+    seatStatusSpan.innerHTML = '👤 有人';
+    seatStatusSpan.style.color = '#00ff88';
+  } else {
+    seatStatusSpan.innerHTML = '🪑 空位';
+    seatStatusSpan.style.color = '#ffd700';
+  }
 }
 
 /* Build HTML for a single table */
@@ -2394,28 +2496,7 @@ function listenToLobby(){
   mpLobbyListener=mpLobbyRef.on('value',function(snap){
     var data=snap.val()||{};
     for(var i=1;i<=30;i++){
-      var tableData=data[i]||data[''+i]||{};
-      var seat1=tableData.seat1;
-      var seat2=tableData.seat2;
-      var myUid=getMyUid();
-      var statusSpan=document.getElementById('seatStatus_'+i);
-      var detailSpan=document.getElementById('seatDetail_'+i);
-      if(statusSpan){
-        if(seat1&&seat2){
-          statusSpan.innerHTML='👥 已满'; statusSpan.style.color='#ff6666';
-        }else if(seat1||seat2){
-          statusSpan.innerHTML='👤 有人'; statusSpan.style.color='#00ff88';
-        }else{
-          statusSpan.innerHTML='🪑 空位'; statusSpan.style.color='#ffd700';
-        }
-      }
-      if(detailSpan){
-        var s1Name=seat1?(seat1.name||'玩家'):'空';
-        var s2Name=seat2?(seat2.name||'玩家'):'空';
-        var s1Mark=(seat1&&seat1.uid===myUid)?' (你)':'';
-        var s2Mark=(seat2&&seat2.uid===myUid)?' (你)':'';
-        detailSpan.innerHTML='座位1: '+s1Name+s1Mark+'  |  座位2: '+s2Name+s2Mark;
-      }
+      updateTableUI(i, data[i]||data[''+i]||{});
     }
     updateLobbyUI(data);
     if(mpMyTable>0&&!_mpGameStarting){
@@ -2548,95 +2629,151 @@ function returnToLobbyFromSolo(tableNum){
 
 /* Start a multiplayer game when both players are ready */
 var _mpGameStarting=false;
+
 function startMultiplayerGame(tableNum,uid1,uid2,name1,name2){
-  /* 防止重复触发 */
   if(_mpGameStarting){
-    console.log('[MP] startMultiplayerGame already in progress, skipping duplicate call');
+    console.log('[MP] 游戏已经开始，跳过重复调用');
     return;
   }
   _mpGameStarting=true;
-  console.log('[MP] startMultiplayerGame called for table',tableNum,'uids:',uid1,uid2);
   
-  var myUid=getMyUid();
-  var isHost=(myUid===uid1);  // 最先坐下的玩家是 Host（seat 1）
+  var myUid = getMyUid();
+  var isHost = (myUid === uid1);  // 最先坐下的是1P（房主）
   
-  /* ===== 难度选择：简化为 prompt 弹窗 ===== */
+  console.log('[MP] 开始游戏，isHost:', isHost, 'myUid:', myUid);
+  
+  // 保存对手信息
+  mpOpponentUid = isHost ? uid2 : uid1;
+  mpOpponentName = isHost ? (name2 || '对手') : (name1 || '对手');
+  mpIsHost = isHost;
+  mpMyTable = tableNum;
+  
+  // 如果是房主（1P），弹出难度选择
   if(isHost){
-    gDifficulty = parseInt(prompt('选择难度: 0简单 1普通 2困难 3极难 4地狱 5不可能', '1')) || 1;
-    // 保存难度到 RTDB
-    var rtdb=getRtdb();
-    if(rtdb){
-      rtdb.ref('game_states/table_'+tableNum).update({
-        difficulty: gDifficulty,
-        host: uid1,
-        guest: uid2
-      }).catch(function(e){ console.warn('[MP] Failed to save difficulty:', e); });
-    }
+    showDifficultySelectorForHost(function(selectedDiff){
+      if(selectedDiff === null){
+        // 用户取消，重置状态
+        _mpGameStarting = false;
+        return;
+      }
+      gDifficulty = selectedDiff;
+      console.log('[MP] 房主选择难度:', gDifficulty);
+      
+      // 保存难度到 RTDB
+      var rtdb = getRtdb();
+      if(rtdb){
+        rtdb.ref('game_states/table_' + tableNum).set({
+          difficulty: gDifficulty,
+          host: uid1,
+          mode: mpMode
+        }).catch(function(e){ console.warn(e); });
+      }
+      
+      // 开始游戏
+      proceedWithGameStart(tableNum, uid1, uid2, name1, name2);
+    });
+  } else {
+    // 2P：等待房主选择难度
+    showWaitingForHostDifficulty(function(selectedDiff){
+      if(selectedDiff !== null){
+        gDifficulty = selectedDiff;
+        console.log('[MP] 2P 收到房主难度:', gDifficulty);
+        proceedWithGameStart(tableNum, uid1, uid2, name1, name2);
+      } else {
+        _mpGameStarting = false;
+        toast('房主取消了游戏', 'info');
+      }
+    });
   }
-  // 直接开始游戏，不调用额外弹窗
-  proceedWithGameStart(tableNum,uid1,uid2,name1,name2);
 }
 
-/* 显示难度选择器并返回选择的难度索引（0-5）*/
-function showDifficultySelector(){
-  return new Promise(function(resolve){
-    // 创建难度选择弹窗
-    var overlay=document.createElement('div');
-    overlay.id='mpDiffSelector';
-    overlay.style.cssText='position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px)';
-    
-    var html='<div style="background:linear-gradient(160deg,#060610,#0a0612,#060610);border:1px solid rgba(124,92,255,0.3);border-radius:16px;padding:1.5rem;max-width:500px;width:90%;text-align:center">';
-    html+='<h2 style="font-family:\'Orbitron\',sans-serif;font-size:1.2rem;margin-bottom:1rem;color:#fff">SELECT DIFFICULTY</h2>';
-    html+='<p style="font-size:.7rem;color:#aaa;margin-bottom:1rem">You are the host. Choose the challenge level for this match.</p>';
-    html+='<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:0.5rem">';
-    
-    var diffs=[
-      {name:'EASY',emoji:'🌱',color:'#22c55e',desc:'Extra coins & HP, weaker enemies'},
-      {name:'NORMAL',emoji:'⚔️',color:'#3b82f6',desc:'Standard balance'},
-      {name:'HARD',emoji:'🔥',color:'#f97316',desc:'Less coins, stronger enemies'},
-      {name:'VERY HARD',emoji:'💀',color:'#ef4444',desc:'Brutal enemies, quick AI'},
-      {name:'HELL',emoji:'👹',color:'#9333ea',desc:'Extreme challenge'},
-      {name:'IMPOSSIBLE',emoji:'☠️',color:'#dc2626',desc:'Instant AI rebuild, no mercy'}
-    ];
-    
-    diffs.forEach(function(diff,idx){
-      html+='<button data-diff="'+idx+'" style="padding:0.8rem;border-radius:10px;background:rgba(255,255,255,0.03);border:1px solid '+diff.color+'33;color:'+diff.color+';cursor:pointer;transition:all .2s;font-family:\'Orbitron\',sans-serif;font-size:.7rem;font-weight:700" onmouseover="this.style.background=\'rgba(255,255,255,0.08)\';this.style.transform=\'scale(1.02)\'" onmouseout="this.style.background=\'rgba(255,255,255,0.03)\';this.style.transform=\'scale(1)\'">'+diff.emoji+' '+diff.name+'<div style="font-size:.55rem;color:#888;margin-top:.2rem">'+diff.desc+'</div></button>';
-    });
-    
-    html+='</div><button id="mpDiffCancel" style="margin-top:1rem;padding:0.5rem 1.5rem;border-radius:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);color:#aaa;cursor:pointer;font-size:.7rem">Cancel</button>';
-    html+='</div>';
-    
-    overlay.innerHTML=html;
-    document.body.appendChild(overlay);
-    
-    overlay.querySelectorAll('[data-diff]').forEach(function(btn){
-      btn.addEventListener('click',function(){
-        var selected=parseInt(this.getAttribute('data-diff'),10);
-        overlay.remove();
-        resolve(selected);
-      });
-    });
-    
-    document.getElementById('mpDiffCancel').addEventListener('click',function(){
+function showDifficultySelectorForHost(callback){
+  var overlay = document.createElement('div');
+  overlay.id = 'mpDiffSelector';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.95);backdrop-filter:blur(8px)';
+  
+  var html = '<div style="background:linear-gradient(160deg,#0a0a18,#101020);border:1px solid #7c5cff;border-radius:20px;padding:20px;max-width:340px;width:90%;text-align:center">';
+  html += '<h3 style="color:#fff;margin-bottom:8px">🎮 选择难度</h3>';
+  html += '<p style="color:#aaa;font-size:12px;margin-bottom:16px">你是房主，请选择游戏难度</p>';
+  html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">';
+  
+  var diffs = [
+    {name:'简单', emoji:'🌱', color:'#22c55e', val:0},
+    {name:'普通', emoji:'⚔️', color:'#3b82f6', val:1},
+    {name:'困难', emoji:'🔥', color:'#f97316', val:2},
+    {name:'极难', emoji:'💀', color:'#ef4444', val:3},
+    {name:'地狱', emoji:'👹', color:'#9333ea', val:4},
+    {name:'不可能', emoji:'☠️', color:'#dc2626', val:5}
+  ];
+  
+  diffs.forEach(function(d){
+    html += '<button data-diff="' + d.val + '" style="padding:12px;border-radius:10px;background:rgba(255,255,255,0.05);border:1px solid ' + d.color + '33;color:' + d.color + ';cursor:pointer;font-size:14px;font-weight:bold">' + d.emoji + ' ' + d.name + '</button>';
+  });
+  
+  html += '</div><button id="mpDiffCancel" style="margin-top:16px;padding:8px 20px;background:rgba(255,255,255,0.1);border:none;border-radius:8px;color:#aaa;cursor:pointer">取消</button>';
+  html += '</div>';
+  
+  overlay.innerHTML = html;
+  document.body.appendChild(overlay);
+  
+  overlay.querySelectorAll('[data-diff]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var diff = parseInt(this.getAttribute('data-diff'), 10);
       overlay.remove();
-      resolve(null);
+      callback(diff);
     });
+  });
+  
+  document.getElementById('mpDiffCancel').addEventListener('click', function(){
+    overlay.remove();
+    callback(null);
   });
 }
 
-function showWaitingForHostDifficulty(){
-  var overlay=document.getElementById('mpWaitingDifficulty');
-  if(overlay) overlay.remove();
+function showWaitingForHostDifficulty(callback){
+  var overlay = document.createElement('div');
+  overlay.id = 'mpWaitingDifficulty';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.9);backdrop-filter:blur(8px)';
   
-  overlay=document.createElement('div');
-  overlay.id='mpWaitingDifficulty';
-  overlay.style.cssText='position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px)';
-  overlay.innerHTML='<div style="background:linear-gradient(160deg,#060610,#0a0612,#060610);border:1px solid rgba(124,92,255,0.3);border-radius:16px;padding:1.5rem;text-align:center">' +
-    '<div style="font-size:2rem;margin-bottom:0.5rem">⏳</div>' +
-    '<h3 style="font-family:\'Orbitron\',sans-serif;font-size:1rem;margin-bottom:0.5rem;color:#fff">Waiting for host...</h3>' +
-    '<p style="font-size:.7rem;color:#aaa">The host is selecting difficulty level</p>' +
-    '</div>';
+  var html = '<div style="background:linear-gradient(160deg,#0a0a18,#101020);border:1px solid #7c5cff;border-radius:20px;padding:24px;max-width:300px;width:90%;text-align:center">';
+  html += '<div style="font-size:40px;margin-bottom:8px">⏳</div>';
+  html += '<h3 style="color:#fff;margin-bottom:8px">等待房主选择难度...</h3>';
+  html += '<p style="color:#aaa;font-size:12px">房主正在选择游戏难度，请稍候</p>';
+  html += '</div>';
+  
+  overlay.innerHTML = html;
   document.body.appendChild(overlay);
+  
+  // 监听难度变化
+  var rtdb = getRtdb();
+  if(rtdb && mpMyTable){
+    var diffRef = rtdb.ref('game_states/table_' + mpMyTable);
+    var timeout = setTimeout(function(){
+      if(overlay.parentNode) overlay.remove();
+      callback(null);
+    }, 30000);
+    
+    diffRef.once('value', function(snap){
+      clearTimeout(timeout);
+      var data = snap.val();
+      if(data && data.difficulty !== undefined){
+        overlay.remove();
+        callback(data.difficulty);
+      } else {
+        overlay.remove();
+        callback(null);
+      }
+    }).catch(function(){
+      clearTimeout(timeout);
+      overlay.remove();
+      callback(null);
+    });
+  } else {
+    setTimeout(function(){
+      overlay.remove();
+      callback(1); // 默认普通难度
+    }, 1000);
+  }
 }
 
 function proceedWithGameStart(tableNum,uid1,uid2,name1,name2){
@@ -2645,15 +2782,15 @@ function proceedWithGameStart(tableNum,uid1,uid2,name1,name2){
   if(waitingEl) waitingEl.remove();
   
   var myUid=getMyUid();
-  /* Determine my role based on mode and seat */
+  // 确定角色
   if(mpMode==='coop'){
-    savedMode='defense'; /* Both defend in co-op */
+    savedMode='defense';  // 合作模式都是防御方
   }else{
-    /* Versus: seat 1 = defender, seat 2 = attacker */
+    // 对战模式：座位1 = 防御方，座位2 = 攻击方
     if(myUid===uid1) savedMode='defense';
     else savedMode='attack';
   }
-  console.log('[MP] My role:',savedMode,'My UID:',myUid,'mpMode:',mpMode);
+  console.log('[MP] 我的角色:', savedMode, '对手:', mpOpponentName);
 
   /* Determine host status and opponent */
   mpIsHost=(myUid===uid1);
@@ -5473,6 +5610,10 @@ async function validateLicense(){
   try{
     const resp=await fetch('https://api.lemonsqueezy.com/v1/licenses/activate',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded','Accept':'application/json'},body:'license_key='+encodeURIComponent(code)+'&instance_name=PromptMatrix-'+Date.now().toString(36)});
     const data=await resp.json();
+    
+    // ========== 调试：打印完整返回数据 ==========
+    console.log('[ValidateLicense] Full response:', JSON.stringify(data, null, 2));
+    
     if(data.activated||data.valid){
       // Double-check: verify key wasn't used while we were validating
       if(isGameKeyUsed(code)){
@@ -5480,10 +5621,54 @@ async function validateLicense(){
         document.getElementById('purchaseMsg').style.color='#ff4444';
         return;
       }
-      // Determine credits based on product_id
-      let credits=1200; // default: $1.99 product
-      const pid=(data.meta&&data.meta.product_id)||data.product_id||0;
-      if(pid===1092744||String(pid)==='1092744')credits=3800; // $4.99 product
+      
+      // ========== 多种方式获取 product_id ==========
+      let productId = 0;
+      
+      // 方式1: data.meta.product_id
+      if(data.meta && data.meta.product_id) productId = data.meta.product_id;
+      // 方式2: data.license_key.product_id
+      else if(data.license_key && data.license_key.product_id) productId = data.license_key.product_id;
+      // 方式3: data.product_id
+      else if(data.product_id) productId = data.product_id;
+      
+      console.log('[ValidateLicense] Detected product_id:', productId);
+      
+      // ========== 积分判定（核心修复） ==========
+      let credits = 0;
+      
+      // 3800 积分产品的 product_id（正式 + 测试）
+      const CREDIT_3800_IDS = [1092744, 1136121];  // 正式 3800, 测试 3800
+      const CREDIT_1200_IDS = [1091714, 1136120];  // 正式 1200, 测试 1200
+      
+      if(CREDIT_3800_IDS.includes(productId)){
+        credits = 3800;
+        console.log('[ValidateLicense] → 3800 credits detected!');
+      } else if(CREDIT_1200_IDS.includes(productId)){
+        credits = 1200;
+        console.log('[ValidateLicense] → 1200 credits detected');
+      }
+      
+      // 如果 product_id 匹配失败，尝试从 license_key 名称推断
+      if(credits === 0 && data.license_key && data.license_key.product_name){
+        const productName = data.license_key.product_name.toLowerCase();
+        if(productName.includes('3800') || productName.includes('credits')){
+          credits = 3800;
+          console.log('[ValidateLicense] → Inferred 3800 from name:', productName);
+        } else if(productName.includes('1200')){
+          credits = 1200;
+          console.log('[ValidateLicense] → Inferred 1200 from name');
+        }
+      }
+      
+      // 如果还是 0，默认给 1200
+      if(credits === 0){
+        credits = 1200;
+        console.log('[ValidateLicense] → Defaulting to 1200');
+      }
+      
+      console.log('[ValidateLicense] Final credits amount:', credits);
+      
       markGameKeyUsed(code);
       setUnlockCredits(getUnlockCredits()+credits);
       document.getElementById('purchaseMsg').textContent=`✅ Valid! +${credits.toLocaleString()} credits added!`;
