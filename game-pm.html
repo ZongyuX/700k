@@ -2029,12 +2029,15 @@ function initLobby(){
 /* Render 50 empty tables */
 function renderLobbyTables(){
   var container=document.getElementById('lobbyTables');
-  if(!container)return;
+  if(!container) return;
   var html='';
-  for(var i=1;i<=50;i++){
-    html+='<div class="lobby-table" id="table_'+i+'" onclick="sitDown('+i+')" style="background:rgba(255,255,255,0.03);border-radius:10px;padding:8px;margin-bottom:6px;display:flex;justify-content:space-between;cursor:pointer">';
-    html+='<span>🏆 桌子 '+i+'</span>';
-    html+='<span id="seatStatus_'+i+'" style="font-size:11px;color:#aaa">🪑 空位</span>';
+  for(var i=1;i<=30;i++){
+    html+='<div class="lobby-table" id="table_'+i+'" onclick="sitDown('+i+')" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px;margin-bottom:8px;cursor:pointer;transition:all 0.2s">';
+    html+='<div style="display:flex;justify-content:space-between;align-items:center">';
+    html+='<span style="font-weight:bold;color:#aaa">🏆 桌子 '+i+'</span>';
+    html+='<span id="seatStatus_'+i+'" style="font-size:11px;color:#ffd700">🪑 空位</span>';
+    html+='</div>';
+    html+='<div id="seatDetail_'+i+'" style="font-size:10px;color:#888;margin-top:4px"></div>';
     html+='</div>';
   }
   container.innerHTML=html;
@@ -2213,72 +2216,48 @@ function getMyName(){
 }
 
 /* Sit down at a table seat */
-function sitDown(tableNum,seatNum){
+function sitDown(tableNum){
   var myUid=getMyUid();
-  console.log('[MP] sitDown called, myUid:', myUid);
-
-  if(!myUid){
-    alert('Unable to identify player. Please refresh the page.');
-    return;
-  }
-
-  if(mpMyTable>0&&mpMyTable!==tableNum){
-    toast('Leave your current table first!','info');
-    return;
-  }
-
+  var myName=getMyName();
+  if(!myUid){toast('无法识别玩家，请刷新页面','info');return;}
+  if(mpMyTable>0&&mpMyTable!==tableNum){toast('请先离开当前桌子','info');return;}
   var rtdb=getRtdb();
-  console.log('[MP] rtdb instance:', rtdb);
-
-  if(!rtdb){
-    toast('Multiplayer requires login. Please sign in from the PromptRunic app, or play solo mode.','info');
-    startSoloWhileWaiting(tableNum,seatNum);
-    return;
-  }
-
+  if(!rtdb){toast('联机功能不可用','info');return;}
   var tableRef=rtdb.ref('lobby/'+mpMode+'/tables/'+tableNum);
-  console.log('[MP] tableRef path:', 'lobby/'+mpMode+'/tables/'+tableNum);
-
-  tableRef.once('value').then(function(snap){
-    console.log('[MP] table data:', snap.val());
-    var data=snap.val()||{};
-    var seat1=data.seat1||null;
-    var seat2=data.seat2||null;
-
-    if(seatNum===1&&seat1&&seat1.uid!==myUid){
-      toast('Seat 1 is occupied!','info');
+  tableRef.transaction(function(currentData){
+    if(!currentData) currentData={};
+    var seat1=currentData.seat1||null;
+    var seat2=currentData.seat2||null;
+    if((seat1&&seat1.uid===myUid)||(seat2&&seat2.uid===myUid)){
+      mpMyTable=tableNum;
+      if(seat1&&seat1.uid===myUid) mpMySeat=1;
+      else mpMySeat=2;
+      return currentData;
+    }
+    if(!seat1){
+      currentData.seat1={uid:myUid,name:myName,ready:false};
+      mpMySeat=1; mpMyTable=tableNum;
+    }else if(!seat2){
+      currentData.seat2={uid:myUid,name:myName,ready:false};
+      mpMySeat=2; mpMyTable=tableNum;
+    }else{
+      toast('桌子已满','info');
       return;
     }
-    if(seatNum===2&&seat2&&seat2.uid!==myUid){
-      toast('Seat 2 is occupied!','info');
-      return;
+    currentData.mode=mpMode;
+    currentData.updatedAt=Date.now();
+    return currentData;
+  },function(error,committed,snapshot){
+    if(error){
+      console.error('[MP] 坐下失败:',error);
+      toast('坐下失败: '+error.message,'info');
+    }else if(committed){
+      console.log('[MP] 成功坐下，桌子:',tableNum,'座位:',mpMySeat);
+      tableRef.child('seat'+mpMySeat).onDisconnect().remove();
+      showTableRoom(tableNum);
+    }else{
+      toast('坐下失败，请重试','info');
     }
-
-    var update={};
-    update['seat'+seatNum]={uid:myUid,name:getMyName(),ready:false};
-    update['mode']=mpMode;
-    update['updatedAt']=Date.now();
-
-    console.log('[MP] updating table:', update);
-    tableRef.update(update).then(function(){
-      console.log('[MP] Successfully joined table',tableNum,'seat',seatNum);
-    }).catch(function(e){
-      console.error('[MP] Failed to join table:', e);
-      toast('Could not join table: '+(e.message||'write failed'),'info');
-      mpMyTable=-1; mpMySeat=-1;
-    });
-
-    mpMyTable=tableNum;
-    mpMySeat=seatNum;
-    mpIsReady=false;
-
-    tableRef.child('seat'+seatNum).onDisconnect().remove();
-    /* Show the table room view so the player can see who's seated and wait */
-    showTableRoom(tableNum);
-  }).catch(function(e){
-    console.error('[MP] sitDown error details:', e);
-    toast('Could not join table: '+(e.message||'unknown error'),'info');
-    startSoloWhileWaiting(tableNum,seatNum);
   });
 }
 
@@ -2287,117 +2266,59 @@ function showTableRoom(tableNum){
   var rtdb=getRtdb();
   if(!rtdb) return;
   var tableRef=rtdb.ref('lobby/'+mpMode+'/tables/'+tableNum);
-  
-  /* Create/update room overlay */
-  var roomEl=document.getElementById('tableRoomView');
-  if(!roomEl){
-    roomEl=document.createElement('div');
-    roomEl.id='tableRoomView';
-    roomEl.style.cssText='position:fixed;inset:0;z-index:89;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(160deg,#060610,#0a0612,#060610);overflow:hidden';
-    document.body.appendChild(roomEl);
+  var roomDiv=document.getElementById('tableRoomView');
+  if(!roomDiv){
+    roomDiv=document.createElement('div');
+    roomDiv.id='tableRoomView';
+    roomDiv.style.cssText='position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.95);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center';
+    document.body.appendChild(roomDiv);
   }
-  roomEl.style.display='flex';
-  
-  /* Listen to this specific table for changes */
+  roomDiv.style.display='flex';
+  document.getElementById('multiplayerScreen').style.display='none';
+  function updateRoom(snap){
+    var data=snap.val()||{};
+    var seat1=data.seat1;
+    var seat2=data.seat2;
+    var myUid=getMyUid();
+    var s1Name=seat1?(seat1.name||'玩家'):'空位';
+    var s2Name=seat2?(seat2.name||'玩家'):'空位';
+    var s1Ready=seat1?seat1.ready:false;
+    var s2Ready=seat2?seat2.ready:false;
+    var s1IsMe=seat1&&seat1.uid===myUid;
+    var s2IsMe=seat2&&seat2.uid===myUid;
+    var modeName=mpMode==='coop'?'🤝 合作模式':'⚔️ 对战模式';
+    var html='<div style="background:linear-gradient(160deg,#0a0a18,#101020);border:1px solid rgba(124,92,255,0.3);border-radius:20px;padding:24px;max-width:400px;width:90%;text-align:center">';
+    html+='<h3 style="color:#fff;margin-bottom:8px">🏆 桌子 '+tableNum+'</h3>';
+    html+='<p style="color:#888;font-size:12px;margin-bottom:20px">'+modeName+'</p>';
+    // 座位1
+    html+='<div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:16px;margin-bottom:12px;border:1px solid '+(s1Ready?'#00ff88':'rgba(255,255,255,0.1)')+'">';
+    html+='<div style="font-size:12px;color:#aaa">座位 1</div>';
+    html+='<div style="font-size:18px;font-weight:bold;margin:8px 0">'+s1Name+(s1IsMe?' <span style="color:#00ff88">(你)</span>':'')+'</div>';
+    if(s1Ready) html+='<div style="color:#00ff88;font-size:12px">✅ 已准备</div>';
+    else if(s1IsMe) html+='<button onclick="toggleReady('+tableNum+')" style="margin-top:8px;padding:8px 24px;background:linear-gradient(135deg,#ffd700,#ffaa00);border:none;border-radius:8px;color:#000;font-weight:bold;cursor:pointer">✋ 准备</button>';
+    else if(!seat1) html+='<div style="color:#888;font-size:12px">等待玩家</div>';
+    html+='</div>';
+    // VS
+    html+='<div style="font-size:14px;color:#7c5cff;margin:8px 0">'+(mpMode==='coop'?'🤝 合作':'⚔️ VS')+'</div>';
+    // 座位2
+    html+='<div style="background:rgba(255,255,255,0.05);border-radius:12px;padding:16px;margin-bottom:20px;border:1px solid '+(s2Ready?'#00ff88':'rgba(255,255,255,0.1)')+'">';
+    html+='<div style="font-size:12px;color:#aaa">座位 2</div>';
+    html+='<div style="font-size:18px;font-weight:bold;margin:8px 0">'+s2Name+(s2IsMe?' <span style="color:#00ff88">(你)</span>':'')+'</div>';
+    if(s2Ready) html+='<div style="color:#00ff88;font-size:12px">✅ 已准备</div>';
+    else if(s2IsMe) html+='<button onclick="toggleReady('+tableNum+')" style="margin-top:8px;padding:8px 24px;background:linear-gradient(135deg,#ffd700,#ffaa00);border:none;border-radius:8px;color:#000;font-weight:bold;cursor:pointer">✋ 准备</button>';
+    else if(!seat2) html+='<div style="color:#888;font-size:12px">等待玩家</div>';
+    html+='</div>';
+    // 离开按钮
+    html+='<button onclick="leaveTable('+tableNum+')" style="margin-top:8px;padding:8px 20px;background:rgba(255,100,100,0.2);border:1px solid rgba(255,100,100,0.5);border-radius:8px;color:#ff6666;cursor:pointer">🚪 离开桌子</button>';
+    html+='</div>';
+    roomDiv.innerHTML=html;
+  }
   if(window._tableRoomListener){
-    try{ rtdb.ref('lobby/'+mpMode+'/tables/'+window._tableRoomTable).off('value',window._tableRoomListener); }catch(e){}
+    try{ rtdb.ref('lobby/'+mpMode+'/tables/'+(window._tableRoomTable||0)).off('value',window._tableRoomListener); }catch(e){}
   }
   window._tableRoomTable=tableNum;
-  window._tableRoomListener=tableRef.on('value',function(snap){
-    var data=snap.val()||{};
-    var seat1=data.seat1||null;
-    var seat2=data.seat2||null;
-    var s1Ready=seat1&&seat1.ready;
-    var s2Ready=seat2&&seat2.ready;
-    var bothReady=s1Ready&&s2Ready&&seat1&&seat2;
-    var isFull=seat1&&seat2;
-    var amSeated=(seat1&&seat1.uid===getMyUid())||(seat2&&seat2.uid===getMyUid());
-    var onlyMe=amSeated&&!isFull;
-    
-    /* Get avatar SVGs */
-    var s1Svg='',s2Svg='';
-    try{
-      if(window.parent&&window.parent.PPGame&&window.parent.PPGame.avatarSVG){
-        /* Try to get avatar from game state - default to 0 for now */
-        s1Svg=seat1?'<div style="width:48px;height:48px;border-radius:12px;overflow:hidden;border:2px solid '+(s1Ready?'#00ff88':'#50b4ff')+'">'+window.parent.PPGame.avatarSVG(0)+'</div>':'';
-        s2Svg=seat2?'<div style="width:48px;height:48px;border-radius:12px;overflow:hidden;border:2px solid '+(s2Ready?'#00ff88':'#ff9650')+'">'+window.parent.PPGame.avatarSVG(0)+'</div>':'';
-      }
-    }catch(e){}
-    
-    var modeLabel=mpMode==='coop'?'🤝 Co-op':'⚔️ Versus';
-    var modeColor=mpMode==='coop'?'#50b4ff':'#ff5050';
-    
-    var h='<div style="text-align:center;position:relative;z-index:10;max-width:400px;width:90%">';
-    h+='<div style="font-family:\'Orbitron\',sans-serif;font-size:1.2rem;font-weight:700;color:#888;letter-spacing:.1em;margin-bottom:.3rem">TABLE '+tableNum+'</div>';
-    h+='<div style="font-size:.7rem;padding:.2rem .6rem;border-radius:4px;background:'+(mpMode==='coop'?'rgba(80,180,255,.15)':'rgba(255,80,80,.15)')+';color:'+modeColor+';display:inline-block;margin-bottom:1.5rem">'+modeLabel+'</div>';
-    
-    /* Seats display */
-    h+='<div style="display:flex;gap:1.5rem;justify-content:center;margin-bottom:1.5rem">';
-    
-    /* Seat 1 */
-    h+='<div style="background:rgba(255,255,255,.03);border:1px solid '+(seat1?(s1Ready?'rgba(0,255,136,.4)':'rgba(80,180,255,.3)'):'rgba(255,255,255,.08)')+';border-radius:12px;padding:1.2rem 1.5rem;min-width:140px;text-align:center">';
-    h+='<div style="font-size:.55rem;color:#888;margin-bottom:.5rem">SEAT 1</div>';
-    if(seat1){
-      h+='<div style="font-size:1.5rem;margin-bottom:.3rem">👤</div>';
-      h+='<div style="font-size:.75rem;color:'+(s1Ready?'#00ff88':'#50b4ff')+';font-weight:700;margin-bottom:.3rem">'+escMp(seat1.name)+'</div>';
-      if(s1Ready) h+='<div style="font-size:.55rem;color:#00ff88">✅ Ready</div>';
-      else if(seat1.uid===getMyUid()) h+='<button onclick="toggleReady('+tableNum+')" style="margin-top:.3rem;padding:5px 16px;border-radius:6px;background:linear-gradient(135deg,#ffd700,#ffaa00);color:#050508;font-size:.6rem;font-weight:700;cursor:pointer;border:none;font-family:\'Orbitron\',sans-serif;letter-spacing:.05em">✋ READY</button>';
-    }else{
-      h+='<div style="font-size:1.5rem;margin-bottom:.3rem;opacity:.3">🪑</div>';
-      h+='<div style="font-size:.65rem;color:#555">Empty</div>';
-    }
-    h+='</div>';
-    
-    /* VS / & divider */
-    h+='<div style="display:flex;align-items:center;font-family:\'Orbitron\',sans-serif;font-size:1rem;font-weight:700;color:'+(modeColor)+';opacity:.5">'+(mpMode==='coop'?'&':'VS')+'</div>';
-    
-    /* Seat 2 */
-    h+='<div style="background:rgba(255,255,255,.03);border:1px solid '+(seat2?(s2Ready?'rgba(0,255,136,.4)':'rgba(255,150,80,.3)'):'rgba(255,255,255,.08)')+';border-radius:12px;padding:1.2rem 1.5rem;min-width:140px;text-align:center">';
-    h+='<div style="font-size:.55rem;color:#888;margin-bottom:.5rem">SEAT 2</div>';
-    if(seat2){
-      h+='<div style="font-size:1.5rem;margin-bottom:.3rem">👤</div>';
-      h+='<div style="font-size:.75rem;color:'+(s2Ready?'#00ff88':'#ff9650')+';font-weight:700;margin-bottom:.3rem">'+escMp(seat2.name)+'</div>';
-      if(s2Ready) h+='<div style="font-size:.55rem;color:#00ff88">✅ Ready</div>';
-      else if(seat2.uid===getMyUid()) h+='<button onclick="toggleReady('+tableNum+')" style="margin-top:.3rem;padding:5px 16px;border-radius:6px;background:linear-gradient(135deg,#ffd700,#ffaa00);color:#050508;font-size:.6rem;font-weight:700;cursor:pointer;border:none;font-family:\'Orbitron\',sans-serif;letter-spacing:.05em">✋ READY</button>';
-    }else{
-      h+='<div style="font-size:1.5rem;margin-bottom:.3rem;opacity:.3">🪑</div>';
-      h+='<div style="font-size:.65rem;color:#555">Empty</div>';
-    }
-    h+='</div>';
-    h+='</div>';
-    
-    /* Status and action buttons */
-    if(bothReady){
-      h+='<div style="font-size:.8rem;color:#00ff88;font-weight:700;animation:sPulse 1s ease-in-out infinite;margin-bottom:1rem">▶ STARTING GAME...</div>';
-      /* Trigger game start from table room listener too (backup for lobby listener) */
-      if(!_mpGameStarting && amSeated){
-        setTimeout(function(){
-          if(!_mpGameStarting && mpMyTable>0){
-            console.log('[MP] Table room listener triggering game start');
-            startMultiplayerGame(tableNum,
-              seat1.uid, seat2.uid,
-              seat1.name||'Player 1', seat2.name||'Player 2');
-          }
-        },500);
-      }
-    }else if(isFull){
-      h+='<div style="font-size:.7rem;color:#ffd700;margin-bottom:1rem">Waiting for both players to be ready...</div>';
-    }else if(onlyMe){
-      h+='<div style="font-size:.7rem;color:#888;margin-bottom:.8rem">⏳ Waiting for opponent...</div>';
-      h+='<button onclick="closeTableRoom();startSoloWhileWaiting('+tableNum+','+mpMySeat+')" style="padding:8px 24px;border-radius:8px;background:linear-gradient(135deg,#50b4ff,#7c5cff);color:#fff;font-size:.7rem;font-weight:700;cursor:pointer;border:none;font-family:\'Orbitron\',sans-serif;letter-spacing:.05em;margin-bottom:.5rem">🎮 Play Solo While Waiting</button>';
-    }
-    
-    /* Leave button */
-    if(amSeated){
-      h+='<div style="margin-top:.5rem"><button onclick="standUp('+tableNum+');closeTableRoom()" style="padding:6px 20px;border-radius:6px;background:rgba(255,100,100,.15);color:#ff6666;border:1px solid rgba(255,100,100,.3);cursor:pointer;font-size:.6rem;font-family:\'Orbitron\',sans-serif">✕ Leave Table</button></div>';
-    }
-    
-    h+='</div>';
-    roomEl.innerHTML=h;
-    
-    /* Hide the lobby list behind the room view */
-    document.getElementById('multiplayerScreen').style.display='none';
-  });
+  window._tableRoomListener=updateRoom;
+  tableRef.on('value',updateRoom);
 }
 
 /* Close the table room view and go back to lobby */
@@ -2425,29 +2346,38 @@ function standUp(tableNum){
   if(!rtdb)return;
   if(mpMySeat>0){
     rtdb.ref('lobby/'+mpMode+'/tables/'+tableNum+'/seat'+mpMySeat).remove();
-    /* Cancel the onDisconnect */
     rtdb.ref('lobby/'+mpMode+'/tables/'+tableNum+'/seat'+mpMySeat).onDisconnect().cancel();
   }
   mpMyTable=-1;mpMySeat=-1;mpIsReady=false;
-  /* Close table room view if open */
   closeTableRoom();
+}
+
+/* Leave a table (simplified) */
+function leaveTable(tableNum){
+  var rtdb=getRtdb();
+  if(rtdb&&mpMySeat>0){
+    rtdb.ref('lobby/'+mpMode+'/tables/'+tableNum+'/seat'+mpMySeat).remove()
+      .catch(function(e){ console.warn('[MP] 离开失败:',e); });
+  }
+  mpMyTable=-1; mpMySeat=-1; mpIsReady=false;
+  var roomDiv=document.getElementById('tableRoomView');
+  if(roomDiv) roomDiv.style.display='none';
+  document.getElementById('multiplayerScreen').style.display='flex';
 }
 
 /* Toggle ready state */
 function toggleReady(tableNum){
   var rtdb=getRtdb();
   if(!rtdb||mpMySeat<1){
-    console.warn('[MP] toggleReady failed: rtdb=',!!rtdb,'mpMySeat=',mpMySeat);
+    toast('无法准备，请重试','info');
     return;
   }
   mpIsReady=!mpIsReady;
-  console.log('[MP] Setting ready state to', mpIsReady, 'for seat', mpMySeat);
-  rtdb.ref('lobby/'+mpMode+'/tables/'+tableNum+'/seat'+mpMySeat+'/ready').set(mpIsReady).then(function(){
-    console.log('[MP] Ready state saved successfully');
-  }).catch(function(e){
-    console.error('[MP] Failed to set ready state:', e);
-    mpIsReady=!mpIsReady; /* Revert local state */
-    toast('Could not set ready state. Check connection.','info');
+  var ref=rtdb.ref('lobby/'+mpMode+'/tables/'+tableNum+'/seat'+mpMySeat+'/ready');
+  ref.set(mpIsReady).catch(function(e){
+    console.error('[MP] 设置准备状态失败:',e);
+    mpIsReady=!mpIsReady;
+    toast('设置失败: '+e.message,'info');
   });
 }
 
@@ -2457,32 +2387,44 @@ function listenToLobby(){
   var rtdb=getRtdb();
   if(!rtdb){
     var container=document.getElementById('lobbyTables');
-    if(container) container.innerHTML='<div style="color:#888;font-size:.7rem;text-align:center;padding:20px">Multiplayer requires login. Please sign in from the PromptRunic app, or play solo mode.</div>';
+    if(container) container.innerHTML='<div style="color:#888;text-align:center;padding:20px">联机功能不可用，请刷新页面</div>';
     return;
   }
   mpLobbyRef=rtdb.ref('lobby/'+mpMode+'/tables');
   mpLobbyListener=mpLobbyRef.on('value',function(snap){
     var data=snap.val()||{};
-    for(var i=1;i<=50;i++){ updateTableUI(i, data[i] || data[''+i] || {}); }
-    updateLobbyUI(data);
-    /* Check if my table has both players ready → start game */
-    if(mpMyTable>0 && !_mpGameStarting){
-      var tableData=data[mpMyTable]||data[''+mpMyTable];
-      if(tableData){
-        var s1=tableData.seat1;
-        var s2=tableData.seat2;
-        if(s1&&s2&&s1.ready&&s2.ready&&s1.uid&&s2.uid){
-          console.log('[MP] Both players ready! Starting game for table',mpMyTable);
-          /* Close table room view if open */
-          closeTableRoom();
-          /* If playing solo-while-waiting, notify and transition */
-          if(mpSoloWhileWaiting){
-            mpSoloWhileWaiting=false;
-            removeLobbyStatusBar();
-            toast('Opponent found! Starting multiplayer...','info');
-          }
-          startMultiplayerGame(mpMyTable,s1.uid,s2.uid,s1.name,s2.name);
+    for(var i=1;i<=30;i++){
+      var tableData=data[i]||data[''+i]||{};
+      var seat1=tableData.seat1;
+      var seat2=tableData.seat2;
+      var myUid=getMyUid();
+      var statusSpan=document.getElementById('seatStatus_'+i);
+      var detailSpan=document.getElementById('seatDetail_'+i);
+      if(statusSpan){
+        if(seat1&&seat2){
+          statusSpan.innerHTML='👥 已满'; statusSpan.style.color='#ff6666';
+        }else if(seat1||seat2){
+          statusSpan.innerHTML='👤 有人'; statusSpan.style.color='#00ff88';
+        }else{
+          statusSpan.innerHTML='🪑 空位'; statusSpan.style.color='#ffd700';
         }
+      }
+      if(detailSpan){
+        var s1Name=seat1?(seat1.name||'玩家'):'空';
+        var s2Name=seat2?(seat2.name||'玩家'):'空';
+        var s1Mark=(seat1&&seat1.uid===myUid)?' (你)':'';
+        var s2Mark=(seat2&&seat2.uid===myUid)?' (你)':'';
+        detailSpan.innerHTML='座位1: '+s1Name+s1Mark+'  |  座位2: '+s2Name+s2Mark;
+      }
+    }
+    updateLobbyUI(data);
+    if(mpMyTable>0&&!_mpGameStarting){
+      var tbl=data[mpMyTable]||data[''+mpMyTable];
+      if(tbl&&tbl.seat1&&tbl.seat2&&tbl.seat1.ready&&tbl.seat2.ready){
+        console.log('[MP] 双方已准备，开始游戏');
+        closeTableRoom();
+        if(mpSoloWhileWaiting){mpSoloWhileWaiting=false;removeLobbyStatusBar();toast('Opponent found! Starting multiplayer...','info');}
+        startMultiplayerGame(mpMyTable,tbl.seat1.uid,tbl.seat2.uid,tbl.seat1.name,tbl.seat2.name);
       }
     }
   });
@@ -2490,63 +2432,10 @@ function listenToLobby(){
 
 /* Update lobby UI with current data */
 function updateLobbyUI(data){
-  var container=document.getElementById('lobbyTables');
-  if(!container)return;
-  
-  console.log('[MP] Updating lobby UI with data:', data);
-  
-  for(var i=1;i<=50;i++){
-    var tableEl=document.getElementById('table_'+i);
-    if(!tableEl)continue;
-    var tableData=data[i]||data[''+i]||{};
-    
-    // 确保正确解析座位数据
-    var seat1=null;
-    var seat2=null;
-    
-    if(tableData.seat1 && tableData.seat1.uid){
-      seat1 = {
-        uid: tableData.seat1.uid,
-        name: tableData.seat1.name || 'Player',
-        ready: tableData.seat1.ready || false
-      };
-    }
-    if(tableData.seat2 && tableData.seat2.uid){
-      seat2 = {
-        uid: tableData.seat2.uid,
-        name: tableData.seat2.name || 'Player',
-        ready: tableData.seat2.ready || false
-      };
-    }
-    
-    var state = {
-      seat1: seat1,
-      seat2: seat2,
-      mode: tableData.mode || mpMode
-    };
-    
-    var newHTML = buildTableHTML(i, state);
-    var tempDiv = document.createElement('div');
-    tempDiv.innerHTML = newHTML;
-    var newInner = tempDiv.firstChild.innerHTML;
-    
-    if(tableEl.innerHTML !== newInner){
-      tableEl.innerHTML = newInner;
-      // 更新边框颜色
-      if(seat1 && seat2){
-        tableEl.style.borderColor = mpMode === 'coop' ? 'rgba(0,255,136,0.6)' : 'rgba(255,80,0,0.6)';
-      } else if(seat1 || seat2){
-        tableEl.style.borderColor = mpMode === 'coop' ? 'rgba(80,180,255,0.4)' : 'rgba(255,80,80,0.4)';
-      } else {
-        tableEl.style.borderColor = 'rgba(255,255,255,0.08)';
-      }
-    }
-  }
-  
-  var statusEl = document.getElementById('mpLobbyStatus');
+  var statusEl=document.getElementById('mpLobbyStatus');
   if(statusEl){
-    var totalPlayers = 0;
-    for(var i=1;i<=50;i++){
+    var totalPlayers=0;
+    for(var i=1;i<=30;i++){
       var t = data[i] || data[''+i];
       if(t){
         if(t.seat1 && t.seat1.uid) totalPlayers++;
@@ -2578,40 +2467,25 @@ var _parentFirebase=null;
 
 /* Get RTDB instance from parent */
 function getRtdb(){
-  // 方法1: 从父页面获取
+  // 优先从父页面获取 firebase 实例
   try{
-    if(window.parent&&window.parent.rtdb){
-      console.log('[MP] Using parent.rtdb');
-      return window.parent.rtdb;
-    }
-    if(window.parent&&window.parent.firebase&&window.parent.firebase.database){
-      console.log('[MP] Using parent.firebase.database()');
-      return window.parent.firebase.database();
-    }
-  }catch(e){ console.warn('[MP] parent access error:', e); }
-
-  // 方法2: 从当前窗口获取
-  try{
-    if(window.rtdb){
-      console.log('[MP] Using window.rtdb');
-      return window.rtdb;
-    }
-    if(window.firebase&&window.firebase.database){
-      console.log('[MP] Using window.firebase.database()');
-      return window.firebase.database();
-    }
-  }catch(e){ console.warn('[MP] window access error:', e); }
-
-  // 方法3: 尝试从父页面的全局 Firebase 实例获取
-  try{
-    if(window.parent&&window.parent.firebaseApp){
-      console.log('[MP] Using parent.firebaseApp');
-      return window.parent.firebaseApp.database();
+    if(window.parent&&window.parent.firebase){
+      var fb=window.parent.firebase;
+      if(fb.database) return fb.database();
     }
   }catch(e){}
-
-  console.error('[MP] No Firebase RTDB instance found!');
-  toast('Multiplayer requires login. Please sign in from the PromptRunic app.','info');
+  // 从当前窗口获取
+  try{
+    if(window.firebase&&window.firebase.database){
+      return window.firebase.database();
+    }
+  }catch(e){}
+  // 从全局变量获取
+  try{
+    if(window.rtdb) return window.rtdb;
+  }catch(e){}
+  console.error('[MP] 无法获取 RTDB 实例');
+  toast('联机功能需要 Firebase 支持，请刷新页面重试','info');
   return null;
 }
 
@@ -2901,65 +2775,43 @@ function proceedWithGameStart(tableNum,uid1,uid2,name1,name2){
 /* Sync local game state to Firebase RTDB periodically */
 function syncGameState(){
   var rtdb=getRtdb();
-  if(!rtdb||!mpGameId||!mpGameStateRef) return;
+  if(!rtdb||!mpGameId) return;
   if(gState!=='playing'||gameOver) return;
   
-  var myUid=getMyUid();
-  var now=Date.now();
+  var ch=getCurCh();
+  var pathLength=ch.path.length;
   
-  // 基础状态
   var gameState={
     hp:baseHP,
     maxHp:baseMaxHP,
     score:score,
     coins:coins,
     waveIndex:waveI,
-    chapterIndex:chI,
-    ready:true,
-    lastUpdate:now
+    gold:coins,
+    timestamp:Date.now()
   };
   
-  // 防御模式：同步塔楼信息
   if(gMode==='defense'){
-    gameState.towerCount=towers.filter(function(t){ return !t.dead && t.isP; }).length;
-    // 同步塔楼位置和类型（用于对方显示）
     gameState.towers=towers.filter(function(t){ return !t.dead && t.isP; }).map(function(t){
-      return {x:t.x,y:t.y,type:t.type,hp:t.hp};
+      return {x:t.x,y:t.y,type:t.type,hp:t.hp,maxHp:t.mhp,ench:t.ench};
     });
-    // 同步敌人信息
     gameState.enemies=enemies.filter(function(e){ return !e.dead; }).map(function(e){
-      return {type:e.type,x:e.x,y:e.y,hp:e.hp,pi:e.pi,pp:e.pp};
+      var percent=(e.pi+e.pp)/(pathLength-1);
+      return {type:e.type,hp:e.hp,maxHp:e.mhp,percent:percent};
     });
   }
   
-  // 攻击模式：同步敌方堡垒和己方怪物
   if(gMode==='attack'){
     gameState.enemyBaseHP=enemyBaseHP;
+    gameState.enemyBaseMaxHP=enemyBaseMaxHP;
     gameState.atkWave=atkWave;
     gameState.monsters=enemies.filter(function(e){ return !e.dead; }).map(function(e){
-      return {type:e.type,x:e.x,y:e.y,hp:e.hp,pi:e.pi,pp:e.pp};
+      var percent=(e.pi+e.pp)/(pathLength-1);
+      return {type:e.type,hp:e.hp,maxHp:e.mhp,percent:percent};
     });
   }
   
-  // 波次信息
-  var ch=getCurCh();
-  if(ch&&ch.waves){
-    gameState.waveTotal=ch.waves.length;
-    gameState.waveActive=waveActive;
-    gameState.btwnWaves=btwnWaves;
-  }
-  
-  // 同步到 Firebase
-  mpGameStateRef.child('players/'+myUid).update(gameState).catch(function(e){
-    console.warn('[MP] syncGameState error:',e);
-  });
-  
-  // 更新共享游戏状态
-  mpGameStateRef.update({
-    currentWave:Math.max(waveI,0),
-    gameStatus:'playing',
-    lastUpdate:now
-  }).catch(function(){});
+  rtdb.ref('mp_sync/'+mpGameId+'/'+getMyUid()).set(gameState);
 }
 
 /* Listen for opponent's state changes in real-time */
@@ -3057,42 +2909,169 @@ function setupMultiplayerSync(){
   if(!mpGameId) return;
   var rtdb = getRtdb();
   if(!rtdb) return;
-  // 每2秒同步状态
+  
+  // ========== 发送状态（每 0.5 秒） ==========
   setInterval(function(){
     if(gState !== 'playing' || gameOver) return;
-    var state = {
+    
+    var ch = getCurCh();
+    var pathLength = ch.path.length;
+    
+    var gameState = {
       hp: baseHP,
       maxHp: baseMaxHP,
       score: score,
-      waveIndex: waveI,
       coins: coins,
-      baseHP: (gMode === 'attack') ? enemyBaseHP : baseHP,
+      waveIndex: waveI,
+      chapterIndex: chI,
+      waveActive: waveActive,
+      btwnWaves: btwnWaves,
+      gold: coins,
       timestamp: Date.now()
     };
-    rtdb.ref('mp_sync/' + mpGameId + '/' + getMyUid()).set(state);
-  }, 2000);
-  // 监听对手状态
+    
+    // ===== 防御模式：同步塔楼 =====
+    if(gMode === 'defense'){
+      gameState.towers = towers.filter(function(t){ return !t.dead && t.isP; }).map(function(t){
+        return { x: t.x, y: t.y, type: t.type, hp: t.hp, maxHp: t.mhp, angle: t.angle, ench: t.ench.slice() };
+      });
+      gameState.enemies = enemies.filter(function(e){ return !e.dead; }).map(function(e){
+        var percent = (e.pi + e.pp) / (pathLength - 1);
+        return { type: e.type, hp: e.hp, maxHp: e.mhp, percent: Math.min(0.99, percent), col: e.col };
+      });
+    }
+    
+    // ===== 攻击模式：同步怪物和敌方堡垒 =====
+    if(gMode === 'attack'){
+      gameState.enemyBaseHP = enemyBaseHP;
+      gameState.enemyBaseMaxHP = enemyBaseMaxHP;
+      gameState.atkWave = atkWave;
+      gameState.monsters = enemies.filter(function(e){ return !e.dead; }).map(function(e){
+        var percent = (e.pi + e.pp) / (pathLength - 1);
+        return { type: e.type, hp: e.hp, maxHp: e.mhp, percent: Math.min(0.99, percent), col: e.col };
+      });
+    }
+    
+    rtdb.ref('mp_sync/' + mpGameId + '/' + getMyUid()).set(gameState);
+  }, 500);
+  
+  // ========== 监听对手状态 ==========
   rtdb.ref('mp_sync/' + mpGameId + '/' + mpOpponentUid).on('value', function(snap){
     var opp = snap.val();
     if(!opp) return;
     mpOpponentState = opp;
-    // 更新UI
-    var bar = document.getElementById('mpOpponentBar');
-    if(bar) bar.innerHTML = '⚔️ ' + escMp(mpOpponentName) + ' 血量: ' + (opp.hp||'?') + '/' + (opp.maxHp||'?');
-    // 对战模式：同步敌方堡垒
-    if(mpMode === 'versus'){
-      if(gMode === 'attack' && opp.baseHP !== undefined){
-        enemyBaseHP = opp.baseHP;
-        var fortBar = document.getElementById('fortHPBar');
-        if(fortBar) fortBar.style.width = (enemyBaseHP/enemyBaseMaxHP*100)+'%';
-        var fortText = document.getElementById('fortHPText');
-        if(fortText) fortText.innerHTML = enemyBaseHP+'/'+enemyBaseMaxHP;
+    var ch = getCurCh();
+    var pathLength = ch.path.length;
+    
+    // ===== 合作模式：合并对方状态 =====
+    if(mpMode === 'coop'){
+      if(opp.waveIndex !== undefined && opp.waveIndex > waveI){ waveI = opp.waveIndex; updUI(); }
+      if(opp.score !== undefined && opp.score > score){ score = opp.score; updUI(); }
+      if(opp.gold !== undefined && opp.gold > coins){ coins = opp.gold; updUI(); }
+      
+      if(gMode === 'defense' && opp.towers){
+        var myTowerIds = {};
+        towers.forEach(function(t){ if(t.isP) myTowerIds[t.x+','+t.y] = true; });
+        opp.towers.forEach(function(tower){
+          var key = tower.x+','+tower.y;
+          if(!myTowerIds[key]){
+            var newTower = mkTower(tower.x, tower.y, tower.type, true);
+            if(newTower){
+              newTower.hp = tower.hp || newTower.hp;
+              newTower.mhp = tower.maxHp || newTower.mhp;
+              newTower.ench = tower.ench || [];
+              if(newTower.ench.includes('surge')) newTower.range = TD[newTower.type].range * 1.5;
+              towers.push(newTower);
+            }
+          } else {
+            var existing = towers.find(function(t){ return t.x === tower.x && t.y === tower.y; });
+            if(existing && existing.hp > tower.hp) existing.hp = tower.hp;
+          }
+        });
       }
-      if(gMode === 'defense' && opp.waveIndex !== undefined){
-        // 同步波次等
+      
+      if(gMode === 'defense' && opp.enemies){
+        opp.enemies.forEach(function(enemy){
+          var pos = getPosFromPercent(ch.path, enemy.percent);
+          var exists = enemies.some(function(e){ return Math.abs(e.x - pos.x) < 30 && Math.abs(e.y - pos.y) < 30 && e.type === enemy.type; });
+          if(!exists && enemy.hp > 0){
+            var newEnemy = mkEnemy(enemy.type);
+            if(newEnemy){
+              newEnemy.x = pos.x; newEnemy.y = pos.y;
+              newEnemy.hp = enemy.hp; newEnemy.mhp = enemy.maxHp;
+              newEnemy.pi = Math.floor(enemy.percent * (pathLength - 1));
+              newEnemy.pp = (enemy.percent * (pathLength - 1)) - newEnemy.pi;
+              enemies.push(newEnemy);
+            }
+          }
+        });
       }
     }
+    
+    // ===== 对战模式：同步对方数据 =====
+    if(mpMode === 'versus'){
+      var bar = document.getElementById('mpOpponentBar');
+      if(bar) bar.innerHTML = '⚔️ ' + escMp(mpOpponentName) + ' ❤️ ' + (opp.hp||'?') + '/' + (opp.maxHp||'?');
+      
+      if(gMode === 'attack' && opp.towers){
+        mpOpponentTowers = opp.towers;
+        if(opp.hp !== undefined){
+          enemyBaseHP = opp.hp;
+          enemyBaseMaxHP = opp.maxHp;
+          var fortBar = document.getElementById('fortHPBar');
+          if(fortBar) fortBar.style.width = (enemyBaseHP/enemyBaseMaxHP*100)+'%';
+          var fortText = document.getElementById('fortHPText');
+          if(fortText) fortText.innerHTML = Math.floor(enemyBaseHP)+'/'+enemyBaseMaxHP;
+        }
+      }
+      
+      if(gMode === 'defense' && opp.monsters){
+        mpOpponentMonsters = opp.monsters;
+        opp.monsters.forEach(function(monster){
+          var pos = getPosFromPercent(ch.path, monster.percent);
+          var exists = enemies.some(function(e){ return Math.abs(e.x - pos.x) < 30 && Math.abs(e.y - pos.y) < 30 && e.type === monster.type; });
+          if(!exists && monster.hp > 0){
+            var newMonster = mkEnemy(monster.type);
+            if(newMonster){
+              newMonster.x = pos.x; newMonster.y = pos.y;
+              newMonster.hp = monster.hp; newMonster.mhp = monster.maxHp;
+              newMonster.pi = Math.floor(monster.percent * (pathLength - 1));
+              newMonster.pp = (monster.percent * (pathLength - 1)) - newMonster.pi;
+              enemies.push(newMonster);
+            }
+          }
+        });
+      }
+    }
+    
+    updUI();
   });
+}
+
+// 辅助函数：根据百分比获取路径上的坐标
+function getPosFromPercent(path, percent){
+  if(!path || path.length < 2) return {x: 400, y: 250};
+  var totalLen = 0;
+  var segLengths = [];
+  for(var i = 0; i < path.length - 1; i++){
+    var dx = path[i+1].x - path[i].x;
+    var dy = path[i+1].y - path[i].y;
+    var len = Math.sqrt(dx*dx + dy*dy);
+    segLengths.push(len);
+    totalLen += len;
+  }
+  var targetDist = percent * totalLen;
+  var accumulated = 0;
+  for(var j = 0; j < segLengths.length; j++){
+    if(targetDist <= accumulated + segLengths[j]){
+      var t = (targetDist - accumulated) / segLengths[j];
+      var x = path[j].x + (path[j+1].x - path[j].x) * t;
+      var y = path[j].y + (path[j+1].y - path[j].y) * t;
+      return {x: x, y: y};
+    }
+    accumulated += segLengths[j];
+  }
+  return {x: path[path.length-1].x, y: path[path.length-1].y};
 }
 
 /* Show opponent bar and my bar at bottom of screen */
@@ -4462,6 +4441,18 @@ function drTowers(){
     const eIcons={overclock:'⚡',abszero:'❄',nuke:'☢',fortify:'💪',barrier:'🛡',chain:'🔗',decay:'☠',surge:'↑'};
     tw.ench.forEach((en,i)=>{ctx.font='7px sans-serif';ctx.fillText(eIcons[en]||en[0],tw.x-16,tw.y-16+i*9)});
   });
+  // 渲染对手塔楼（对战模式，攻击方视角）
+  if(mpMode==='versus'&&gMode==='attack'&&mpOpponentTowers){
+    ctx.globalAlpha=0.6;
+    mpOpponentTowers.forEach(function(tw){
+      ctx.fillStyle='#ff4444';ctx.beginPath();ctx.arc(tw.x,tw.y,12,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#ff8888';ctx.font='bold 10px monospace';ctx.textAlign='center';ctx.fillText('E',tw.x,tw.y+4);ctx.textAlign='start';
+      var hpPercent=tw.hp/tw.maxHp;
+      ctx.fillStyle='#330000';ctx.fillRect(tw.x-15,tw.y-18,30,4);
+      ctx.fillStyle='#ff0000';ctx.fillRect(tw.x-15,tw.y-18,30*hpPercent,4);
+    });
+    ctx.globalAlpha=1;
+  }
 }
 
 function drEnemies(){
@@ -4756,6 +4747,20 @@ function drEnemies(){
     ctx.fillStyle=e.slowT>0?'#22d3ee':hr>.5?'#00ff44':hr>.25?'#ffaa00':'#ff2200';
     ctx.fillRect(bx,by,bw*hr,bh);
   });
+  // 渲染对手怪物（对战模式，防御方视角）
+  if(mpMode==='versus'&&gMode==='defense'&&mpOpponentMonsters){
+    ctx.globalAlpha=0.7;
+    var ch2=getCurCh();
+    mpOpponentMonsters.forEach(function(monster){
+      var pos=getPosFromPercent(ch2.path,monster.percent);
+      ctx.fillStyle='#ff6600';ctx.beginPath();ctx.arc(pos.x,pos.y,10,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#fff';ctx.font='bold 8px monospace';ctx.textAlign='center';ctx.fillText(monster.type.substring(0,2),pos.x,pos.y+3);ctx.textAlign='start';
+      var hpPercent2=monster.hp/monster.maxHp;
+      ctx.fillStyle='#330000';ctx.fillRect(pos.x-12,pos.y-14,24,3);
+      ctx.fillStyle='#ff8800';ctx.fillRect(pos.x-12,pos.y-14,24*hpPercent2,3);
+    });
+    ctx.globalAlpha=1;
+  }
 }
 
 function drProjs(){projs.forEach(p=>{if(p.dead)return;for(let i=0;i<p.trail.length-1;i++){const a=(i/p.trail.length)*.45;ctx.strokeStyle=h2r(p.col,a);ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(p.trail[i].x,p.trail[i].y);ctx.lineTo(p.trail[i+1].x,p.trail[i+1].y);ctx.stroke()}ctx.fillStyle=p.col;ctx.beginPath();ctx.arc(p.x,p.y,3,0,6.28);ctx.fill();const g=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,7);g.addColorStop(0,h2r(p.col,.35));g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(p.x,p.y,7,0,6.28);ctx.fill()})}
