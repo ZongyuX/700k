@@ -2178,12 +2178,12 @@
   <div id="tabContacts" style="flex:1;overflow-y:auto;display:none;padding:0">
     <!-- Friend Requests Section -->
     <div id="contactReqSection" style="border-bottom:1px solid var(--border)">
-      <div id="contactReqHeader" style="display:flex;align-items:center;gap:8px;padding:10px 14px;cursor:pointer;user-select:none;transition:background .15s" onclick="toggleContactReqSection()" onmouseenter="this.style.background='rgba(124,92,255,.08)'" onmouseleave="this.style.background=''">
-        <span style="font-size:12px;font-weight:700;color:var(--gold);pointer-events:none">📨 <span data-i18n="friends.requests">Friend Requests</span></span>
-        <span id="contactReqCount" style="font-size:11px;color:var(--muted);pointer-events:none"></span>
-        <span id="contactReqArrow" style="font-size:10px;color:var(--muted);transition:transform .2s;pointer-events:none;margin-left:auto">▼</span>
+      <div id="contactReqHeader" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;cursor:pointer" onclick="toggleContactReqSection()">
+        <span style="font-size:12px;font-weight:700;color:var(--gold)">📨 <span data-i18n="friends.requests">Friend Requests</span></span>
+        <span id="contactReqCount" style="font-size:11px;color:var(--muted)"></span>
+        <span id="contactReqArrow" style="font-size:10px;color:var(--muted);transition:.2s">▼</span>
       </div>
-      <div id="contactReqList" style="display:none;padding:0 14px 10px;max-height:240px;overflow-y:auto;transition:max-height .2s"></div>
+      <div id="contactReqList" style="display:none;padding:0 14px 10px;max-height:200px;overflow-y:auto"></div>
     </div>
     <!-- Pending Sent Section -->
     <div id="contactPendingSection" style="border-bottom:1px solid var(--border);display:none">
@@ -2301,7 +2301,7 @@ if(typeof window.PPI18n==='undefined'){
       isZh:function(){return _lang==='zh';},
       isEn:function(){return _lang==='en';},
       isEs:function(){return _lang==='es';},
-      applyLang:function(l){if(l)this.setLang(l);var els=document.querySelectorAll('[data-i18n]');for(var i=0;i<els.length;i++){var el=els[i],k=el.getAttribute('data-i18n');if(!k)continue;var v=this.t(k);if(v&&v!==k){var a=el.getAttribute('data-i18n-attr');if(a==='placeholder')el.placeholder=v;else if(a==='html')el.innerHTML=v;else{var hs=el.querySelector('.btn-hide-sm');if(hs){hs.textContent=' '+v;}else{el.textContent=v;}}}}document.documentElement.lang=_lang;},
+      applyLang:function(l){if(l)this.setLang(l);var els=document.querySelectorAll('[data-i18n]');for(var i=0;i<els.length;i++){var el=els[i],k=el.getAttribute('data-i18n');if(!k)continue;var v=this.t(k);if(v&&v!==k){var a=el.getAttribute('data-i18n-attr');if(a==='placeholder')el.placeholder=v;else if(a==='html')el.innerHTML=v;else{var hs=el.querySelector('.btn-hide-sm');if(hs){hs.textContent=' '+v;}else{el.textContent=v;}}}document.documentElement.lang=_lang;},
       registerDict:function(l,d){_dicts[l]=d;},
       buildSwitcher:function(){var bar=document.querySelector('.hbtns');var hdr=document.querySelector('header');if(!hdr)return;var wrapper=document.createElement('div');wrapper.className='lang-switch-wrapper';wrapper.id='langSwitchWrapper';var btn=document.createElement('button');btn.id='langSwitch';btn.className='lang-switch-btn';btn.title='Switch language / 切换语言 / Cambiar idioma';btn.innerHTML='<span class="lang-icon">'+_iconMap[_lang]+'</span><span class="lang-text">'+_labelMap[_lang]+'</span><span class="lang-arrow">▾</span>';var dd=document.createElement('div');dd.id='langDropdown';dd.className='lang-dropdown';_supported.forEach(function(l){var opt=document.createElement('button');opt.className='lang-option'+(l===_lang?' active':'');opt.setAttribute('data-lang',l);opt.innerHTML='<span class="lang-opt-icon">'+_iconMap[l]+'</span><span class="lang-opt-label">'+_labelMap[l]+'</span>';opt.addEventListener('click',function(e){e.stopPropagation();if(l!==_lang){PPI18n.setLang(l);PPI18n.applyLang(l);btn.innerHTML='<span class="lang-icon">'+_iconMap[l]+'</span><span class="lang-text">'+_labelMap[l]+'</span><span class="lang-arrow">▾</span>';dd.querySelectorAll('.lang-option').forEach(function(o){o.className='lang-option'+(o.getAttribute('data-lang')===l?' active':'');});if(typeof window._ppI18nRefresh==='function')window._ppI18nRefresh();}dd.classList.remove('show');});dd.appendChild(opt);});btn.addEventListener('click',function(e){e.stopPropagation();e.preventDefault();var r=btn.getBoundingClientRect();dd.style.top=(r.bottom+6)+'px';dd.style.left=Math.max(4,Math.min(r.left,window.innerWidth-160))+'px';dd.classList.toggle('show');});document.addEventListener('click',function(){dd.classList.remove('show');});wrapper.appendChild(btn);document.body.appendChild(dd);if(bar&&bar.parentNode===hdr){if(bar.nextSibling)hdr.insertBefore(wrapper,bar.nextSibling);else hdr.appendChild(wrapper);}else{hdr.appendChild(wrapper);}},
       fmtLocal:function(n){return Number(n).toLocaleString(_localeMap[_lang]||'en-US');},
@@ -2680,55 +2680,11 @@ async function handleAuthChange(user){
   evalProState();
   if(currentUser){
     try{ await loadUserDoc(currentUser); }catch(e){ console.warn('loadUserDoc',e); }
-    /* Sync public profile so other users can find this user by search */
-    syncPublicProfile();
-    /* Save user name/email to localStorage for game iframe access */
-    try{
-      var uname=currentUser.displayName||currentUser.email.split('@')[0]||'';
-      if(uname) localStorage.setItem('pp_user_name',uname);
-      if(currentUser.email) localStorage.setItem('pp_user_email',currentUser.email);
-      if(currentUser.uid) localStorage.setItem('pp_user_uid',currentUser.uid);
-    }catch(e){}
-    /* Start listening for conversations so unread badge updates in real-time */
-    listenForConversations();
-  }else{
-    /* Clear stored user info on sign-out */
-    try{ localStorage.removeItem('pp_user_name'); localStorage.removeItem('pp_user_email'); localStorage.removeItem('pp_user_uid'); }catch(e){}
-    /* Clear unread badge on sign-out */
-    _totalUnread=0;
-    updateUnreadBadge();
-    if(_convUnsubscribe){_convUnsubscribe();_convUnsubscribe=null;}
   }
   refreshAuthUI();
   refreshBadge();
   renderSidebar();
   renderGrid();
-}
-
-/* Sync the current user's profile to the pp_public collection so that
- * other users can discover them via the Find Friends search.
- * This writes a minimal public document: name, email, avatar, lvl. */
-function syncPublicProfile(){
-  if(!fbReady||!currentUser) return;
-  var name=currentUser.displayName||currentUser.email.split('@')[0]||'';
-  var email=currentUser.email||'';
-  var avatar=0, lvl=1, bio='';
-  if(window.PPGame&&PPGame.exportState){
-    var gs=PPGame.exportState();
-    avatar=gs.avatar||0;
-    lvl=gs.lvl||1;
-  }
-  /* Get bio from settings if available */
-  var bioEl=document.getElementById('setBio');
-  if(bioEl) bio=bioEl.value.trim();
-  db.collection('pp_public').doc(currentUser.uid).set({
-    name:name,
-    email:email,
-    avatar:avatar,
-    lvl:lvl,
-    bio:bio,
-    updatedAt:firebase.firestore.FieldValue.serverTimestamp()
-  },{merge:true}).catch(function(e){ console.warn('syncPublicProfile',e); });
 }
 
 function userDocRef(){ return db.collection('users').doc(currentUser.uid); }
@@ -2765,51 +2721,18 @@ async function loadUserDoc(user){
     [].concat(Array.isArray(d.favorites)?d.favorites:[], localFavs).forEach(id=>{
       if(merged.indexOf(id)<0) merged.push(id);
     });
-    // Stacking logic: take max of local and cloud
-    var localUntil = proUntil();
-    var cloudUntil = d.proUntil || 0;
-    var cloudIsPro = (!!d.pro && !!d.proCode);
-    var now = Date.now();
-
-    var untilM = 0;
-    var permanent = false;
-
-    if(cloudIsPro && cloudUntil === 0){
-      // Cloud lifetime Pro
-      permanent = true;
-      untilM = 0;
-    } else if(cloudIsPro && cloudUntil > now){
-      // Cloud timed Pro — stack
-      permanent = false;
-      untilM = Math.max(localUntil, cloudUntil);
-    } else if(localUntil > now){
-      // Local Pro
-      permanent = false;
-      untilM = localUntil;
-    } else {
-      permanent = false;
-      untilM = 0;
-    }
-
-    var trialUsedM = (!!d.trialUsed) || localTrialUsed;
-
-    const state = {
-      email: user.email || d.email || '', 
-      method: method,
-      favorites: merged, 
-      pro: permanent, 
-      proUntil: untilM,
-      trialUsed: trialUsedM,
-      marketingOptIn: (d.marketingOptIn !== false),
-      proCode: d.proCode || ''
+    const permanent=(!!d.pro && !!d.proCode)||localPermanent;
+    const untilM=permanent?0:Math.max(d.proUntil||0, localUntil||0);
+    const trialUsedM=(!!d.trialUsed)||localTrialUsed;
+    const state={
+      email:user.email||d.email||'', method:method,
+      favorites:merged, pro:permanent, proUntil:untilM, trialUsed:trialUsedM,
+      marketingOptIn:(d.marketingOptIn!==false)
     };
-
-    console.log('[loadUserDoc] Final proUntil:', untilM ? new Date(untilM).toLocaleString() : 'none', 'permanent:', permanent);
     try{
       await ref.set({
         email:state.email, displayName:user.displayName||d.displayName||'', method:method,
         favorites:merged, pro:permanent, proUntil:untilM, trialUsed:trialUsedM,
-        proCode:d.proCode||'',
         updatedAt:TS
       },{merge:true});
     }catch(e){ console.warn('user doc merge',e); }
@@ -2829,49 +2752,18 @@ async function loadUserDoc(user){
 
 /* push a user-doc state into the running app + local cache */
 function applyUserState(s){
-  favorites = Array.isArray(s.favorites) ? s.favorites.slice() : [];
+  favorites=Array.isArray(s.favorites)?s.favorites.slice():[];
   saveFavs();
-  
-  var localUntil = proUntil();
-  var cloudUntil = s.proUntil || 0;
-  var cloudIsPro = (s.pro && s.proCode);
-  var now = Date.now();
-  
-  console.log('[ApplyUserState] Local until:', localUntil ? new Date(localUntil).toLocaleString() : 'none', 'Cloud until:', cloudUntil ? new Date(cloudUntil).toLocaleString() : 'none');
-  
-  if(cloudIsPro && cloudUntil === 0){
-    // Cloud lifetime Pro
-    isPro = true;
-    proExpired = false;
-    lsSet('pp_pro_code', s.proCode);
-    lsDel('pp_pro_until');
-    console.log('[ApplyUserState] → Lifetime Pro from cloud');
-  } 
-  else if(cloudIsPro && cloudUntil > now){
-    // Cloud timed Pro — take max (stack)
-    isPro = true;
-    proExpired = false;
-    var maxUntil = Math.max(localUntil, cloudUntil);
-    lsSet('pp_pro_code', s.proCode);
-    lsSet('pp_pro_until', String(maxUntil));
-    console.log('[ApplyUserState] → Timed Pro from cloud, stacked until:', new Date(maxUntil).toLocaleString());
+  if(s.pro && s.proCode){
+    /* Pro is only valid if there's a valid pro code (purchased Pro).
+     * A pro:true without proCode means stale data — treat as Free. */
+    lsSet('pp_pro_code', s.proCode||lsGet('pp_pro_code')||'ACCOUNT'); lsDel('pp_pro_until'); isPro=true; proExpired=false;
+  }else if(s.proUntil && Date.now()<s.proUntil){
+    lsSet('pp_pro_code','TRIAL'); lsSet('pp_pro_until',String(s.proUntil)); isPro=true; proExpired=false;
+  }else{
+    lsDel('pp_pro_code'); lsDel('pp_pro_until'); isPro=false;
   }
-  else if(localUntil > now){
-    // Local Pro only, no cloud Pro
-    isPro = true;
-    proExpired = false;
-    console.log('[ApplyUserState] → Pro from local only');
-  }
-  else {
-    // No Pro
-    isPro = false;
-    proExpired = false;
-    lsDel('pp_pro_code');
-    lsDel('pp_pro_until');
-    console.log('[ApplyUserState] → No Pro');
-  }
-  
-  if(s.trialUsed) lsSet('pp_trial_used', '1');
+  if(s.trialUsed) lsSet('pp_trial_used','1');
 }
 
 /* save current favorites / Pro to the signed-in user's cloud doc */
@@ -2884,15 +2776,13 @@ function cloudSaveFavorites(){
 }
 function cloudSavePro(){
   if(!(fbReady && currentUser)) return;
-  var until = proUntil();
-  var now = Date.now();
   userDocRef().set({
-    pro: (until === 0 && isPro),      // Lifetime Pro flag
-    proUntil: until,                   // Expiry timestamp (0 = lifetime)
-    trialUsed: !!lsGet('pp_trial_used'),
-    proCode: lsGet('pp_pro_code') || '',
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-  }, {merge: true}).catch(e => console.warn('save pro', e));
+    pro:(proUntil()===0 && isPro),
+    proUntil:proUntil(),
+    trialUsed:!!lsGet('pp_trial_used'),
+    proCode:lsGet('pp_pro_code')||'',
+    updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+  },{merge:true}).catch(e=>console.warn('save pro',e));
 }
 /* gamification state -> cloud (debounced; called by fun.js) */
 let gameSaveT=null;
@@ -2944,27 +2834,19 @@ function doAuthSubmit(){
     lsSet('pp_optin', document.getElementById('authOptIn').checked?'1':'0');
     auth.createUserWithEmailAndPassword(email,pass).then(function(userCredential){
       var user = userCredential.user;
-      /* Set display name from email prefix if not provided */
-      var displayName = email.split('@')[0];
-      if(!user.displayName && displayName){
-        return user.updateProfile({displayName:displayName}).then(function(){
-          return user.sendEmailVerification();
-        });
-      }
       /* Send email verification */
-      return user.sendEmailVerification();
-    }).then(function(){
-      done();
-      /* Sign out the user — they must verify email first before logging in */
-      return auth.signOut();
-    }).then(function(){
+      return user.sendEmailVerification().then(function(){
+        done();
+        /* Sign out the user — they must verify email first before logging in */
+        return auth.signOut();
+      }).then(function(){
         m.className='msg ok';
         m.textContent='Registration successful! A verification email has been sent to ' + email + '. Please check your inbox and click the verification link before signing in.';
-        /* Show resend button and start cooldown */
+        /* Show resend button */
         var resendWrap = document.getElementById('resendVerifyWrap');
         if(resendWrap) resendWrap.style.display = 'block';
         document.getElementById('authEmail').value = email;
-        if(typeof startResendCountdown === 'function') startResendCountdown(60);
+      });
     }).catch(function(e){ done(); m.className='msg err'; m.textContent=authErrMsg(e); });
   }else{
     /* Step 2: On sign in, check if email is verified */
@@ -2991,36 +2873,9 @@ function doAuthSubmit(){
   }
 }
 
-/* Step 3: Resend verification email with countdown timer */
-var _resendCountdown = 0;
-var _resendCountdownTimer = null;
-function startResendCountdown(seconds){
-  _resendCountdown = seconds;
-  var btn = document.getElementById('resendVerifyBtn');
-  if(!btn) return;
-  btn.disabled = true;
-  btn.style.opacity = '0.5';
-  btn.style.cursor = 'not-allowed';
-  btn.textContent = 'Resend available in ' + _resendCountdown + 's';
-  if(_resendCountdownTimer) clearInterval(_resendCountdownTimer);
-  _resendCountdownTimer = setInterval(function(){
-    _resendCountdown--;
-    if(_resendCountdown <= 0){
-      clearInterval(_resendCountdownTimer);
-      _resendCountdownTimer = null;
-      btn.disabled = false;
-      btn.style.opacity = '1';
-      btn.style.cursor = 'pointer';
-      btn.textContent = 'Resend verification email';
-    }else{
-      btn.textContent = 'Resend available in ' + _resendCountdown + 's';
-    }
-  }, 1000);
-}
-
+/* Step 3: Resend verification email */
 function doResendVerification(){
   if(!fbReady) return;
-  if(_resendCountdown > 0) return; /* Still in cooldown */
   var email = document.getElementById('authEmail').value.trim();
   if(!email){ toast('Please enter your email address first.','info'); return; }
   var m=document.getElementById('authMsg'); m.style.display='block'; m.className='msg';
@@ -3039,17 +2894,9 @@ function doResendVerification(){
       return auth.signOut().then(function(){
         m.className='msg ok';
         m.textContent='Verification email has been resent to ' + email + '. Please check your inbox.';
-        /* Start 60-second cooldown timer */
-        startResendCountdown(60);
       });
     });
-  }).catch(function(e){
-    m.className='msg err'; m.textContent=authErrMsg(e);
-    /* If rate-limited by Firebase, start countdown */
-    if(e.code === 'auth/too-many-requests'){
-      startResendCountdown(60);
-    }
-  });
+  }).catch(function(e){ m.className='msg err'; m.textContent=authErrMsg(e); });
 }
 
 function doSocial(which){
@@ -3271,14 +3118,13 @@ function refreshBadge(){
     const until=proUntil();
     if(until>0){
       const days=Math.max(1,Math.ceil((until-Date.now())/86400000));
-      b.textContent='PRO '+days+'d';
+      b.textContent=PPI18n.t('plan.pro.days').replace('{d}',days);
     }else{
-      b.textContent='PRO';
+      b.textContent=PPI18n.t('plan.pro');
     }
     b.className='badge on';
   }else{
-    b.textContent='FREE';
-    b.className='badge';
+    b.textContent=PPI18n.t('plan.free'); b.className='badge';
   }
 }
 /* Category cache — rebuilt only when data changes */
@@ -3771,188 +3617,86 @@ function openActivate(){
   document.getElementById('actOverlay').classList.add('show');
 }
 async function redeemCode(){
-  var key = document.getElementById('codeInput').value.trim();
-  var m = document.getElementById('actMsg');
-  if(!key){
-    m.className = 'msg err';
-    m.textContent = 'Please enter your activation code.';
-    return;
-  }
+  const key=document.getElementById('codeInput').value.trim();
+  const m=document.getElementById('actMsg');
+  if(!key){ m.className='msg err'; m.textContent=PPI18n.t('activate.entercode'); return; }
 
+  /* Require login for Pro activation */
   if(!currentUser){
-    m.className = 'msg err';
-    m.textContent = 'Please sign in first to activate Pro.';
+    m.className='msg err';
+    m.textContent=PPI18n.t('activate.login.required');
     return;
   }
 
-  m.className = 'msg';
-  m.textContent = 'Checking activation code...';
-  m.style.display = 'block';
+  m.className='msg'; m.textContent=PPI18n.t('activate.checking'); m.style.display='block';
 
-  var promoKey = key.toUpperCase();
+  /* ---- Promo codes (advertising / marketing) ---- */
+  const promoKey = key.toUpperCase();
 
-  /* 促销码 */
+  /* ZXTEST- : test mode — permanent Pro unlock */
   if(promoKey.indexOf('ZXTEST-')===0){
     if(isPromoUsed('ZXTEST')) return promoAlreadyUsed(m,'ZXTEST');
     markPromoUsed('ZXTEST');
-    return unlock(key, m, 'Pro activated (test mode)');
+    return unlock(key,m,PPI18n.t('activate.testmode'));
   }
 
+  /* ZX14D- : free 14-day Pro trial */
   if(promoKey.indexOf('ZX14D-')===0){
     if(isPromoUsed('ZX14D')) return promoAlreadyUsed(m,'ZX14D');
     markPromoUsed('ZX14D');
-    return unlockTimed(key, m, 14, '14-day Pro trial activated');
+    return unlockTimed(key,m,14,PPI18n.t('activate.promo.14d'));
   }
 
+  /* ZX1M- : free 1-month (30-day) Pro */
   if(promoKey.indexOf('ZX1M-')===0){
     if(isPromoUsed('ZX1M')) return promoAlreadyUsed(m,'ZX1M');
     markPromoUsed('ZX1M');
-    return unlockTimed(key, m, 30, '1-month Pro activated');
+    return unlockTimed(key,m,30,PPI18n.t('activate.promo.1m'));
   }
 
+  /* ZX5000C- : add 5000 coins */
   if(promoKey.indexOf('ZX5000C-')===0){
     if(isPromoUsed('ZX5000C')) return promoAlreadyUsed(m,'ZX5000C');
     markPromoUsed('ZX5000C');
     if(window.PPGame && PPGame.addCoins) PPGame.addCoins(5000);
     m.className='msg ok';
-    m.textContent='5,000 coins added!';
+    m.textContent=PPI18n.t('activate.promo.5000c');
     return;
   }
 
   if(!window.PPLemon || !PPLemon.validateLicense){
-    m.className = 'msg err';
-    m.textContent = 'Payment system not ready';
+    m.className='msg err';
+    m.textContent=PPI18n.t('activate.notready');
     return;
   }
-
-  var alreadyUsed = await isLicenseUsed(key);
-  if(alreadyUsed){
-    m.className = 'msg err';
-    m.textContent = 'This activation code has already been used.';
-    return;
-  }
-
+  /* verify the license key with Lemon Squeezy */
   try{
-    console.log('[Activation] Validating key with Lemon Squeezy...');
-    var res = await PPLemon.validateLicense(key);
-    console.log('[Activation] Validation result:', JSON.stringify(res));
-
-    /* 金币类激活码 */
-    if(res.ok && res.kind === 'coins'){
-      await markLicenseUsed(key);
-      var coinAmount = res.amount || 1200;
-      
-      if(window.PPGame && PPGame.addCoins){
-        PPGame.addCoins(coinAmount);
-      }else{
-        var cur = parseInt(lsGet('pp_coins')||'0',10);
-        lsSet('pp_coins', String(cur + coinAmount));
-      }
-      
-      m.className = 'msg ok';
-      m.textContent = 'Successfully added ' + coinAmount.toLocaleString() + ' coins!';
-      if(typeof toast === 'function') toast('+' + coinAmount.toLocaleString() + ' coins!', 'info');
-      setTimeout(function(){ document.getElementById('actOverlay').classList.remove('show'); }, 2000);
-      return;
-    }
-
-    /* Pro 类激活码 */
-    if(res.ok && res.kind === 'pro'){
-      await markLicenseUsed(key);
+    const res=await PPLemon.validateLicense(key);
+    if(res.ok && res.kind==='pro'){
+      /* Lifetime (days===0) → permanent; subscription (days>0) → set expiry */
       if(res.days && res.days > 0){
-        return unlockTimed(key, m, res.days, 'Pro activated! ' + res.days + ' days access.');
+        return unlockTimed(key,m,res.days,PPI18n.t('activate.unlocked.sub').replace('{d}',res.days));
       }
-      return unlock(key, m, 'Pro activated! Lifetime access unlocked.');
+      return unlock(key,m,PPI18n.t('activate.unlocked'));
     }
-
-    /* 积分类激活码 */
-    if(res.ok && res.kind === 'credits'){
-      await markLicenseUsed(key);
-      var creditAmount = res.credits || 1200;
-      var curCreds = parseInt(lsGet('pm_unlock_credits')||'0',10);
-      lsSet('pm_unlock_credits', String(curCreds + creditAmount));
-      try{
-        var gameFrame = document.querySelector('iframe[src*="game-pm"]');
-        if(gameFrame && gameFrame.contentWindow && gameFrame.contentWindow.setUnlockCredits){
-          gameFrame.contentWindow.setUnlockCredits((gameFrame.contentWindow.getUnlockCredits ? gameFrame.contentWindow.getUnlockCredits() : 0) + creditAmount);
-        }
-      }catch(e){}
-      m.className = 'msg ok';
-      m.textContent = 'Successfully added ' + creditAmount + ' game credits!';
-      if(typeof toast === 'function') toast('+' + creditAmount + ' credits!', 'info');
-      setTimeout(function(){ document.getElementById('actOverlay').classList.remove('show'); }, 2000);
+    if(res.ok && res.kind==='coins'){
+      /* Coin codes should be redeemed in the 🪙 Coins panel (Arcade), not here.
+       * This Pro activation panel is only for Pro codes. */
+      m.className='msg err';
+      m.textContent='That is a coin code — please redeem it in the 🪙 Coins panel instead.';
       return;
     }
-
-    /* 未知类型 — 默认给 Pro 30天（重要修复！）*/
     if(res.ok){
-      console.warn('[Activation] Unknown kind, defaulting to 30-day Pro');
-      await markLicenseUsed(key);
-      return unlockTimed(key, m, 30, 'Pro activated (30 days) — code recognized.');
-    }
-
-    if(res.error === 'network'){
-      m.className = 'msg err';
-      m.textContent = 'Network error. Please try again.';
+      m.className='msg err'; m.textContent=PPI18n.t('activate.notpro');
       return;
     }
-
-    m.className = 'msg err';
-    m.textContent = 'Invalid activation code. Please check your code and try again.';
-    
+    if(res.error==='network'){
+      m.className='msg err'; m.textContent=PPI18n.t('activate.network');
+      return;
+    }
+    m.className='msg err'; m.textContent=PPI18n.t('activate.invalid');
   }catch(e){
-    console.error('[Activation] Error:', e);
-    m.className = 'msg err';
-    m.textContent = 'Activation failed: ' + (e.message || 'Unknown error');
-  }
-}
-
-/* ---- License key usage tracking (cross-account, cross-device) ---- */
-/* Check if activation code has already been used (localStorage + Firestore global collection) */
-async function isLicenseUsed(key){
-  var normalizedKey = key.trim().toUpperCase();
-
-  /* 1. Check localStorage (current browser) */
-  var usedKeys = [];
-  try{ usedKeys = JSON.parse(localStorage.getItem('pp_used_keys') || '[]'); }catch(e){ usedKeys = []; }
-  if(usedKeys.indexOf(normalizedKey) >= 0) return true;
-
-  /* 2. Check Firestore global collection (cross-account) */
-  if(fbReady && db){
-    try{
-      var doc = await db.collection('used_license_keys').doc(normalizedKey).get();
-      if(doc.exists) return true;
-    }catch(e){
-      console.warn('check used key error:', e);
-    }
-  }
-
-  return false;
-}
-
-/* Mark activation code as used (localStorage + Firestore global collection) */
-async function markLicenseUsed(key){
-  var normalizedKey = key.trim().toUpperCase();
-
-  /* 1. Write to localStorage */
-  var usedKeys = [];
-  try{ usedKeys = JSON.parse(localStorage.getItem('pp_used_keys') || '[]'); }catch(e){ usedKeys = []; }
-  if(usedKeys.indexOf(normalizedKey) < 0){
-    usedKeys.push(normalizedKey);
-    localStorage.setItem('pp_used_keys', JSON.stringify(usedKeys));
-  }
-
-  /* 2. Write to Firestore global collection (cross-account anti-reuse) */
-  if(fbReady && db && currentUser){
-    try{
-      await db.collection('used_license_keys').doc(normalizedKey).set({
-        key: normalizedKey,
-        usedBy: currentUser.uid,
-        usedAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-    }catch(e){
-      console.warn('mark used key error:', e);
-    }
+    m.className='msg err'; m.textContent=PPI18n.t('activate.network');
   }
 }
 
@@ -3986,41 +3730,25 @@ function promoAlreadyUsed(m,code){
 }
 
 function unlock(key,m,text){
-  lsSet('pp_pro_code', key);
-  lsDel('pp_pro_until');   /* permanent — no expiry */
-  isPro = true;
-  proExpired = false;
-  if(typeof cloudSavePro === 'function') cloudSavePro();
-  m.className = 'msg ok';
-  m.textContent = text;
-  if(typeof refreshBadge === 'function') refreshBadge();
-  if(typeof renderGrid === 'function') renderGrid();
-  setTimeout(function(){ document.getElementById('actOverlay').classList.remove('show'); }, 2000);
-  if(typeof toast === 'function') toast('Pro activated!', 'info');
+  lsSet('pp_pro_code',key); lsDel('pp_pro_until');   /* permanent — no expiry */
+  isPro=true; proExpired=false;
+  cloudSavePro();
+  m.className='msg ok'; m.textContent=text;
+  refreshBadge(); renderGrid();
+  setTimeout(()=>document.getElementById('actOverlay').classList.remove('show'),1400);
+  toast(PPI18n.t('activate.pro.unlocked'));
 }
-/* Timed unlock: Pro for N days, then reverts to Free.
- * If the user already has Pro time remaining, the new days are ADDED
- * on top of the existing expiry (stacking), not replaced. */
-function unlockTimed(key, m, days, text){
-  var existingUntil = proUntil();
-  var now = Date.now();
-  var base = (existingUntil > now) ? existingUntil : now;
-  var until = base + days * 86400000;
-  
-  console.log('[Pro] Stacking: existing=' + new Date(existingUntil).toLocaleString() + ', adding=' + days + 'd, new=' + new Date(until).toLocaleString());
-  
-  lsSet('pp_pro_code', key);
-  lsSet('pp_pro_until', String(until));
-  isPro = true;
-  proExpired = false;
-  if(typeof cloudSavePro === 'function') cloudSavePro();
-  m.className = 'msg ok';
-  var totalDays = Math.round((until - now) / 86400000);
-  m.textContent = text + ' (Total: ' + totalDays + ' days remaining)';
-  if(typeof refreshBadge === 'function') refreshBadge();
-  if(typeof renderGrid === 'function') renderGrid();
-  setTimeout(function(){ document.getElementById('actOverlay').classList.remove('show'); }, 2000);
-  if(typeof toast === 'function') toast('Pro extended! ' + totalDays + ' days remaining.', 'info');
+/* Timed unlock: Pro for N days, then reverts to Free */
+function unlockTimed(key,m,days,text){
+  const until=Date.now()+days*86400000;
+  lsSet('pp_pro_code',key);
+  lsSet('pp_pro_until',String(until));
+  isPro=true; proExpired=false;
+  cloudSavePro();
+  m.className='msg ok'; m.textContent=text;
+  refreshBadge(); renderGrid();
+  setTimeout(()=>document.getElementById('actOverlay').classList.remove('show'),1400);
+  toast(PPI18n.t('activate.pro.unlocked'));
 }
 function startTrial(){
   /* Free trial removed — redirect to Pro plans */
@@ -5455,18 +5183,14 @@ function openAvatarPicker(){
   document.getElementById('avatarOverlay').classList.add('show');
 }
 
-/* Wire badge click — scroll to pricing section */
+/* Wire avatar badge click */
 document.addEventListener('DOMContentLoaded',function(){
   var badge=document.getElementById('planBadge');
   if(badge){
     badge.style.cursor='pointer';
     badge.addEventListener('click',function(){
-      // Scroll to pricing section
-      var pricingSection = document.getElementById('pro');
-      if(pricingSection){
-        pricingSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      } else {
-        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      if(window.PPGame && PPGame.exportState){
+        openAvatarPicker();
       }
     });
   }
@@ -5518,18 +5242,8 @@ function toggleContactReqSection(){
   _contactReqOpen=!_contactReqOpen;
   var list=document.getElementById('contactReqList');
   var arrow=document.getElementById('contactReqArrow');
-  if(!list||!arrow) return;
-  if(_contactReqOpen){
-    list.style.display='block';
-    arrow.style.transform='rotate(180deg)';
-    /* Load friend requests when expanding */
-    if(list.innerHTML.trim()==='' || list.innerHTML.indexOf('loading')>=0){
-      loadFriendRequests();
-    }
-  }else{
-    list.style.display='none';
-    arrow.style.transform='rotate(0deg)';
-  }
+  list.style.display=_contactReqOpen?'block':'none';
+  arrow.textContent=_contactReqOpen?'▲':'▼';
 }
 
 /* ---- Toggle friends panel ---- */
@@ -5551,7 +5265,7 @@ function toggleFriendsPanel(){
     closeChatWindow();
     if(_friendsListUnsubscribe){_friendsListUnsubscribe();_friendsListUnsubscribe=null;}
     if(_friendReqUnsubscribe){_friendReqUnsubscribe();_friendReqUnsubscribe=null;}
-    /* Keep conversation listener active for unread badge — do NOT unsubscribe _convUnsubscribe */
+    if(_convUnsubscribe){_convUnsubscribe();_convUnsubscribe=null;}
   }
 }
 
@@ -5586,13 +5300,12 @@ async function searchUsers(){
     var html='';
     var seen={};
     var users=[];
-
-    /* IMPORTANT: Only use pp_public collection for search — the users
-     * collection has Firestore rules that only allow reading your own doc,
-     * so querying it always throws "Missing or insufficient permissions".
-     * pp_public is readable by anyone (allow read: if true). */
-
-    /* Search by name prefix in pp_public */
+    /* Search by email (exact match) in users collection */
+    try{
+      var snap1=await db.collection('users').where('email','==',query).limit(5).get();
+      snap1.forEach(function(d){if(!seen[d.id]&&d.id!==currentUser.uid){seen[d.id]=1;users.push({uid:d.id,data:d.data()});}});
+    }catch(e){console.warn('email search',e);}
+    /* Search by displayName prefix in pp_public (populated by syncPublicProfile) */
     try{
       var snap2=await db.collection('pp_public').where('name','>=',query).where('name','<=',query+'\uf8ff').limit(10).get();
       snap2.forEach(function(d){
@@ -5603,8 +5316,7 @@ async function searchUsers(){
         }
       });
     }catch(e){console.warn('name search pp_public',e);}
-
-    /* Search by email (exact and prefix) in pp_public */
+    /* Search by email prefix in pp_public */
     try{
       var snap3=await db.collection('pp_public').where('email','>=',query).where('email','<=',query+'\uf8ff').limit(10).get();
       snap3.forEach(function(d){
@@ -5615,26 +5327,66 @@ async function searchUsers(){
         }
       });
     }catch(e){console.warn('email prefix search pp_public',e);}
-
-    /* Fallback: If no results from indexed queries, try client-side
-     * filtering on pp_public (works even without Firestore indexes). */
+    /* Fallback: try displayName in users collection */
+    try{
+      var snap4=await db.collection('users').where('displayName','>=',query).where('displayName','<=',query+'\uf8ff').limit(10).get();
+      snap4.forEach(function(d){if(!seen[d.id]&&d.id!==currentUser.uid){seen[d.id]=1;users.push({uid:d.id,data:d.data()});}});
+    }catch(e){console.warn('displayname search',e);}
+    /* Search game-related user data: try users where game.displayName matches */
+    try{
+      var snap5=await db.collection('users').where('game.displayName','>=',query).where('game.displayName','<=',query+'\uf8ff').limit(10).get();
+      snap5.forEach(function(d){
+        if(!seen[d.id]&&d.id!==currentUser.uid){
+          seen[d.id]=1;
+          var dd=d.data()||{};
+          var gd=dd.game||{};
+          users.push({uid:d.id,data:{displayName:gd.displayName||dd.displayName||dd.email||'User',email:dd.email||'',avatar:gd.avatar||0,lvl:gd.lvl||1,bio:dd.bio||''}});
+        }
+      });
+    }catch(e){console.warn('game displayname search',e);}
+    /* FALLBACK: If no Firestore query returned results (possibly due to
+     * missing indexes), try getting all users and filtering client-side.
+     * This is less efficient but ensures search works even without
+     * Firestore composite indexes configured. */
     if(!users.length && query.length >= 2){
       try{
-        var allPubSnap=await db.collection('pp_public').limit(100).get();
-        var ql=query.toLowerCase();
-        allPubSnap.forEach(function(d){
-          if(seen[d.id]||d.id===currentUser.uid) return;
-          var dd=d.data()||{};
-          var name=dd.name||'';
-          var email=dd.email||'';
-          if(name.toLowerCase().indexOf(ql)>=0||email.toLowerCase().indexOf(ql)>=0){
+        var allUsersSnap = await db.collection('users').limit(50).get();
+        var ql = query.toLowerCase();
+        allUsersSnap.forEach(function(d){
+          if(seen[d.id] || d.id===currentUser.uid) return;
+          var dd = d.data()||{};
+          var gd = dd.game||{};
+          var name = dd.displayName || gd.displayName || dd.email || '';
+          if(name.toLowerCase().indexOf(ql) >= 0 || (dd.email||'').toLowerCase().indexOf(ql) >= 0){
             seen[d.id]=1;
-            users.push({uid:d.id,data:{
-              displayName:name,
-              email:email,
-              avatar:dd.avatar||0,
-              lvl:dd.lvl||1,
-              bio:dd.bio||''
+            users.push({uid:d.id, data:{
+              displayName: name,
+              email: dd.email||'',
+              avatar: gd.avatar||0,
+              lvl: gd.lvl||1,
+              bio: dd.bio||''
+            }});
+          }
+        });
+      }catch(e){console.warn('client-side search fallback',e);}
+    }
+    /* Also try pp_public client-side fallback if no results */
+    if(!users.length && query.length >= 2){
+      try{
+        var allPubSnap = await db.collection('pp_public').limit(50).get();
+        var ql = query.toLowerCase();
+        allPubSnap.forEach(function(d){
+          if(seen[d.id] || d.id===currentUser.uid) return;
+          var dd = d.data()||{};
+          var name = dd.name || dd.email || '';
+          if(name.toLowerCase().indexOf(ql) >= 0 || (dd.email||'').toLowerCase().indexOf(ql) >= 0){
+            seen[d.id]=1;
+            users.push({uid:d.id, data:{
+              displayName: name,
+              email: dd.email||'',
+              avatar: dd.avatar||0,
+              lvl: dd.lvl||1,
+              bio: dd.bio||''
             }});
           }
         });
@@ -5693,7 +5445,7 @@ function loadSuggestedUsers(){
       var btnId='sugBtn_'+u._uid.replace(/[^a-zA-Z0-9]/g,'_');
       var btnHtml=alreadySent?
         '<button id="'+btnId+'" style="background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.3);color:var(--accent2);padding:4px 10px;border-radius:6px;font-size:11px;cursor:default" disabled>'+PPI18n.t('friends.sent')+'</button>':
-        '<button id="'+btnId+'" onclick="event.stopPropagation();sendFriendRequestTo(\''+u._uid+'\',\''+esc(u.name).replace(/'/g,"\\'")+'\',\''+btnId+'\')" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer">+ '+PPI18n.t('friends.add')+'</button>';
+        '<button id="'+btnId+'" onclick="sendFriendRequestTo(\''+u._uid+'\',\''+esc(u.name).replace(/'/g,"\\'")+'\',\''+btnId+'\')" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer">+ '+PPI18n.t('friends.add')+'</button>';
       html+='<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.04)">'+
         '<div style="width:34px;height:34px;border-radius:10px;overflow:hidden;border:1px solid var(--border)">'+svg+'</div>'+
         '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(u.name)+'</div>'+
@@ -5845,11 +5597,16 @@ function viewSearchUser(uid,name){
       if(pubSnap.exists) pubData=pubSnap.data()||{};
     }catch(e){ console.warn('viewSearchUser pp_public read failed',e); }
 
-    /* Step 2: Only use pp_public for profile data — the users collection
-     * requires owner-level access and will throw permission errors */
-    /* Step 3: Use pp_public data for display */
-    if(!pubData){
-      /* No public profile — show minimal profile with just the name */
+    /* Step 2: Try users doc for game stats */
+    var userData=null;
+    try{
+      var userSnap=await db.collection('users').doc(uid).get();
+      if(userSnap.exists) userData=userSnap.data()||{};
+    }catch(e){ console.warn('viewSearchUser users doc read failed',e); }
+
+    /* Step 3: Merge data — pp_public for basic info, users doc for game stats */
+    if(!pubData&&!userData){
+      /* Both failed — show minimal profile with just the name */
       content.innerHTML='<div style="text-align:center">'+
         '<div style="font-size:16px;font-weight:800">'+esc(name)+'</div>'+
         profileBtnHtml(uid,name)+
@@ -5857,12 +5614,22 @@ function viewSearchUser(uid,name){
       overlay.classList.add('show');
       return;
     }
-    var bio=(pubData&&pubData.bio)||'';
-    var displayName=(pubData&&pubData.name)||name||'User';
-    var email=(pubData&&pubData.email)||'';
-    var avatar=(pubData&&pubData.avatar)||0;
-    var lvl=(pubData&&pubData.lvl)||1;
-    var coins=0, bestStreak=0;
+    var bio=(userData&&userData.bio)||(pubData&&pubData.bio)||'';
+    var displayName=(pubData&&pubData.name)||(userData&&userData.displayName)||name||'User';
+    var email=(pubData&&pubData.email)||(userData&&userData.email)||'';
+    var avatar=0;
+    var lvl=1, coins=0, bestStreak=0;
+    /* Game stats from users doc (more detailed) */
+    if(userData){
+      try{
+        if(userData.game&&userData.game.avatar) avatar=userData.game.avatar;
+        if(userData.game&&userData.game.lvl) lvl=userData.game.lvl;
+        if(userData.game&&userData.game.coins) coins=userData.game.coins;
+        if(userData.game&&userData.game.best) bestStreak=userData.game.best;
+      }catch(e){}
+    }
+    /* Avatar from pp_public if users doc didn't have it */
+    if(avatar===0&&pubData&&pubData.avatar) avatar=pubData.avatar;
     var svg=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(avatar):'';
     var rankInfo=(window.PPGame&&PPGame.rankOf)?PPGame.rankOf(lvl):{name:'Bronze',color:'#cd7f32'};
     var titleInfo=(window.PPGame&&PPGame.levelTitle)?PPGame.levelTitle(lvl):'Newcomer';
@@ -6541,7 +6308,8 @@ async function loadConversations(){
   }
   list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px">Loading...</div>';
   try{
-    /* First try user_conversations (preferred — has unread counts) */
+    /* NOTE: Removed orderByChild('lastMessageTime') — RTDB requires an index
+     * for ordered queries, which may not exist. Instead we sort client-side. */
     var convRef=rtdb.ref('user_conversations/'+currentUser.uid);
     convRef.once('value',function(snap){
       var convs=[];
@@ -6549,135 +6317,51 @@ async function loadConversations(){
         var c=child.val();
         if(c.friendId&&c.friendName) convs.push(c);
       });
-      /* If user_conversations is empty (possibly due to permission issues),
-       * fall back to reading from chat_rooms where I'm a participant */
-      if(!convs.length){
-        rtdb.ref('chat_rooms').once('value',function(roomsSnap){
-          roomsSnap.forEach(function(roomChild){
-            var roomData=roomChild.val();
-            var info=roomData.info||{};
-            var participants=info.participants||[];
-            if(participants.indexOf(currentUser.uid)>=0 && info.lastMessage){
-              var friendUid='';
-              var friendName='';
-              var pNames=info.participantNames||{};
-              for(var i=0;i<participants.length;i++){
-                if(participants[i]!==currentUser.uid){
-                  friendUid=participants[i];
-                  friendName=pNames[friendUid]||'User';
-                  break;
-                }
-              }
-              if(friendUid){
-                convs.push({
-                  friendId:friendUid,
-                  friendName:friendName,
-                  lastMessage:info.lastMessage,
-                  lastMessageTime:info.lastMessageTime,
-                  unreadCount:0
-                });
-              }
-            }
-          });
-          renderConversationsList(convs);
-        },function(){
-          renderConversationsList([]);
-        });
-        return;
-      }
       /* Sort client-side by lastMessageTime descending (most recent first) */
       convs.sort(function(a,b){
         return (b.lastMessageTime||0)-(a.lastMessageTime||0);
       });
-      renderConversationsList(convs);
-    },function(e){
-      /* Permission denied — fall back to chat_rooms */
-      rtdb.ref('chat_rooms').once('value',function(roomsSnap){
-        var convs=[];
-        roomsSnap.forEach(function(roomChild){
-          var roomData=roomChild.val();
-          var info=roomData.info||{};
-          var participants=info.participants||[];
-          if(participants.indexOf(currentUser.uid)>=0 && info.lastMessage){
-            var friendUid='';
-            var friendName='';
-            var pNames=info.participantNames||{};
-            for(var i=0;i<participants.length;i++){
-              if(participants[i]!==currentUser.uid){
-                friendUid=participants[i];
-                friendName=pNames[friendUid]||'User';
-                break;
-              }
-            }
-            if(friendUid){
-              convs.push({
-                friendId:friendUid,
-                friendName:friendName,
-                lastMessage:info.lastMessage,
-                lastMessageTime:info.lastMessageTime,
-                unreadCount:0
-              });
-            }
-          }
-        });
-        convs.sort(function(a,b){ return (b.lastMessageTime||0)-(a.lastMessageTime||0); });
-        renderConversationsList(convs);
-      },function(){
+      if(!convs.length){
         list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:30px 14px">'+PPI18n.t('friends.no.conversations')+'<br>'+PPI18n.t('friends.no.conversations.hint')+'</div>';
+        return;
+      }
+      var html='';
+      convs.forEach(function(c){
+        var unread=(c.unreadCount&&c.unreadCount>0)?c.unreadCount:0;
+        var badge=unread?'<div style="min-width:18px;height:18px;border-radius:9px;background:#ef4444;color:#fff;font-size:10px;font-weight:700;text-align:center;line-height:18px;padding:0 4px;flex-shrink:0">'+unread+'</div>':'';
+        var lastMsg=c.lastMessage||'';
+        if(lastMsg.length>30) lastMsg=lastMsg.substring(0,30)+'...';
+        var ts=c.lastMessageTime?new Date(c.lastMessageTime):null;
+        var timeStr=ts?ts.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'';
+        var dateStr='';
+        if(ts){
+          var today=new Date();
+          if(ts.toDateString()===today.toDateString()) dateStr=timeStr;
+          else dateStr=ts.toLocaleDateString([],{month:'short',day:'numeric'});
+        }
+        html+='<div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;transition:background .15s" onmouseenter="this.style.background=\'rgba(124,92,255,.08)\'" onmouseleave="this.style.background=\'transparent\'" onclick="openChatWith(\''+c.friendId+'\',\''+esc(c.friendName).replace(/'/g,"\\'")+'\',0)">'+
+          '<div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,rgba(124,92,255,.2),rgba(34,211,238,.1));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">💬</div>'+
+          '<div style="flex:1;min-width:0">'+
+            '<div style="display:flex;justify-content:space-between;align-items:center">'+
+              '<span style="font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(c.friendName)+'</span>'+
+              '<span style="font-size:10px;color:var(--muted);flex-shrink:0;margin-left:8px">'+dateStr+'</span>'+
+            '</div>'+
+            '<div style="font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px">'+esc(lastMsg)+'</div>'+
+          '</div>'+
+          badge+
+        '</div>';
       });
+      list.innerHTML=html;
+    },function(e){
+      console.warn('load convs',e);
+      /* Show "No conversations yet" instead of scary error — most likely
+       * there simply aren't any conversations yet. */
+      list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:30px 14px">'+PPI18n.t('friends.no.conversations')+'<br>'+PPI18n.t('friends.no.conversations.hint')+'</div>';
     });
   }catch(e){
     console.warn('load convs',e);
     list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:30px 14px">'+PPI18n.t('friends.no.conversations')+'</div>';
   }
-}
-
-/* Render the conversations list HTML */
-function renderConversationsList(convs){
-  var list=document.getElementById('conversationsList');
-  if(!list) return;
-  if(!convs.length){
-    list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;padding:30px 14px">'+PPI18n.t('friends.no.conversations')+'<br>'+PPI18n.t('friends.no.conversations.hint')+'</div>';
-    return;
-  }
-  convs.sort(function(a,b){ return (b.lastMessageTime||0)-(a.lastMessageTime||0); });
-  var html='';
-  convs.forEach(function(c){
-    var unread=(c.unreadCount&&c.unreadCount>0)?c.unreadCount:0;
-    var badge=unread?'<div style="min-width:18px;height:18px;border-radius:9px;background:#ef4444;color:#fff;font-size:10px;font-weight:700;text-align:center;line-height:18px;padding:0 4px;flex-shrink:0">'+unread+'</div>':'';
-    var lastMsg=c.lastMessage||'';
-    if(lastMsg.length>30) lastMsg=lastMsg.substring(0,30)+'...';
-    var ts=c.lastMessageTime?new Date(c.lastMessageTime):null;
-    var dateStr='';
-    if(ts){
-      var today=new Date();
-      if(ts.toDateString()===today.toDateString()) dateStr=ts.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-      else dateStr=ts.toLocaleDateString([],{month:'short',day:'numeric'});
-    }
-    /* Try to show friend's avatar */
-    var avatarSvg='';
-    try{
-      if(window.PPGame&&PPGame.avatarSVG){
-        var av=c.friendAvatar||0;
-        avatarSvg='<div style="width:40px;height:40px;border-radius:12px;overflow:hidden;border:1px solid var(--border);flex-shrink:0">'+PPGame.avatarSVG(av)+'</div>';
-      }
-    }catch(e){}
-    if(!avatarSvg){
-      avatarSvg='<div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,rgba(124,92,255,.2),rgba(34,211,238,.1));display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">'+(c.friendName?c.friendName.charAt(0).toUpperCase():'💬')+'</div>';
-    }
-    html+='<div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;transition:background .15s" onmouseenter="this.style.background=\'rgba(124,92,255,.08)\'" onmouseleave="this.style.background=\'transparent\'" onclick="openChatWith(\''+c.friendId+'\',\''+esc(c.friendName).replace(/'/g,"\\'")+'\',0)">'+
-      avatarSvg+
-      '<div style="flex:1;min-width:0">'+
-        '<div style="display:flex;justify-content:space-between;align-items:center">'+
-          '<span style="font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(c.friendName)+'</span>'+
-          '<span style="font-size:10px;color:var(--muted);flex-shrink:0;margin-left:8px">'+dateStr+'</span>'+
-        '</div>'+
-        '<div style="font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px">'+esc(lastMsg)+'</div>'+
-      '</div>'+
-      badge+
-    '</div>';
-  });
-  list.innerHTML=html;
 }
 
 /* Show contact profile with "Send Message" button (Contacts tab) */
@@ -6707,12 +6391,13 @@ function showContactProfile(uid,name,avatar){
       try{
         var pubSnap=await db.collection('pp_public').doc(uid).get();
         var pubData=pubSnap.exists?pubSnap.data():null;
-        /* Only use pp_public — the users collection requires owner-level access */
-        var bio=(pubData&&pubData.bio)||'';
-        var lvl=(pubData&&pubData.lvl)||1;
-        var coins=0,best=0;
+        var userSnap=await db.collection('users').doc(uid).get();
+        var userData=userSnap.exists?userSnap.data():null;
+        var bio=(userData&&userData.bio)||(pubData&&pubData.bio)||'';
+        var lvl=1,coins=0,best=0;
+        if(userData&&userData.game){lvl=userData.game.lvl||1;coins=userData.game.coins||0;best=userData.game.best||0;}
         var av=avatar||0;
-        if(pubData&&pubData.avatar) av=pubData.avatar;
+        if(userData&&userData.game&&userData.game.avatar) av=userData.game.avatar;
         var svg2=(window.PPGame&&PPGame.avatarSVG)?PPGame.avatarSVG(av):'';
         var rk=(window.PPGame&&PPGame.rankOf)?PPGame.rankOf(lvl):{name:'Bronze',color:'#cd7f32'};
         var ttl=(window.PPGame&&PPGame.levelTitle)?PPGame.levelTitle(lvl):'Newcomer';
@@ -6863,8 +6548,6 @@ window.openChatWith=function(fUid,fName,fAvatar){
       });
       /* Mark messages as read */
       rtdb.ref('user_conversations/'+currentUser.uid+'/'+chatId).update({unreadCount:0}).catch(function(){});
-      /* Also save last read timestamp in localStorage for fallback unread counting */
-      try{ localStorage.setItem('pp_chat_read_'+chatId, String(Date.now())); }catch(e){}
     }catch(e){
       console.warn('RTDB chat error, using Firestore fallback',e);
       loadFirestoreChat(chatId,fUid,fName,fAvatar);
@@ -6892,90 +6575,75 @@ window.sendChatMessage=async function(){
   input.value='';
   var chatId=getChatRoomId(currentUser.uid,_chatFriendUid);
   var ts=Date.now();
-  var myName=currentUser.displayName||currentUser.email.split('@')[0];
-  var friendName=document.getElementById('chatFriendName').textContent;
-  var msgSent=false;
   /* Try RTDB first */
   if(rtdb){
     try{
       var msgRef=rtdb.ref('chat_rooms/'+chatId+'/messages').push();
+      var myName=currentUser.displayName||currentUser.email.split('@')[0];
       await msgRef.set({senderId:currentUser.uid,senderName:myName,text:text,timestamp:ts});
-      msgSent=true;
-      /* Update chat room info (this path works — no permission issues) */
-      rtdb.ref('chat_rooms/'+chatId+'/info').set({
+      /* Update chat room info */
+      await rtdb.ref('chat_rooms/'+chatId+'/info').set({
         participants:[currentUser.uid,_chatFriendUid],
-        participantNames:{},
         lastMessage:text,
         lastMessageTime:ts,
         lastMessageSender:currentUser.uid
-      }).catch(function(){});
-      /* Set participant names for avatar lookup */
-      var infoNames={};
-      infoNames[currentUser.uid]=myName;
-      infoNames[_chatFriendUid]=friendName;
-      rtdb.ref('chat_rooms/'+chatId+'/info/participantNames').set(infoNames).catch(function(){});
-      /* Try to update user_conversations — may fail due to permissions,
-       * but that's OK because we also read conversations from chat_rooms/info */
-      rtdb.ref('user_conversations/'+currentUser.uid+'/'+chatId).set({
+      });
+      /* Update my conversation index */
+      await rtdb.ref('user_conversations/'+currentUser.uid+'/'+chatId).set({
         friendId:_chatFriendUid,
-        friendName:friendName,
+        friendName:document.getElementById('chatFriendName').textContent,
         lastMessage:text,
         lastMessageTime:ts,
         unreadCount:0
-      }).catch(function(){});
-      rtdb.ref('user_conversations/'+_chatFriendUid+'/'+chatId).update({
+      });
+      /* Update friend's conversation index */
+      await rtdb.ref('user_conversations/'+_chatFriendUid+'/'+chatId).update({
         friendId:currentUser.uid,
         friendName:myName,
         lastMessage:text,
         lastMessageTime:ts
-      }).catch(function(){});
+      });
+      /* Increment friend's unread count */
       rtdb.ref('user_conversations/'+_chatFriendUid+'/'+chatId+'/unreadCount').transaction(function(current){
         return (current||0)+1;
       }).catch(function(){});
-    }catch(e){console.warn('RTDB send msg partial fail:',e);}
+      return;
+    }catch(e){console.warn('RTDB send msg failed, trying Firestore',e);}
   }
-  /* Firestore fallback if RTDB message didn't go through */
-  if(!msgSent && db){
-    try{
-      await db.collection('chat_messages').doc(chatId).collection('messages').add({
-        senderId:currentUser.uid,
-        senderName:myName,
-        text:text,
-        timestamp:ts
-      });
-      msgSent=true;
-      await db.collection('chat_conversations').doc(currentUser.uid).collection('list').doc(chatId).set({
-        friendId:_chatFriendUid,
-        friendName:friendName,
-        lastMessage:text,
-        lastMessageTime:ts,
-        unreadCount:0
-      },{merge:true}).catch(function(){});
-      await db.collection('chat_conversations').doc(_chatFriendUid).collection('list').doc(chatId).set({
-        friendId:currentUser.uid,
-        friendName:myName,
-        lastMessage:text,
-        lastMessageTime:ts
-      },{merge:true}).catch(function(){});
-    }catch(e){
-      console.warn('Firestore send msg failed',e);
-    }
-  }
-  /* Only show error if the message actually failed to send */
-  if(!msgSent){
+  /* Firestore fallback for sending messages */
+  if(!db){toast('Chat unavailable','info');return;}
+  try{
+    var myName=currentUser.displayName||currentUser.email.split('@')[0];
+    await db.collection('chat_messages').doc(chatId).collection('messages').add({
+      senderId:currentUser.uid,
+      senderName:myName,
+      text:text,
+      timestamp:ts
+    });
+    /* Also update conversation indexes in Firestore so loadConversations can find them */
+    await db.collection('chat_conversations').doc(currentUser.uid).collection('list').doc(chatId).set({
+      friendId:_chatFriendUid,
+      friendName:document.getElementById('chatFriendName').textContent,
+      lastMessage:text,
+      lastMessageTime:ts,
+      unreadCount:0
+    },{merge:true});
+    await db.collection('chat_conversations').doc(_chatFriendUid).collection('list').doc(chatId).set({
+      friendId:currentUser.uid,
+      friendName:myName,
+      lastMessage:text,
+      lastMessageTime:ts
+    },{merge:true});
+  }catch(e){
+    console.warn('Firestore send msg failed',e);
     toast('Could not send message. Please try again.','info');
   }
 };
 
 /* ---- Listen for conversations (unread count, new message notifications) ---- */
 function listenForConversations(){
-  if(!fbReady||!currentUser) return;
-  if(!rtdb){
-    try{ if(typeof firebase!=='undefined'&&firebase.database) rtdb=firebase.database(); }catch(e){}
-    if(!rtdb) return;
-  }
+  if(!fbReady||!currentUser||!rtdb) return;
   if(_convUnsubscribe) _convUnsubscribe();
-  /* Try user_conversations first, fall back to chat_rooms */
   var convRef=rtdb.ref('user_conversations/'+currentUser.uid);
   _convUnsubscribe=convRef.on('value',function(snap){
     _totalUnread=0;
@@ -6983,110 +6651,47 @@ function listenForConversations(){
       var conv=child.val();
       if(conv.unreadCount&&conv.unreadCount>0) _totalUnread+=conv.unreadCount;
     });
-    /* Also check friend_requests for pending count */
-    updateUnreadBadge();
-  },function(e){
-    /* Permission denied on user_conversations — listen to chat_rooms instead */
-    console.warn('conv listen fallback to chat_rooms',e);
-    try{
-      rtdb.ref('chat_rooms').on('value',function(roomsSnap){
-        _totalUnread=0;
-        /* Count unread from chat_rooms by checking last message sender */
-        roomsSnap.forEach(function(roomChild){
-          var roomData=roomChild.val();
-          var info=roomData.info||{};
-          var participants=info.participants||[];
-          if(participants.indexOf(currentUser.uid)>=0){
-            /* This is a room we're in — check if last message is not from us */
-            if(info.lastMessageSender && info.lastMessageSender !== currentUser.uid){
-              /* Check if we recently read this conversation */
-              var lastRead = 0;
-              try{ lastRead = parseInt(localStorage.getItem('pp_chat_read_'+roomChild.key)||'0',10); }catch(e2){}
-              if(info.lastMessageTime && info.lastMessageTime > lastRead){
-                _totalUnread += 1;
-              }
-            }
-            /* Also check for unread messages by counting messages newer than last read */
-            var messages = roomData.messages;
-            if(messages){
-              var msgRead = 0;
-              try{ msgRead = parseInt(localStorage.getItem('pp_chat_read_'+roomChild.key)||'0',10); }catch(e2){}
-              var unreadInRoom = 0;
-              for(var msgKey in messages){
-                if(messages.hasOwnProperty(msgKey)){
-                  var msg = messages[msgKey];
-                  if(msg.senderId !== currentUser.uid && msg.timestamp && msg.timestamp > msgRead){
-                    unreadInRoom++;
-                  }
-                }
-              }
-              if(unreadInRoom > 0) _totalUnread = Math.max(_totalUnread, unreadInRoom);
-            }
-          }
-        });
-        updateUnreadBadge();
-      });
-    }catch(e2){console.warn('chat_rooms listen fail',e2);}
-  });
-  /* Also listen for friend requests */
-  if(!_friendReqUnsubscribe){
-    loadFriendRequests();
-  }
-}
-
-/* Update the unread badge on the friends button */
-function updateUnreadBadge(){
-  /* Also add friend request count */
-  var reqCount=0;
-  try{
-    var reqBadge=document.getElementById('friendReqBadge');
-    if(reqBadge && reqBadge.style.display!=='none' && reqBadge.textContent){
-      reqCount=parseInt(reqBadge.textContent,10)||0;
+    /* Update unread indicator */
+    var ind=document.getElementById('unreadIndicator');
+    if(_totalUnread>0){
+      ind.style.display='block';
+      ind.textContent=_totalUnread+' unread message'+(_totalUnread>1?'s':'');
+      /* Flash browser tab title */
+      if(document.hidden) document.title='('+_totalUnread+') '+_origTitle;
+    }else{
+      ind.style.display='none';
+      document.title=_origTitle;
     }
-  }catch(e){}
-  var totalCount=_totalUnread+reqCount;
-  /* Update unread indicator bar */
-  var ind=document.getElementById('unreadIndicator');
-  if(totalCount>0){
-    ind.style.display='block';
-    ind.textContent=totalCount+' unread item'+(totalCount>1?'s':'');
-    if(document.hidden) document.title='('+totalCount+') '+_origTitle;
-  }else{
-    ind.style.display='none';
-    document.title=_origTitle;
-  }
-  /* Update friends button badge */
-  var btn=document.getElementById('friendsBtn');
-  if(btn){
-    var existingBadge=btn.querySelector('.unread-dot');
-    if(totalCount>0){
-      if(!existingBadge){
-        var dot=document.createElement('span');
-        dot.className='unread-dot';
-        dot.style.cssText='position:absolute;top:-2px;right:-2px;min-width:16px;height:16px;border-radius:50%;background:#ef4444;color:#fff;font-size:9px;font-weight:700;text-align:center;line-height:16px;padding:0 3px';
-        dot.textContent=totalCount;
-        btn.style.position='relative';
-        btn.appendChild(dot);
-      }else{
-        existingBadge.textContent=totalCount;
+    /* Update friends button badge */
+    var btn=document.getElementById('friendsBtn');
+    if(btn){
+      var existingBadge=btn.querySelector('.unread-dot');
+      if(_totalUnread>0){
+        if(!existingBadge){
+          var dot=document.createElement('span');
+          dot.className='unread-dot';
+          dot.style.cssText='position:absolute;top:-2px;right:-2px;width:16px;height:16px;border-radius:50%;background:#ef4444;color:#fff;font-size:9px;font-weight:700;text-align:center;line-height:16px';
+          dot.textContent=_totalUnread;
+          btn.style.position='relative';
+          btn.appendChild(dot);
+        }else{
+          existingBadge.textContent=_totalUnread;
+        }
+      }else if(existingBadge){
+        existingBadge.remove();
       }
-    }else if(existingBadge){
-      existingBadge.remove();
     }
-  }
-  /* Refresh conversations list if on chats tab */
-  if(_currentFriendsTab==='chats'){
-    var fp=document.getElementById('friendsPanel');
-    if(fp && fp.style.display==='flex') loadConversations();
-  }
+    /* Refresh conversations list if on chats tab */
+    if(_currentFriendsTab==='chats'&&document.getElementById('friendsPanel').style.display==='flex'){
+      loadConversations();
+    }
+  },function(e){console.warn('conv listen',e);});
 }
 
 /* ---- Set online status ---- */
 function setOnlineStatus(){
   if(!fbReady||!currentUser) return;
   db.collection('users').doc(currentUser.uid).set({online:true,lastSeen:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).catch(function(){});
-  /* Also update pp_public for searchability */
-  if(typeof syncPublicProfile==='function') syncPublicProfile();
   /* Set offline on page unload */
   window.addEventListener('beforeunload',function(){
     db.collection('users').doc(currentUser.uid).set({online:false,lastSeen:firebase.firestore.FieldValue.serverTimestamp()},{merge:true}).catch(function(){});
@@ -7553,23 +7158,6 @@ saveAccountSettings=async function(){
   await _origSaveAccount();
   cloudSaveBio();
 };
-
-/* ---- Expose friend/chat/search functions to window (for onclick handlers in HTML) ---- */
-window.sendFriendRequestTo = sendFriendRequestTo;
-window.viewSearchUser = viewSearchUser;
-window.showContactProfile = showContactProfile;
-window.searchUsers = searchUsers;
-window.acceptFriendRequest = acceptFriendRequest;
-window.declineFriendRequest = declineFriendRequest;
-window.toggleContactReqSection = toggleContactReqSection;
-window.switchFriendsTab = switchFriendsTab;
-window.toggleFriendsPanel = toggleFriendsPanel;
-window.closeChatWindow = closeChatWindow;
-window.loadSuggestedUsers = loadSuggestedUsers;
-window.loadFriendsList = loadFriendsList;
-window.loadFriendRequests = loadFriendRequests;
-window.loadConversations = loadConversations;
-window.syncPublicProfile = syncPublicProfile;
 
 })();
 </script>

@@ -96,7 +96,7 @@ var CREDIT_PRODUCT_MAP_PROD = {
 /* 游戏积分产品映射（测试环境）*/
 var CREDIT_PRODUCT_MAP_TEST = {
   1136120: 1200,   /* Prompt Matrix Bundle 1200 credits 测试 */
-  1136121: 3800    /* Prompt Matrix Bundle 3800 credits 测试 */
+  1136121: 3800    /* Prompt Matrix Bundle 3800 Credits 测试 */
 };
 
 /* 合并积分映射 */
@@ -209,7 +209,7 @@ function classifyProduct(productId, productName){
   /* 2. 从名称推断（备用）*/
   var nameResult = classifyByProductName(productName, productId);
   if(nameResult){
-    return { ok: true, ...nameResult, productId: productId };
+    return Object.assign({ ok: true, productId: productId }, nameResult);
   }
   
   /* 3. 未知类型 — 默认给 Pro 30天（重要：不是金币！）*/
@@ -251,8 +251,8 @@ function validateLicense(key){
     }
     
     /* 获取 product_id 和 product_name */
-    var productId = licenseKey.product_id || d.meta?.product_id || 0;
-    var productName = d.meta?.product_name || '';
+    var productId = licenseKey.product_id || (d.meta && d.meta.product_id) || 0;
+    var productName = (d.meta && d.meta.product_name) || '';
     console.log('[LemonSqueezy] → Product ID:', productId, 'Name:', productName);
     
     if(productId || productName){
@@ -288,20 +288,20 @@ function tryActivate(key){
       var status = licenseKey.status || d.status || '';
       if(status === 'expired' || status === 'disabled') return { ok: false, error: 'invalid' };
       
-      var productId = licenseKey.product_id || d.meta?.product_id || d.product_id || 0;
-      var productName = d.meta?.product_name || '';
+      var productId = licenseKey.product_id || (d.meta && d.meta.product_id) || d.product_id || 0;
+      var productName = (d.meta && d.meta.product_name) || '';
       if(productId || productName) return classifyProduct(productId, productName);
       return { ok: true, kind: 'unknown' };
     }
     
     if(d && d.error === 'activation_limit_reached'){
-      var productId2 = d.meta?.product_id || d.product_id || 0;
-      var productName2 = d.meta?.product_name || '';
+      var productId2 = (d.meta && d.meta.product_id) || d.product_id || 0;
+      var productName2 = (d.meta && d.meta.product_name) || '';
       if(productId2 || productName2) return classifyProduct(productId2, productName2);
       return { ok: true, kind: 'unknown' };
     }
     
-    return { ok: false, error: d?.error || 'invalid' };
+    return { ok: false, error: (d && d.error) || 'invalid' };
   })
   .catch(function(err){
     console.error('[LemonSqueezy] Activate network error:', err);
