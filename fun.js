@@ -1792,11 +1792,49 @@ async function redeemCoinCode(){
       return;
     }
     if(res.ok && res.kind==='credits'){
-      m.className='msg err';
-      m.textContent='That is a game credit code — it cannot be used for coins. Please redeem it in the game credits section.';
+      console.log('[Redeem] ========== 积分激活 ==========');
+      console.log('[Redeem] 完整响应:', JSON.stringify(res));
+      
+      if(_isCodeUsed(code)){
+        m.className='msg err';
+        m.textContent='This credit code has already been used on your account.';
+        return;
+      }
+      _markCodeUsed(code);
+      
+      // 优先使用 res.credits，其次 res.amount
+      var creditAmount = res.credits || res.amount || 1200;
+      console.log('[Redeem] 应得积分:', creditAmount);
+      
+      var curCreds = parseInt(localStorage.getItem('pm_unlock_credits')||'0',10);
+      var newCreds = curCreds + creditAmount;
+      localStorage.setItem('pm_unlock_credits', String(newCreds));
+      console.log('[Redeem] 积分: ' + curCreds + ' -> ' + newCreds);
+      
+      // 通知游戏 iframe
+      try{
+        var gameFrame = document.querySelector('iframe[src*="game-pm"]');
+        if(gameFrame && gameFrame.contentWindow){
+          gameFrame.contentWindow.postMessage({
+            type: 'add_credits',
+            amount: creditAmount
+          }, '*');
+          console.log('[Redeem] 已发送 add_credits 消息到游戏 iframe');
+        }
+      } catch(e){
+        console.warn('[Redeem] 无法通知游戏 iframe:', e);
+      }
+      
+      m.className='msg ok';
+      m.textContent='Successfully added ' + creditAmount.toLocaleString() + ' game credits!';
+      if(typeof ppToast === 'function') ppToast('+' + creditAmount.toLocaleString() + ' credits!');
+      setTimeout(paintArcade, 900);
       return;
     }
     if(res.ok && res.kind==='coins'){
+      console.log('[Redeem] ========== 金币激活 ==========');
+      console.log('[Redeem] 完整响应:', JSON.stringify(res));
+      
       /* Check if already redeemed on this account */
       if(_isCodeUsed(code)){
         m.className='msg err';
@@ -1804,15 +1842,32 @@ async function redeemCoinCode(){
         return;
       }
       _markCodeUsed(code);
-      var coinAmount = res.coins || 1200;
-      /* Only show coin pack selector if we truly can't determine the amount
-       * (product_id not in COIN_PRODUCT_MAP and amount is default fallback). */
-      if(res.productId && !COIN_PRODUCT_MAP_HAS(res.productId) && coinAmount === 1200){
-        showCoinPackSelector(code, m);
-        return;
-      }
-      game.coins=(game.coins||0)+coinAmount; save(); refresh(); paintArcadeBtn();
-      m.className='msg ok'; m.textContent='+'+coinAmount+' coins added!';
+      
+      // 优先使用 res.coins，其次 res.amount，最后默认 1200
+      var coinAmount = res.coins || res.amount || 1200;
+      console.log('[Redeem] 应得金币:', coinAmount);
+      
+      // 记录添加前金币
+      var beforeCoins = game.coins || 0;
+      console.log('[Redeem] 添加前金币:', beforeCoins);
+      
+      game.coins = beforeCoins + coinAmount;
+      
+      console.log('[Redeem] 添加后金币:', game.coins);
+      console.log('[Redeem] 实际增加:', game.coins - beforeCoins);
+      
+      save(); refresh(); paintArcadeBtn();
+      
+      m.className='msg ok';
+      m.textContent='Successfully added ' + coinAmount.toLocaleString() + ' coins!';
+      if(typeof ppToast === 'function') ppToast('+' + coinAmount.toLocaleString() + ' coins!');
+      
+      // 显示添加后的总金币
+      setTimeout(function(){
+        var totalMsg = 'Total coins: ' + (game.coins || 0).toLocaleString();
+        if(typeof ppToast === 'function') ppToast(totalMsg);
+      }, 800);
+      
       setTimeout(paintArcade, 900); return;
     }
     if(res.ok && res.kind==='unknown'){
@@ -1896,10 +1951,17 @@ function showCoinPackSelector(code, msgEl){
 }
 /* Apply selected coin pack amount */
 function applyCoinPack(code,amount,parentEl){
-  /* Code was already marked as used in redeemCoinCode, just add coins */
-  game.coins=(game.coins||0)+amount; save(); refresh(); paintArcadeBtn();
+  console.log('[ApplyCoinPack] Adding', amount, 'coins');
+  var beforeCoins = game.coins || 0;
+  game.coins = beforeCoins + amount;
+  console.log('[ApplyCoinPack] 金币: ' + beforeCoins + ' -> ' + game.coins);
+  save(); refresh(); paintArcadeBtn();
   var msgEl=elById('ppCoinMsg');
-  if(msgEl){msgEl.className='msg ok';msgEl.textContent='+'+amount+' coins added!';}
+  if(msgEl){
+    msgEl.className='msg ok';
+    msgEl.textContent='+' + amount.toLocaleString() + ' coins added! Total: ' + (game.coins || 0).toLocaleString();
+  }
+  if(typeof ppToast === 'function') ppToast('+' + amount.toLocaleString() + ' coins!');
   setTimeout(paintArcade, 900);
 }
 

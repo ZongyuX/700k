@@ -157,11 +157,12 @@ function classifyByProductName(productName, productId){
     var coins = match ? parseInt(match[0], 10) : 0;
     if(coins === 1200 || coins === 4000 || coins === 12000){
       console.log('[LemonSqueezy] → Inferred Coins from name:', coins);
-      return { kind: 'coins', amount: coins };
+      // 同时返回 amount 和 coins
+      return { kind: 'coins', amount: coins, coins: coins };
     }
     if(coins > 0){
       console.log('[LemonSqueezy] → Inferred Coins from name (fallback):', coins);
-      return { kind: 'coins', amount: coins };
+      return { kind: 'coins', amount: coins, coins: coins };
     }
   }
   
@@ -171,7 +172,8 @@ function classifyByProductName(productName, productId){
     var credits = match2 ? parseInt(match2[0], 10) : 0;
     if(credits === 1200 || credits === 3800){
       console.log('[LemonSqueezy] → Inferred Credits from name:', credits);
-      return { kind: 'credits', credits: credits };
+      // 同时返回 credits 和 amount
+      return { kind: 'credits', credits: credits, amount: credits };
     }
   }
   
@@ -196,14 +198,16 @@ function classifyProduct(productId, productName){
   if(COIN_PRODUCT_MAP[productId]){
     var coins = COIN_PRODUCT_MAP[productId];
     console.log('[LemonSqueezy] → Matched as Coins by ID map, amount:', coins);
-    return { ok: true, kind: 'coins', amount: coins, productId: productId };
+    // 同时返回 amount 和 coins 字段，确保两种都能被读取
+    return { ok: true, kind: 'coins', amount: coins, coins: coins, productId: productId };
   }
   
   /* 检查积分映射 */
   if(CREDIT_PRODUCT_MAP[productId]){
     var credits = CREDIT_PRODUCT_MAP[productId];
     console.log('[LemonSqueezy] → Matched as Credits by ID map, amount:', credits);
-    return { ok: true, kind: 'credits', credits: credits, productId: productId };
+    // 同时返回 credits 和 amount 字段
+    return { ok: true, kind: 'credits', credits: credits, amount: credits, productId: productId };
   }
   
   /* 2. 从名称推断（备用）*/

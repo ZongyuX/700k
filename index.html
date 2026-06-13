@@ -155,7 +155,7 @@
   .hbtns a:hover,.hbtns button:hover{color:var(--text);background:rgba(255,255,255,.06)}
   .badge{font-size:10px;padding:3px 8px;border-radius:20px;font-weight:700;background:var(--panel3);color:var(--muted);flex-shrink:0}
   .icon-only-sm{display:none}
-  .badge.on{background:linear-gradient(90deg,var(--gold),#ffd279);color:#1a1205}
+  .badge.on{background:linear-gradient(90deg,#f5b942,#ffd279);color:#1a1205;box-shadow:0 0 8px rgba(245,185,66,.5);text-shadow:0 1px 0 rgba(255,255,255,.3)}
   .hbtn-gold{background:linear-gradient(90deg,var(--gold),#ffce6b)!important;color:#1a1205!important;border-radius:8px;font-weight:700!important}
   .hbtn-user{background:var(--panel2)!important;color:var(--text)!important;border:1px solid var(--border)!important;border-radius:8px;font-weight:600!important}
   .hbtn-user:hover{border-color:var(--accent)!important}
@@ -3836,16 +3836,31 @@ async function redeemCode(){
     var res = await PPLemon.validateLicense(key);
     console.log('[Activation] Validation result:', JSON.stringify(res));
 
-    /* 金币类激活码 */
+    /* 金币类激活码 - 修复版 */
     if(res.ok && res.kind === 'coins'){
       await markLicenseUsed(key);
-      var coinAmount = res.amount || 1200;
+      // 优先使用 res.coins，其次 res.amount
+      var coinAmount = res.coins || res.amount || 1200;
+      
+      console.log('[Redeem] 应得金币:', coinAmount);
       
       if(window.PPGame && PPGame.addCoins){
         PPGame.addCoins(coinAmount);
+        if(typeof PPGame.refresh === 'function') PPGame.refresh();
       }else{
         var cur = parseInt(lsGet('pp_coins')||'0',10);
         lsSet('pp_coins', String(cur + coinAmount));
+      }
+      
+      // 刷新显示
+      var coinBtnCount = document.getElementById('coinBtnCount');
+      if(coinBtnCount){
+        if(window.PPGame && PPGame.exportState){
+          coinBtnCount.textContent = ' ' + (PPGame.exportState().coins || 0);
+        } else {
+          var newTotal = parseInt(lsGet('pp_coins')||'0',10);
+          coinBtnCount.textContent = ' ' + newTotal;
+        }
       }
       
       m.className = 'msg ok';
@@ -3864,21 +3879,33 @@ async function redeemCode(){
       return unlock(key, m, 'Pro activated! Lifetime access unlocked.');
     }
 
-    /* 积分类激活码 */
+    /* 积分类激活码 - 修复版 */
     if(res.ok && res.kind === 'credits'){
       await markLicenseUsed(key);
-      var creditAmount = res.credits || 1200;
+      // 优先使用 res.credits，其次 res.amount
+      var creditAmount = res.credits || res.amount || 1200;
+      
+      console.log('[Redeem] 应得积分:', creditAmount);
+      
       var curCreds = parseInt(lsGet('pm_unlock_credits')||'0',10);
-      lsSet('pm_unlock_credits', String(curCreds + creditAmount));
+      var newCreds = curCreds + creditAmount;
+      lsSet('pm_unlock_credits', String(newCreds));
+      console.log('[Redeem] 积分: ' + curCreds + ' -> ' + newCreds);
+      
+      // 通知游戏 iframe
       try{
-        var gameFrame = document.querySelector('iframe[src*="game-pm"]');
-        if(gameFrame && gameFrame.contentWindow && gameFrame.contentWindow.setUnlockCredits){
-          gameFrame.contentWindow.setUnlockCredits((gameFrame.contentWindow.getUnlockCredits ? gameFrame.contentWindow.getUnlockCredits() : 0) + creditAmount);
+        var gameFrame = document.getElementById('gameFrame');
+        if(gameFrame && gameFrame.contentWindow){
+          gameFrame.contentWindow.postMessage({
+            type: 'add_credits',
+            amount: creditAmount
+          }, '*');
         }
-      }catch(e){}
+      } catch(e){}
+      
       m.className = 'msg ok';
-      m.textContent = 'Successfully added ' + creditAmount + ' game credits!';
-      if(typeof toast === 'function') toast('+' + creditAmount + ' credits!', 'info');
+      m.textContent = 'Successfully added ' + creditAmount.toLocaleString() + ' game credits!';
+      if(typeof toast === 'function') toast('+' + creditAmount.toLocaleString() + ' credits!', 'info');
       setTimeout(function(){ document.getElementById('actOverlay').classList.remove('show'); }, 2000);
       return;
     }
