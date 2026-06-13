@@ -5202,11 +5202,12 @@ function activateEpicSkill(id){
 // ===== SHOP SYSTEM =====
 let unlockCredits=0;
 
-function getUnlockedTowers(){try{return [...new Set([...FREE_TOWERS,...JSON.parse(localStorage.getItem('pm_unlocked_towers'))||[]])]}catch(e){return[...FREE_TOWERS]}}
-function getUnlockedMonsters(){try{return [...new Set([...FREE_MONSTERS,...JSON.parse(localStorage.getItem('pm_unlocked_monsters'))||[]])]}catch(e){return[...FREE_MONSTERS]}}
-function getUnlockedSkills(){try{return JSON.parse(localStorage.getItem('pm_unlocked_skills'))||[]}catch(e){return[]}}
-function getUnlockCredits(){return parseInt(localStorage.getItem('pm_unlock_credits')||'0')}
-function setUnlockCredits(n){localStorage.setItem('pm_unlock_credits',String(n));unlockCredits=n}
+function getUnlockedTowers(){var myUid=getMyUid();try{return [...new Set([...FREE_TOWERS,...JSON.parse(localStorage.getItem('pm_unlocked_towers_'+myUid)||'[]')])]}catch(e){return[...FREE_TOWERS]}}
+function getUnlockedMonsters(){var myUid=getMyUid();try{return [...new Set([...FREE_MONSTERS,...JSON.parse(localStorage.getItem('pm_unlocked_monsters_'+myUid)||'[]')])]}catch(e){return[...FREE_MONSTERS]}}
+function getUnlockedSkills(){var myUid=getMyUid();try{return JSON.parse(localStorage.getItem('pm_unlocked_skills_'+myUid)||'[]')}catch(e){return[]}}
+function getUnlockCredits(){var myUid=getMyUid();var val=parseInt(localStorage.getItem('pm_unlock_credits_'+myUid)||'0');return isNaN(val)?0:val}
+function setUnlockCredits(n){var myUid=getMyUid();localStorage.setItem('pm_unlock_credits_'+myUid,String(n));unlockCredits=n}
+function setUnlockedSkills(skills){var myUid=getMyUid();localStorage.setItem('pm_unlocked_skills_'+myUid,JSON.stringify(skills))}
 
 function openShop(){
   document.getElementById('shopScreen').style.display='flex';
@@ -5386,13 +5387,13 @@ function buyWithCredit(){
   }
   if(type==='skill'){
     let skills=getUnlockedSkills();
-    if(!skills.includes(itemId)){skills.push(itemId);localStorage.setItem('pm_unlocked_skills',JSON.stringify(skills))}
+    if(!skills.includes(itemId)){skills.push(itemId);setUnlockedSkills(skills)}
   }else if(type==='tower'){
     let towers=getUnlockedTowers();
-    if(!towers.includes(itemId)){towers.push(itemId);localStorage.setItem('pm_unlocked_towers',JSON.stringify(towers))}
+    if(!towers.includes(itemId)){towers.push(itemId);localStorage.setItem('pm_unlocked_towers_'+getMyUid(),JSON.stringify(towers))}
   }else if(type==='monster'){
     let monsters=getUnlockedMonsters();
-    if(!monsters.includes(itemId)){monsters.push(itemId);localStorage.setItem('pm_unlocked_monsters',JSON.stringify(monsters))}
+    if(!monsters.includes(itemId)){monsters.push(itemId);localStorage.setItem('pm_unlocked_monsters_'+getMyUid(),JSON.stringify(monsters))}
   }
   setUnlockCredits(unlockCredits-cost);
   document.getElementById('shopCredits').textContent=(unlockCredits-cost).toLocaleString();
@@ -5403,13 +5404,14 @@ function buyWithCredit(){
 }
 
 // ===== One-Time-Use License Key Tracking =====
-function getUsedGameKeys(){try{return JSON.parse(localStorage.getItem('pm_used_keys')||'[]')}catch(e){return[]}}
+function getUsedGameKeys(){var myUid=getMyUid();try{return JSON.parse(localStorage.getItem('pm_used_keys_'+myUid)||'[]')}catch(e){return[]}}
 function isGameKeyUsed(key){var nk=key.trim().toUpperCase();return getUsedGameKeys().indexOf(nk)>=0}
 function markGameKeyUsed(key){
+  var myUid=getMyUid();
   var nk=key.trim().toUpperCase();
   var used=getUsedGameKeys();
   if(used.indexOf(nk)<0)used.push(nk);
-  localStorage.setItem('pm_used_keys',JSON.stringify(used));
+  localStorage.setItem('pm_used_keys_'+myUid,JSON.stringify(used));
   // Also sync to parent app's global used_license_keys via Firestore if available
   try{
     if(window.parent&&window.parent!==window&&window.parent.markLicenseUsed){

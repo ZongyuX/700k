@@ -155,7 +155,7 @@
   .hbtns a:hover,.hbtns button:hover{color:var(--text);background:rgba(255,255,255,.06)}
   .badge{font-size:10px;padding:3px 8px;border-radius:20px;font-weight:700;background:var(--panel3);color:var(--muted);flex-shrink:0}
   .icon-only-sm{display:none}
-  .badge.on{background:linear-gradient(90deg,#f5b942,#ffd279);color:#1a1205;box-shadow:0 0 8px rgba(245,185,66,.5);text-shadow:0 1px 0 rgba(255,255,255,.3)}
+  .badge.on{background:linear-gradient(90deg,#f5b942,#ffce6b)!important;color:#1a1205!important;box-shadow:0 0 8px rgba(245,185,66,.5);text-shadow:0 1px 0 rgba(255,255,255,.3);transition:all .2s ease}
   .hbtn-gold{background:linear-gradient(90deg,var(--gold),#ffce6b)!important;color:#1a1205!important;border-radius:8px;font-weight:700!important}
   .hbtn-user{background:var(--panel2)!important;color:var(--text)!important;border:1px solid var(--border)!important;border-radius:8px;font-weight:600!important}
   .hbtn-user:hover{border-color:var(--accent)!important}
@@ -195,6 +195,7 @@
   .cta-hook .hook-pro-btn:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 0 24px rgba(34,211,238,.45),0 0 48px rgba(124,92,255,.3)}
   @keyframes hookTypeReveal{0%{opacity:0;transform:translateY(8px);filter:blur(4px)}15%{opacity:1;transform:translateY(0);filter:blur(0)}70%{opacity:1;transform:translateY(0);filter:blur(0)}85%{opacity:.6;transform:translateY(-4px);filter:blur(2px)}100%{opacity:0;transform:translateY(-8px);filter:blur(4px)}}
   @keyframes hookBtnPulse{0%,100%{box-shadow:0 0 16px rgba(34,211,238,.25),0 0 32px rgba(124,92,255,.15)}50%{box-shadow:0 0 24px rgba(34,211,238,.5),0 0 48px rgba(124,92,255,.35),0 4px 20px rgba(34,211,238,.2)}}
+  @keyframes badgePulse{0%{transform:scale(.8);opacity:0}50%{transform:scale(1.2)}100%{transform:scale(1);opacity:1}}
   .btn{display:inline-block;padding:12px 22px;border-radius:10px;font-weight:700;text-decoration:none;border:none;font-size:15px;cursor:pointer}
   .btn-primary{background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff}
   .btn-gold{background:linear-gradient(90deg,var(--gold),#ffce6b);color:#1a1205}
@@ -1560,7 +1561,7 @@
     <button class="pp-chip" id="optimizerBtn" title="Prompt Optimizer" onclick="document.getElementById('optimizer').scrollIntoView({behavior:'smooth',block:'center'})">⚡<span class="btn-hide-sm"> Optimizer</span></button>
     <button class="pp-chip" id="communityBtn" data-i18n="header.community" title="Leaderboards & Mood Wall">🏆<span class="btn-hide-sm"> Community</span></button>
     <button class="hbtn-game" id="gameBtn" data-i18n="header.game">🎮<span class="btn-hide-sm"> Game</span></button>
-    <button class="pp-chip" id="friendsBtn" title="Friends & Chat">👥<span class="btn-hide-sm"> Friends</span></button>
+    <button class="pp-chip" id="friendsBtn" title="Friends & Chat" style="position:relative">👥<span class="btn-hide-sm"> Friends</span><span id="friendsUnreadBadge" style="display:none;position:absolute;top:-4px;right:-6px;min-width:16px;height:16px;border-radius:50%;background:#ef4444;color:#fff;font-size:9px;font-weight:700;text-align:center;line-height:16px;padding:0 4px;animation:badgePulse .5s ease-out"></span></button>
     <button class="pp-chip" id="accountBtn" title="Account & Profile" style="display:none;background:linear-gradient(135deg,rgba(124,92,255,.15),rgba(34,211,238,.08));border:1px solid rgba(124,92,255,.3)">👤<span class="btn-hide-sm"> Account</span></button>
     <button class="pp-chip" id="coinBtn" title="Coins &amp; Arcade" style="cursor:pointer">🪙<span class="btn-hide-sm" id="coinBtnCount"> 0</span></button>
     <span class="badge" id="planBadge">FREE</span>
@@ -3234,11 +3235,10 @@ function refreshAuthUI(){
   }
   if(currentUser){
     const nm=currentUser.displayName||((currentUser.email||'Account').split('@')[0]);
-    /* Show Account button with username, hide Sign in button */
-    accountBtn.style.display='';
-    accountBtn.innerHTML='👤<span class="btn-hide-sm"> '+nm+'</span>';
-    accountBtn.title='Account — '+nm;
-    authBtn.style.display='none';
+    /* Show username in authBtn, hide Account button */
+    authBtn.innerHTML='👤<span class="btn-hide-sm"> '+nm+'</span>';
+    authBtn.style.display='';
+    accountBtn.style.display='none';
     /* Update arcade button coin count */
     if(window.paintArcadeBtn) paintArcadeBtn();
     var coinBtnCount=document.getElementById('coinBtnCount');
@@ -3275,9 +3275,13 @@ function refreshBadge(){
       b.textContent='PRO';
     }
     b.className='badge on';
+    b.style.background='linear-gradient(90deg,#f5b942,#ffce6b)';
+    b.style.color='#1a1205';
   }else{
     b.textContent='FREE';
     b.className='badge';
+    b.style.background='';
+    b.style.color='';
   }
 }
 /* Category cache — rebuilt only when data changes */
@@ -5572,6 +5576,10 @@ function toggleFriendsPanel(){
     loadFriendsList();
     loadFriendRequests();
     listenForConversations();
+    /* Clear unread badge when opening Friends panel */
+    var friendsBadge=document.getElementById('friendsUnreadBadge');
+    if(friendsBadge) friendsBadge.style.display='none';
+    _totalUnread=0;
   }else{
     p.style.display='none';
     closeChatWindow();
@@ -6277,6 +6285,8 @@ async function acceptFriendRequest(uid,name,requestDocId){
     toast(name+' '+PPI18n.t('friends.now.friend'));
     loadFriendRequests();
     loadFriendsList();
+    /* Refresh unread badge after accepting friend request */
+    updateUnreadBadge();
   }catch(e){
     console.warn('accept friend',e);
     toast(PPI18n.t('friends.accept.error'),'info');
@@ -6906,6 +6916,8 @@ window.openChatWith=function(fUid,fName,fAvatar){
     }
   }
   if(_currentFriendsTab==='chats') loadConversations();
+  /* Refresh unread badge after marking as read */
+  updateUnreadBadge();
 };
 
 /* ---- Send chat message (RTDB with Firestore fallback) ---- */
@@ -7070,35 +7082,32 @@ function updateUnreadBadge(){
       reqCount=parseInt(reqBadge.textContent,10)||0;
     }
   }catch(e){}
-  var totalCount=_totalUnread+reqCount;
+  var totalUnread=_totalUnread||0;
+  var totalCount=totalUnread+reqCount;
   /* Update unread indicator bar */
   var ind=document.getElementById('unreadIndicator');
   if(totalCount>0){
-    ind.style.display='block';
-    ind.textContent=totalCount+' unread item'+(totalCount>1?'s':'');
+    if(ind){ind.style.display='block';ind.textContent=totalCount+' unread item'+(totalCount>1?'s':'');}
     if(document.hidden) document.title='('+totalCount+') '+_origTitle;
   }else{
-    ind.style.display='none';
+    if(ind) ind.style.display='none';
     document.title=_origTitle;
   }
   /* Update friends button badge */
+  var friendsBadge=document.getElementById('friendsUnreadBadge');
+  if(friendsBadge){
+    if(totalCount>0){
+      friendsBadge.textContent=totalCount>99?'99+':totalCount;
+      friendsBadge.style.display='block';
+    }else{
+      friendsBadge.style.display='none';
+    }
+  }
+  /* Also handle the old .unread-dot on friendsBtn for compatibility */
   var btn=document.getElementById('friendsBtn');
   if(btn){
     var existingBadge=btn.querySelector('.unread-dot');
-    if(totalCount>0){
-      if(!existingBadge){
-        var dot=document.createElement('span');
-        dot.className='unread-dot';
-        dot.style.cssText='position:absolute;top:-2px;right:-2px;min-width:16px;height:16px;border-radius:50%;background:#ef4444;color:#fff;font-size:9px;font-weight:700;text-align:center;line-height:16px;padding:0 3px';
-        dot.textContent=totalCount;
-        btn.style.position='relative';
-        btn.appendChild(dot);
-      }else{
-        existingBadge.textContent=totalCount;
-      }
-    }else if(existingBadge){
-      existingBadge.remove();
-    }
+    if(existingBadge) existingBadge.remove();
   }
   /* Refresh conversations list if on chats tab */
   if(_currentFriendsTab==='chats'){
@@ -7596,6 +7605,9 @@ window.loadFriendsList = loadFriendsList;
 window.loadFriendRequests = loadFriendRequests;
 window.loadConversations = loadConversations;
 window.syncPublicProfile = syncPublicProfile;
+window.refreshAuthUI = refreshAuthUI;
+window.refreshBadge = refreshBadge;
+window.updateUnreadBadge = updateUnreadBadge;
 
 })();
 </script>
