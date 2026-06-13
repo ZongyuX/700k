@@ -103,7 +103,7 @@ var ZH = {
 
   /* ---- Friends ---- */
   'friends.title': '好友',
-  'friends.add': '添加',
+  'friends.add': '+ 添加',
   'friends.email.placeholder': '输入好友邮箱',
   'friends.sendrequest': '发送请求',
   'friends.chat.placeholder': '输入消息...',

@@ -103,7 +103,7 @@ var EN = {
 
   /* ---- Friends ---- */
   'friends.title': 'Friends',
-  'friends.add': 'Add',
+  'friends.add': '+ Add',
   'friends.email.placeholder': "Enter friend's email",
   'friends.sendrequest': 'Send Request',
   'friends.chat.placeholder': 'Type a message...',

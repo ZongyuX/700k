@@ -1576,23 +1576,35 @@ function startTimer(){
 /* ---- header coin button ---- */
 var arcBtn, arcPanel;
 function buildArcadeBtn(){
-  /* Reuse the existing #coinBtn in the header instead of creating a duplicate.
-   * The #coinBtn already shows 🪙 + coin count and has its own click handler. */
-  arcBtn = elById('coinBtn');
-  if(!arcBtn) return;
-  /* Ensure clicking the existing coinBtn opens the arcade panel */
-  arcBtn.removeEventListener('click', arcBtn._prevArcadeClick);
-  arcBtn._prevArcadeClick = function(e){
+  var bar=D.querySelector('.hbtns'); if(!bar) return;
+  /* Remove any existing arcade button first */
+  var existing=bar.querySelector('.arcade-btn');
+  if(existing) existing.remove();
+  arcBtn=D.createElement('button');
+  arcBtn.className='pp-chip arcade-btn';
+  arcBtn.title='Arcade — coins, avatars & battles';
+  arcBtn.style.cursor='pointer';
+  arcBtn.addEventListener('click',function(e){
     e.stopPropagation();
     openArcade();
-  };
-  arcBtn.addEventListener('click', arcBtn._prevArcadeClick);
+  });
+  /* Insert after the game button for better visibility, or before authBtn */
+  var gameBtn=bar.querySelector('#gameBtn');
+  var authBtn=bar.querySelector('#authBtn');
+  if(gameBtn && gameBtn.nextSibling){
+    bar.insertBefore(arcBtn, gameBtn.nextSibling);
+  }else if(authBtn){
+    bar.insertBefore(arcBtn, authBtn);
+  }else{
+    bar.appendChild(arcBtn);
+  }
   paintArcadeBtn();
 }
-function paintArcadeBtn(){
-  /* Update the existing coinBtn's count display */
-  var countEl = elById('coinBtnCount');
-  if(countEl) countEl.textContent = ' '+(game.coins||0);
+function paintArcadeBtn(){ 
+  if(arcBtn) arcBtn.innerHTML='<span class="lv">🪙 '+(game.coins||0)+'</span>'; 
+  /* Also update the header coin button if it exists */
+  var coinBtnCount=D.getElementById('coinBtnCount');
+  if(coinBtnCount) coinBtnCount.textContent=game.coins||0;
 }
 
 /* ---- arcade panel ---- */
@@ -1761,271 +1773,89 @@ var COIN_PACKS=[
   { coins:12000, price:'$14.99' }
 ];
 async function redeemCoinCode(){
-  var code = (document.getElementById('ppCoinCode').value || '').trim();
-  var m = document.getElementById('ppCoinMsg');
-  m.style.display = 'block';
-  
-  if(!code){
-    m.className = 'msg err';
-    m.textContent = 'Please enter a code.';
-    return;
-  }
+  var code=(elById('ppCoinCode').value||'').trim();
+  var m=elById('ppCoinMsg'); m.style.display='block';
+  if(!code){ m.className='msg err'; m.textContent='Paste a coin code first.'; return; }
 
-  /* TEST mode: codes starting with ZXTEST- */
-  if(code.toUpperCase().indexOf('ZXTEST-') === 0){
-    if(_isCodeUsed(code)){
-      m.className = 'msg err';
-      m.textContent = 'This test code has already been used.';
-      return;
-    }
-    var testAmount = 1200;
-    if(code.includes('4000') || code.includes('M')) testAmount = 4000;
-    if(code.includes('12000') || code.includes('L')) testAmount = 12000;
-    if(code.includes('3800')) testAmount = 3800;
-    
-    game.coins = (game.coins || 0) + testAmount;
-    save(); refresh(); paintArcadeBtn();
-    _markCodeUsed(code);
-    m.className = 'msg ok';
-    m.textContent = '+' + testAmount + ' coins added! (TEST)';
-    setTimeout(paintArcade, 900);
-    return;
-  }
-  
-  if(!window.PPLemon || !PPLemon.validateLicense){
-    m.className = 'msg err';
-    m.textContent = 'Code redemption is not set up yet.';
-    return;
-  }
-  
-  m.className = 'msg';
-  m.textContent = 'Verifying code...';
-  
-  try{
-    console.log('[Redeem] Validating key with Lemon Squeezy...');
-    var res = await PPLemon.validateLicense(code);
-    console.log('[Redeem] Validation result:', JSON.stringify(res));
-    
-    /* ========== 金币类激活码 ========== */
-    if(res.ok && res.kind === 'coins'){
-      console.log('[Redeem] ========== COINS ==========');
-      console.log('[Redeem] Response:', JSON.stringify(res));
-      
-      if(_isCodeUsed(code)){
-        m.className = 'msg err';
-        m.textContent = 'This code has already been used on your account.';
-        return;
-      }
-      _markCodeUsed(code);
-      
-      // 直接从响应中获取金额，不经过任何选择器
-      var coinAmount = res.coins || res.amount || 0;
-      
-      // 如果金额为0，从 product_id 精确匹配
-      if(coinAmount === 0 && res.productId){
-        var productMap = {
-          1136119: 1200, 1086196: 1200,  // Coin Pack S
-          1136118: 4000, 1086203: 4000,  // Coin Pack M
-          1136117: 12000, 1086212: 12000, // Coin Pack L
-          1136120: 1200, 1091714: 1200,  // Credits 1200
-          1136121: 3800, 1092744: 3800   // Credits 3800
-        };
-        coinAmount = productMap[res.productId] || 1200;
-      }
-      
-      console.log('[Redeem] Coin amount:', coinAmount);
-      
-      var beforeCoins = game.coins || 0;
-      game.coins = beforeCoins + coinAmount;
-      console.log('[Redeem] Coins: ' + beforeCoins + ' -> ' + game.coins);
-      
-      save();
-      refresh();
-      paintArcadeBtn();
-      
-      m.className = 'msg ok';
-      m.textContent = 'Successfully added ' + coinAmount.toLocaleString() + ' coins!';
-      if(typeof ppToast === 'function') ppToast('+' + coinAmount.toLocaleString() + ' coins!');
-      
-      setTimeout(paintArcade, 900);
-      return;
-    }
-    
-    /* ========== 积分类激活码 ========== */
-    if(res.ok && res.kind === 'credits'){
-      console.log('[Redeem] ========== CREDITS ==========');
-      console.log('[Redeem] Response:', JSON.stringify(res));
-      
-      if(_isCodeUsed(code)){
-        m.className = 'msg err';
-        m.textContent = 'This code has already been used on your account.';
-        return;
-      }
-      _markCodeUsed(code);
-      
-      // 直接从响应中获取金额
-      var creditAmount = res.credits || res.amount || 0;
-      
-      // 如果金额为0，从 product_id 精确匹配
-      if(creditAmount === 0 && res.productId){
-        var creditMap = {
-          1136120: 1200, 1091714: 1200,  // Credits 1200
-          1136121: 3800, 1092744: 3800   // Credits 3800
-        };
-        creditAmount = creditMap[res.productId] || 1200;
-        console.log('[Redeem] Credit amount from product_id map:', creditAmount);
-      }
-      
-      // 如果还是没有，默认 3800（因为这是 3800 产品）
-      if(creditAmount === 0 && (res.productId === 1136121 || res.productId === 1092744)){
-        creditAmount = 3800;
-        console.log('[Redeem] Credit amount forced to 3800 by product_id');
-      }
-      
-      console.log('[Redeem] Final credit amount:', creditAmount);
-      
-      var curCreds = parseInt(localStorage.getItem('pm_unlock_credits') || '0', 10);
-      var newCreds = curCreds + creditAmount;
-      localStorage.setItem('pm_unlock_credits', String(newCreds));
-      console.log('[Redeem] Credits: ' + curCreds + ' -> ' + newCreds);
-      
-      // 通知游戏 iframe
-      try{
-        var gameFrame = document.querySelector('iframe[src*="game-pm"]');
-        if(gameFrame && gameFrame.contentWindow){
-          gameFrame.contentWindow.postMessage({
-            type: 'add_credits',
-            amount: creditAmount
-          }, '*');
-          console.log('[Redeem] Sent add_credits message to game iframe');
-        } else {
-          console.log('[Redeem] Game iframe not found');
+  /* ---- Check if this code has already been used (one-time-use enforcement) ---- */
+  if(window.isLicenseUsedAsync){
+    try{
+      var usedResult = await isLicenseUsedAsync(code);
+      if(usedResult.used){
+        m.className='msg err';
+        if(usedResult.byOtherAccount){
+          m.textContent='This activation code has already been activated by another account.';
+        }else{
+          m.textContent='This activation code has already been used on your account. Each code can only be activated once.';
         }
-      } catch(e){
-        console.warn('[Redeem] Failed to notify game iframe:', e);
-      }
-      
-      m.className = 'msg ok';
-      m.textContent = 'Successfully added ' + creditAmount.toLocaleString() + ' game credits!';
-      if(typeof ppToast === 'function') ppToast('+' + creditAmount.toLocaleString() + ' credits!');
-      
-      // 刷新游戏积分显示
-      var shopCreditsEl = document.getElementById('shopCredits');
-      if(shopCreditsEl) shopCreditsEl.textContent = newCreds.toLocaleString();
-      
-      setTimeout(paintArcade, 900);
-      return;
-    }
-    
-    /* Pro 激活码 - 提示去正确的地方激活 */
-    if(res.ok && res.kind === 'pro'){
-      m.className = 'msg err';
-      m.textContent = 'This is a Pro subscription code. Please use the "Activate Pro" button to redeem it.';
-      return;
-    }
-    
-    /* 未知类型 - 尝试根据 product_id 推断 */
-    if(res.ok){
-      console.log('[Redeem] Unknown kind, inferring from product_id');
-      if(_isCodeUsed(code)){
-        m.className = 'msg err';
-        m.textContent = 'This code has already been used.';
         return;
       }
-      _markCodeUsed(code);
-      
-      var inferredAmount = 1200;
-      if(res.productId === 1136118 || res.productId === 1086203) inferredAmount = 4000;
-      if(res.productId === 1136117 || res.productId === 1086212) inferredAmount = 12000;
-      if(res.productId === 1136121 || res.productId === 1092744) inferredAmount = 3800;
-      
-      game.coins = (game.coins || 0) + inferredAmount;
-      save(); refresh(); paintArcadeBtn();
-      m.className = 'msg ok';
-      m.textContent = '+' + inferredAmount + ' coins added!';
-      setTimeout(paintArcade, 900);
-      return;
-    }
-    
-    /* 网络错误 */
-    if(res.error === 'network'){
-      m.className = 'msg err';
-      m.textContent = 'Network error. Please check your connection and try again.';
-      return;
-    }
-    
-    /* 激活次数已达上限 - 但 key 仍然有效，直接添加对应金额 */
-    if(res.error === 'activation_limit_reached'){
-      console.log('[Redeem] activation_limit_reached, treating as valid');
-      if(_isCodeUsed(code)){
-        m.className = 'msg err';
-        m.textContent = 'This code has already been used on your account.';
-      } else {
-        _markCodeUsed(code);
-        var limitAmount = 1200;
-        if(res.productId === 1136118 || res.productId === 1086203) limitAmount = 4000;
-        if(res.productId === 1136117 || res.productId === 1086212) limitAmount = 12000;
-        if(res.productId === 1136121 || res.productId === 1092744) limitAmount = 3800;
-        
-        game.coins = (game.coins || 0) + limitAmount;
-        save(); refresh(); paintArcadeBtn();
-        m.className = 'msg ok';
-        m.textContent = '+' + limitAmount + ' coins added!';
-        setTimeout(paintArcade, 900);
-      }
-      return;
-    }
-    
-    /* 无效激活码 */
-    m.className = 'msg err';
-    m.textContent = 'Invalid code. Please check and try again.';
-    
-  } catch(e){
-    console.error('[Redeem] Error:', e);
-    m.className = 'msg err';
-    m.textContent = 'Error verifying code. Please try again.';
+    }catch(e){}
   }
-}
 
-/* Helper: check if a code has been used locally (per account) */
-function _isCodeUsed(code){
-  var key = _gameUid ? ('pp_used_codes_'+_gameUid) : 'pp_used_codes';
-  var usedCodes=[];
-  try{ usedCodes=JSON.parse(localStorage.getItem(key)||'[]'); }catch(e){ usedCodes=[]; }
-  return usedCodes.indexOf(code)>=0;
-}
-/* Helper: mark a code as used locally (per account) */
-function _markCodeUsed(code){
-  var key = _gameUid ? ('pp_used_codes_'+_gameUid) : 'pp_used_codes';
-  var uc=[];try{uc=JSON.parse(localStorage.getItem(key)||'[]');}catch(e){uc=[];}
-  if(uc.indexOf(code)<0){uc.push(code);localStorage.setItem(key,JSON.stringify(uc));}
-}
-/* Helper: check if product_id is in COIN_PRODUCT_MAP (via PPLemon) */
-function COIN_PRODUCT_MAP_HAS(productId){
-  try{
-    if(window.PPLemon && PPLemon.coinProductMapHas) return PPLemon.coinProductMapHas(productId);
-  }catch(e){}
-  return false;
-}
-/* [DEPRECATED] Show coin pack size selector — no longer used, amount is auto-detected */
-function showCoinPackSelector(code, msgEl){
-  // 这个函数已经不再使用 — 金额直接从 API 响应获取
-  console.warn('[Redeem] showCoinPackSelector is deprecated, amount is auto-detected');
-}
-/* Apply selected coin pack amount */
-function applyCoinPack(code,amount,parentEl){
-  console.log('[ApplyCoinPack] Adding', amount, 'coins');
-  var beforeCoins = game.coins || 0;
-  game.coins = beforeCoins + amount;
-  console.log('[ApplyCoinPack] 金币: ' + beforeCoins + ' -> ' + game.coins);
-  save(); refresh(); paintArcadeBtn();
-  var msgEl=elById('ppCoinMsg');
-  if(msgEl){
-    msgEl.className='msg ok';
-    msgEl.textContent='+' + amount.toLocaleString() + ' coins added! Total: ' + (game.coins || 0).toLocaleString();
+  /* TEST mode: codes starting with ZXTEST- grant 1000 coins (owner testing). */
+  if(code.toUpperCase().indexOf('ZXTEST-')===0){
+    /* Also check one-time-use for test codes */
+    if(window.isLicenseUsed && isLicenseUsed(code)){
+      m.className='msg err'; m.textContent='This activation code has already been used. Each code can only be activated once.';
+      return;
+    }
+    game.coins=(game.coins||0)+1000; save(); refresh(); paintArcadeBtn();
+    if(window.markLicenseUsedAsync) await markLicenseUsedAsync(code);
+    else if(window.markLicenseUsed) markLicenseUsed(code);
+    m.className='msg ok'; m.textContent='+1000 coins added! (TEST code)';
+    setTimeout(paintArcade, 900); return;
   }
-  if(typeof ppToast === 'function') ppToast('+' + amount.toLocaleString() + ' coins!');
-  setTimeout(paintArcade, 900);
+  if(!window.PPLemon || !PPLemon.validateLicense){
+    m.className='msg err'; m.textContent='Coin codes are not set up yet.'; return;
+  }
+  m.className='msg'; m.textContent='Checking…';
+  try{
+    var res = await PPLemon.validateLicense(code);
+
+    /* Double-check: after Lemon Squeezy validation, verify key wasn't used while validating */
+    if(window.isLicenseUsedAsync){
+      var secondCheck = await isLicenseUsedAsync(code);
+      if(secondCheck.used){
+        m.className='msg err';
+        if(secondCheck.byOtherAccount){
+          m.textContent='This activation code has already been activated by another account.';
+        }else{
+          m.textContent='This activation code has already been used on your account. Each code can only be activated once.';
+        }
+        return;
+      }
+    }
+
+    if(res.ok && res.kind==='coins'){
+      /* Mark the key as used BEFORE adding coins to prevent reuse */
+      if(window.markLicenseUsedAsync) await markLicenseUsedAsync(code);
+      else if(window.markLicenseUsed) markLicenseUsed(code);
+      game.coins=(game.coins||0)+res.coins; save(); refresh(); paintArcadeBtn();
+      m.className='msg ok'; m.textContent='+'+res.coins+' coins added!';
+      setTimeout(paintArcade, 900); return;
+    }
+    if(res.ok && res.kind==='pro'){
+      m.className='msg err';
+      m.textContent='That is a Pro code — activate it under "Activate code", not here.';
+      return;
+    }
+    if(res.ok){ m.className='msg err'; m.textContent='That code is valid but not a coin code.'; return; }
+    if(res.error==='network'){
+      m.className='msg err'; m.textContent='Could not reach the server. Check your connection.'; return;
+    }
+    if(res.error==='limit'){
+      /* Activation limit reached — code already used on another device/account */
+      if(window.markLicenseUsedAsync) await markLicenseUsedAsync(code);
+      else if(window.markLicenseUsed) markLicenseUsed(code);
+      m.className='msg err';
+      m.textContent='This activation code has already been activated. Each code can only be used once.';
+      return;
+    }
+    m.className='msg err'; m.textContent='This activation code has already been activated. Each code can only be used once.';
+  }catch(e){
+    m.className='msg err'; m.textContent='Could not reach the server. Check your connection.';
+  }
 }
 
 /* ---- Account / Profile panel: removed — duplicate of header authBtn ---- */
@@ -2090,8 +1920,5 @@ else arcadeBoot();
 
 if(D.readyState==='loading') D.addEventListener('DOMContentLoaded', boot);
 else boot();
-
-/* ---- Expose functions needed by onclick handlers in generated HTML ---- */
-window.applyCoinPack = applyCoinPack;
 
 })();
