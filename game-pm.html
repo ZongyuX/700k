@@ -208,6 +208,32 @@ body{background:#050508;color:#e0e0e0;font-family:'Share Tech Mono',monospace;ov
 .shop-card canvas.shop-icon{transition:transform .2s}
 .shop-card:hover canvas.shop-icon{animation:shopIconPulse .6s ease-in-out infinite alternate}
 @keyframes shopIconPulse{0%{transform:scale(1) rotate(0deg)}100%{transform:scale(1.1) rotate(3deg)}}
+#mpOpponentBar, #mpMyBar {
+  position: fixed !important;
+  bottom: 70px !important;
+  top: auto !important;
+  left: 10px !important;
+  right: auto !important;
+  transform: none !important;
+  z-index: 9999 !important;
+  background: rgba(0,0,0,0.85) !important;
+  border-radius: 20px !important;
+  padding: 4px 12px !important;
+  font-size: 10px !important;
+  pointer-events: none !important;
+}
+#mpMyBar {
+  left: auto !important;
+  right: 10px !important;
+  color: #ffaa00 !important;
+}
+@media(max-width: 768px){
+  #mpOpponentBar, #mpMyBar {
+    bottom: 60px !important;
+    font-size: 8px !important;
+    padding: 2px 8px !important;
+  }
+}
 </style>
 </head>
 <body>
@@ -1881,20 +1907,16 @@ function init(){
 }
 
 function resizeCanvas(){
-  const wrap=document.getElementById('canvasWrap');
-  if(!wrap||!canvas)return;
-  const wW=wrap.clientWidth-4,wH=wrap.clientHeight-4;
-  if(wW<50||wH<50)return;
-  const ratio=CW/CH;
-  let w=wW,h=wW/ratio;
-  if(h>wH){h=wH;w=wH*ratio}
-  /* On mobile portrait, canvas takes available width; panels go below */
-  if(window.innerWidth<=768){
-    const maxH=window.innerHeight*0.45;
-    if(h>maxH){h=maxH;w=h*ratio}
-  }
-  canvas.style.width=Math.floor(w)+'px';
-  canvas.style.height=Math.floor(h)+'px';
+  if(!canvas) return;
+  const maxWidth = Math.min(window.innerWidth - 20, 800);
+  const maxHeight = Math.min(window.innerHeight - 200, 510);
+  const ratio = CW/CH;
+  let w = maxWidth;
+  let h = w / ratio;
+  if(h > maxHeight) { h = maxHeight; w = h * ratio; }
+  canvas.style.width = Math.floor(w) + 'px';
+  canvas.style.height = Math.floor(h) + 'px';
+  canvas.style.margin = '0 auto';
 }
 
 function mkStartFx(){
@@ -2010,9 +2032,25 @@ function renderLobbyTables(){
   if(!container)return;
   var html='';
   for(var i=1;i<=50;i++){
-    html+=buildTableHTML(i);
+    html+='<div class="lobby-table" id="table_'+i+'" onclick="sitDown('+i+')" style="background:rgba(255,255,255,0.03);border-radius:10px;padding:8px;margin-bottom:6px;display:flex;justify-content:space-between;cursor:pointer">';
+    html+='<span>🏆 桌子 '+i+'</span>';
+    html+='<span id="seatStatus_'+i+'" style="font-size:11px;color:#aaa">🪑 空位</span>';
+    html+='</div>';
   }
   container.innerHTML=html;
+}
+
+function updateTableUI(tableNum, data){
+  var seatEl = document.getElementById('seatStatus_' + tableNum);
+  if(!seatEl) return;
+  var s1 = data && data.seat1, s2 = data && data.seat2;
+  var myUid = getMyUid();
+  var status = '';
+  if(s1 && s2) status = '👥 ' + (s1.name||'?') + ' / ' + (s2.name||'?');
+  else if(s1) status = '👤 ' + (s1.name||'?') + (s1.uid===myUid?' (你)':'') + ' · 等待对手';
+  else if(s2) status = '👤 ' + (s2.name||'?') + (s2.uid===myUid?' (你)':'') + ' · 等待对手';
+  else status = '🪑 空位';
+  seatEl.innerText = status;
 }
 
 /* Build HTML for a single table */
@@ -2425,6 +2463,7 @@ function listenToLobby(){
   mpLobbyRef=rtdb.ref('lobby/'+mpMode+'/tables');
   mpLobbyListener=mpLobbyRef.on('value',function(snap){
     var data=snap.val()||{};
+    for(var i=1;i<=50;i++){ updateTableUI(i, data[i] || data[''+i] || {}); }
     updateLobbyUI(data);
     /* Check if my table has both players ready → start game */
     if(mpMyTable>0 && !_mpGameStarting){
@@ -2647,60 +2686,21 @@ function startMultiplayerGame(tableNum,uid1,uid2,name1,name2){
   var myUid=getMyUid();
   var isHost=(myUid===uid1);  // 最先坐下的玩家是 Host（seat 1）
   
-  /* ===== 难度选择：只有 Host（最先坐下的玩家）可以选择难度 ===== */
+  /* ===== 难度选择：简化为 prompt 弹窗 ===== */
   if(isHost){
-    // Host 选择难度
-    showDifficultySelector().then(function(selectedDifficulty){
-      if(selectedDifficulty===null||selectedDifficulty===undefined){
-        // 用户取消或关闭，不开始游戏
-        _mpGameStarting=false;
-        return;
-      }
-      gDifficulty=selectedDifficulty;
-      // 保存难度到 RTDB
-      var rtdb=getRtdb();
-      if(rtdb){
-        rtdb.ref('game_states/table_'+tableNum).update({
-          difficulty: selectedDifficulty,
-          host: uid1,
-          guest: uid2
-        }).catch(function(e){ console.warn('[MP] Failed to save difficulty:', e); });
-      }
-      proceedWithGameStart(tableNum,uid1,uid2,name1,name2);
-    }).catch(function(){
-      _mpGameStarting=false;
-    });
-  } else {
-    // 非 Host 等待 Host 选择难度
-    showWaitingForHostDifficulty();
-    // 监听 Host 选择的难度
+    gDifficulty = parseInt(prompt('选择难度: 0简单 1普通 2困难 3极难 4地狱 5不可能', '1')) || 1;
+    // 保存难度到 RTDB
     var rtdb=getRtdb();
     if(rtdb){
-      var diffRef=rtdb.ref('game_states/table_'+tableNum);
-      var diffListener=diffRef.on('value',function(snap){
-        var data=snap.val();
-        if(data && data.difficulty!==undefined){
-          gDifficulty=data.difficulty;
-          diffRef.off('value',diffListener);
-          proceedWithGameStart(tableNum,uid1,uid2,name1,name2);
-        }
-      });
-      // 超时处理
-      setTimeout(function(){
-        if(_mpGameStarting){
-          toast('Host did not select difficulty. Please try again.','info');
-          _mpGameStarting=false;
-          var waitingEl=document.getElementById('mpWaitingDifficulty');
-          if(waitingEl) waitingEl.remove();
-          backToModeSelect();
-        }
-      },30000);
-    } else {
-      // 无 RTDB 时直接开始
-      gDifficulty=1;
-      proceedWithGameStart(tableNum,uid1,uid2,name1,name2);
+      rtdb.ref('game_states/table_'+tableNum).update({
+        difficulty: gDifficulty,
+        host: uid1,
+        guest: uid2
+      }).catch(function(e){ console.warn('[MP] Failed to save difficulty:', e); });
     }
   }
+  // 直接开始游戏，不调用额外弹窗
+  proceedWithGameStart(tableNum,uid1,uid2,name1,name2);
 }
 
 /* 显示难度选择器并返回选择的难度索引（0-5）*/
@@ -2885,8 +2885,9 @@ function proceedWithGameStart(tableNum,uid1,uid2,name1,name2){
   try{
     SFX.resume();startBGM();
     initCh(0);
-    /* Show opponent info bar */
-    updateOpponentUI();
+    /* Show opponent info bar and setup sync */
+    showOpponentBar();
+    setupMultiplayerSync();
   }catch(e){
     console.error('[MP] Error starting game:', e);
     toast('Error starting game: ' + (e.message||'unknown'), 'info');
@@ -3049,6 +3050,69 @@ function stopOpponentListener(){
     }catch(e){}
   }
   mpStateListener=null;
+}
+
+/* Setup multiplayer sync — periodic state sync + opponent listener */
+function setupMultiplayerSync(){
+  if(!mpGameId) return;
+  var rtdb = getRtdb();
+  if(!rtdb) return;
+  // 每2秒同步状态
+  setInterval(function(){
+    if(gState !== 'playing' || gameOver) return;
+    var state = {
+      hp: baseHP,
+      maxHp: baseMaxHP,
+      score: score,
+      waveIndex: waveI,
+      coins: coins,
+      baseHP: (gMode === 'attack') ? enemyBaseHP : baseHP,
+      timestamp: Date.now()
+    };
+    rtdb.ref('mp_sync/' + mpGameId + '/' + getMyUid()).set(state);
+  }, 2000);
+  // 监听对手状态
+  rtdb.ref('mp_sync/' + mpGameId + '/' + mpOpponentUid).on('value', function(snap){
+    var opp = snap.val();
+    if(!opp) return;
+    mpOpponentState = opp;
+    // 更新UI
+    var bar = document.getElementById('mpOpponentBar');
+    if(bar) bar.innerHTML = '⚔️ ' + escMp(mpOpponentName) + ' 血量: ' + (opp.hp||'?') + '/' + (opp.maxHp||'?');
+    // 对战模式：同步敌方堡垒
+    if(mpMode === 'versus'){
+      if(gMode === 'attack' && opp.baseHP !== undefined){
+        enemyBaseHP = opp.baseHP;
+        var fortBar = document.getElementById('fortHPBar');
+        if(fortBar) fortBar.style.width = (enemyBaseHP/enemyBaseMaxHP*100)+'%';
+        var fortText = document.getElementById('fortHPText');
+        if(fortText) fortText.innerHTML = enemyBaseHP+'/'+enemyBaseMaxHP;
+      }
+      if(gMode === 'defense' && opp.waveIndex !== undefined){
+        // 同步波次等
+      }
+    }
+  });
+}
+
+/* Show opponent bar and my bar at bottom of screen */
+function showOpponentBar(){
+  var old = document.getElementById('mpOpponentBar');
+  if(old) old.remove();
+  var bar = document.createElement('div');
+  bar.id = 'mpOpponentBar';
+  bar.style.cssText = 'position:fixed;bottom:70px;left:10px;z-index:9999;background:rgba(0,0,0,0.85);border-radius:20px;padding:4px 12px;font-family:monospace;font-size:10px;color:#00ff88;pointer-events:none';
+  bar.innerHTML = '⚔️ ' + escMp(mpOpponentName) + ' 等待同步...';
+  document.body.appendChild(bar);
+  
+  var myBar = document.getElementById('mpMyBar');
+  if(!myBar){
+    myBar = document.createElement('div');
+    myBar.id = 'mpMyBar';
+    myBar.style.cssText = 'position:fixed;bottom:70px;right:10px;z-index:9999;background:rgba(0,0,0,0.85);border-radius:20px;padding:4px 12px;font-family:monospace;font-size:10px;color:#ffaa00;pointer-events:none';
+    myBar.innerHTML = '🛡️ ' + escMp(getMyName()) + ' (你)';
+    document.body.appendChild(myBar);
+  }
 }
 
 /* Update the game UI with opponent's state info */
