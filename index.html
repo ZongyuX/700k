@@ -449,6 +449,8 @@
   .opt-output-actions{display:flex;gap:8px}
   .opt-copy-btn,.opt-send-btn{padding:6px 14px;border-radius:8px;border:1px solid var(--border);background:var(--panel2);color:var(--text);font-size:12px;font-weight:600;cursor:pointer;transition:.15s}
   .opt-copy-btn:hover,.opt-send-btn:hover{border-color:var(--accent);background:rgba(124,92,255,.1)}
+  .opt-card-copy{background:none;border:1px solid var(--border);color:var(--muted);font-size:11px;padding:2px 6px;border-radius:5px;cursor:pointer;transition:.15s;margin-left:4px}
+  .opt-card-copy:hover{border-color:var(--accent2);color:var(--accent2);background:rgba(34,211,238,.1)}
   /* AI Selector Popup */
   .ai-sel-overlay{position:fixed;inset:0;background:rgba(4,7,14,.85);display:none;align-items:center;justify-content:center;z-index:200;padding:24px}
   .ai-sel-overlay.show{display:flex}
@@ -1750,10 +1752,10 @@
         <textarea class="opt-input" id="optInput" data-i18n="optimizer.placeholder" data-i18n-attr="placeholder" placeholder="Paste your prompt or describe what you need — e.g. 'Write a cover letter for a software engineer role at Google'..."></textarea>
         <div class="opt-btns">
           <button class="opt-btn" id="optQuickBtn" data-i18n="optimizer.quickbtn">&#9889; Quick Optimize</button>
-          <button class="opt-btn opt-ai-btn" id="optAiBtn" data-i18n="optimizer.aibtn">&#129504; AI Optimize</button>
+          <button class="opt-btn opt-ai-btn" id="optAiBtn" data-i18n="optimizer.aibtn" style="display:none">&#129504; AI Optimize</button>
         </div>
       </div>
-      <div class="opt-ai-notice" data-i18n="optimizer.ainotice">&#129504; First-time use requires downloading a local AI model (~300MB). Runs entirely in your browser — no data leaves your device.</div>
+      <!-- AI notice removed: auto-load silently -->
       <div class="opt-progress" id="optProgress">
         <div class="opt-progress-label" id="optProgressLabel" data-i18n="optimizer.loading">Loading AI model...</div>
         <div class="opt-progress-bar"><div class="opt-progress-fill" id="optProgressFill"></div></div>
@@ -2109,8 +2111,8 @@
   </div>
 </div>
 
-<!-- Global AI Model Badge -->
-<div class="global-ai-badge" id="globalAiBadge">
+<!-- Global AI Model Badge — hidden by default, no popup notification -->
+<div class="global-ai-badge" id="globalAiBadge" style="display:none!important">
   <span class="ai-dot"></span>
   <span data-i18n="badge.ai.ready">AI Ready</span>
 </div>
@@ -2668,11 +2670,15 @@ function initFirebase(){
 
 async function handleAuthChange(user){
   currentUser=user||null;
+  /* Update auth UI immediately — don't wait for loadUserDoc */
+  refreshAuthUI();
+  refreshBadge();
   /* Re-evaluate Pro state — Pro only works for logged-in users */
   evalProState();
   if(currentUser){
     try{ await loadUserDoc(currentUser); }catch(e){ console.warn('loadUserDoc',e); }
   }
+  /* Refresh UI again after loading user doc (name may have updated) */
   refreshAuthUI();
   refreshBadge();
   renderSidebar();
@@ -2821,12 +2827,14 @@ function doAuthSubmit(){
     lsSet('pp_optin', document.getElementById('authOptIn').checked?'1':'0');
     auth.createUserWithEmailAndPassword(email,pass).then(()=>{
       done(); hideOverlays(); toast(PPI18n.t('auth.account.created'));
+      refreshAuthUI();
     }).catch(e=>{ done(); m.className='msg err'; m.textContent=authErrMsg(e); });
   }else{
     auth.signInWithEmailAndPassword(email,pass).then(()=>{
       done(); hideOverlays();
       var u=auth.currentUser; var nm=u?(u.displayName||((u.email||'').split('@')[0]||'User')):'User';
       toast(nm+' — Welcome back!');
+      refreshAuthUI();
     }).catch(e=>{ done(); m.className='msg err'; m.textContent=authErrMsg(e); });
   }
 }
@@ -2843,6 +2851,7 @@ function doSocial(which){
     hideOverlays();
     var u=auth.currentUser; var nm=u?(u.displayName||((u.email||'').split('@')[0]||'User')):'User';
     toast(nm+' — Welcome!');
+    refreshAuthUI();
   }).catch(e=>{ m.className='msg err'; m.textContent=authErrMsg(e); });
 }
 
@@ -4130,12 +4139,15 @@ function _renderOptCards(scored,keywords){
       var fav=favorites.includes(p.id);
       var catDisplay=tCat(p.cat);
       var relevance=Math.min(100,Math.round(score/keywords.length*10));
+      var templateText=p.template||p.desc||'';
       return '<div class="card '+(locked?'locked':'')+'" data-id="'+p.id+'">'+
         '<button class="star '+(fav?'on':'')+'" data-star="'+p.id+'">'+(fav?'\u2605':'\u2606')+'</button>'+
         '<h4>'+esc(p.title)+'</h4><p>'+esc(p.desc)+'</p>'+
         '<div class="meta"><span class="tag">'+esc(catDisplay)+'</span>'+
         (locked?'<span class="tag locktag">'+PPI18n.t('grid.locked')+'</span>':(!isPro?'<span class="tag freetag">'+PPI18n.t('grid.free')+'</span>':''))+
-        '<span class="opt-relevance">'+PPI18n.t('optimizer.relevance','Relevance')+': '+relevance+'%</span></div></div>';
+        '<span class="opt-relevance">'+PPI18n.t('optimizer.relevance','Relevance')+': '+relevance+'%</span>'+
+        (templateText?'<button class="opt-card-copy" onclick="event.stopPropagation();copyText(\''+esc(templateText).replace(/'/g,"\\'").replace(/\n/g,' ')+'\');toast(PPI18n.t(\'toast.copied\',\'Copied!\'))" title="'+PPI18n.t('optimizer.copy','Copy')+'">&#128203;</button>':'')+
+        '</div></div>';
     }).join('');
   }
 }
@@ -4210,7 +4222,9 @@ async function runAIOptimizer(){
       document.getElementById('globalAiBadge').classList.add('show');
       /* Show online consultation button */
       document.getElementById('consultFab').classList.add('show');
-      toast(PPI18n.t('optimizer.ailoaded','AI model loaded! You can now use it across the site.'),'info');
+      /* No toast notification for "AI Ready" — silently ready */
+      /* Show the AI Optimize button now that model is ready */
+      document.getElementById('optAiBtn').style.display='';
     }catch(e){
       console.error('AI Optimize error:',e);
       toast(PPI18n.t('optimizer.aierror','AI optimization failed. Falling back to quick optimize.'),'info');
@@ -6274,9 +6288,11 @@ function loadFirestoreChat(chatId,fUid,fName,fAvatar){
       var avatarSvg='';
       if(!isMe){
         try{if(window.PPGame&&PPGame.avatarSVG){var a=document.getElementById('chatFriendAvatar');if(a)avatarSvg=a.innerHTML;}}catch(e){}
+      } else {
+        try{if(window.PPGame&&PPGame.avatarSVG&&PPGame.exportState){var _g=PPGame.exportState();var _av=_g.avatar||0;if(_av>0) avatarSvg=PPGame.avatarSVG(_av);}}catch(e){}
       }
       var ts=m.timestamp?new Date(m.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'';
-      var avatarHtml=isMe?'':'<div style="width:28px;height:28px;border-radius:7px;overflow:hidden;flex-shrink:0;border:1px solid var(--border)">'+avatarSvg+'</div>';
+      var avatarHtml=!avatarSvg?'':'<div style="width:28px;height:28px;border-radius:7px;overflow:hidden;flex-shrink:0;border:1px solid var(--border)">'+avatarSvg+'</div>';
       var nameHtml=isMe?'':'<div style="font-size:10px;color:var(--accent2);font-weight:600;margin-bottom:2px">'+esc(senderName)+'</div>';
       html+='<div style="display:flex;gap:6px;align-items:flex-end;align-self:'+align+';max-width:82%;position:relative">'+
         avatarHtml+
@@ -6339,9 +6355,11 @@ window.openChatWith=function(fUid,fName,fAvatar){
         var avatarSvg='';
         if(!isMe){
           try{if(window.PPGame&&PPGame.avatarSVG){var a=document.getElementById('chatFriendAvatar');if(a)avatarSvg=a.innerHTML;}}catch(e){}
+        } else {
+          try{if(window.PPGame&&PPGame.avatarSVG&&PPGame.exportState){var _g2=PPGame.exportState();var _av2=_g2.avatar||0;if(_av2>0) avatarSvg=PPGame.avatarSVG(_av2);}}catch(e){}
         }
         var ts=m.timestamp?new Date(m.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'';
-        var avatarHtml=isMe?'':'<div style="width:28px;height:28px;border-radius:7px;overflow:hidden;flex-shrink:0;border:1px solid var(--border)">'+avatarSvg+'</div>';
+        var avatarHtml=!avatarSvg?'':'<div style="width:28px;height:28px;border-radius:7px;overflow:hidden;flex-shrink:0;border:1px solid var(--border)">'+avatarSvg+'</div>';
         var nameHtml=isMe?'':'<div style="font-size:10px;color:var(--accent2);font-weight:600;margin-bottom:2px">'+esc(senderName||fName)+'</div>';
         html+='<div style="display:flex;gap:6px;align-items:flex-end;align-self:'+align+';max-width:82%;position:relative">'+
           avatarHtml+
@@ -6981,12 +6999,26 @@ saveAccountSettings=async function(){
  *  AI MODEL AUTO-PRELOAD — Load in background after page ready
  *  Downloads the WebLLM model to browser cache without user click
  *  Runs LAST after everything else is loaded
+ *  - Silently loads, no popup/notification
+ *  - Shows AI Optimize button after load
+ *  - On subsequent visits, shows button immediately if cached
  * ============================================================ */
 (function(){
   function autoPreloadAI(){
     /* Only preload if WebGPU is available and model not already loaded */
     if(!navigator.gpu) return;
-    if(window.PPLocalAI && window.PPLocalAI.ready) return;
+    if(window.PPLocalAI && window.PPLocalAI.ready){
+      /* Model already loaded (cached) — show AI button immediately */
+      document.getElementById('optAiBtn').style.display='';
+      document.getElementById('consultFab').classList.add('show');
+      return;
+    }
+    
+    /* If model was previously cached, show AI button as loading state immediately */
+    var aiBtn=document.getElementById('optAiBtn');
+    aiBtn.style.display='';
+    aiBtn.disabled=true;
+    aiBtn.innerHTML='<span style="display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:pp-spin .6s linear infinite"></span> '+PPI18n.t('optimizer.aibtn','&#129504; AI Optimize')+' <span style="font-size:10px;opacity:.7">Loading...</span>';
     
     console.log('[AI Preload] Starting background model preload...');
     try{
@@ -6994,24 +7026,38 @@ saveAccountSettings=async function(){
         webllm.CreateMLCEngine('Qwen2.5-1.5B-Instruct-q4f16_1-MLC',{
           initProgressCallback:function(report){
             var pct=Math.round(report.progress*100);
-            if(pct>0 && pct%20===0) console.log('[AI Preload] '+pct+'%');
+            /* Silently update progress — no toast notification */
+            var statusEl=document.getElementById('optAiStatus');
+            if(statusEl) statusEl.textContent=pct+'%';
           }
         }).then(function(engine){
           window.PPLocalAI={engine:engine,ready:true,modelName:'Qwen2.5-1.5B-Instruct'};
           console.log('[AI Preload] Model preloaded and cached!');
-          /* Show AI badge if elements exist */
-          var badge=document.getElementById('globalAiBadge');
-          if(badge) badge.classList.add('show');
+          /* Show AI Optimize button and enable it */
+          aiBtn.style.display='';
+          aiBtn.disabled=false;
+          aiBtn.innerHTML=PPI18n.t('optimizer.aibtn','&#129504; AI Optimize');
+          /* Show online consultation button */
           var fab=document.getElementById('consultFab');
           if(fab) fab.classList.add('show');
+          /* No toast notification — silently ready */
         }).catch(function(e){
           console.warn('[AI Preload] Failed:',e.message);
+          /* Hide AI button on failure */
+          aiBtn.style.display='none';
+          aiBtn.disabled=false;
+          aiBtn.innerHTML=PPI18n.t('optimizer.aibtn','&#129504; AI Optimize');
         });
       }).catch(function(e){
         console.warn('[AI Preload] WebLLM import failed:',e.message);
+        /* Hide AI button on failure */
+        aiBtn.style.display='none';
+        aiBtn.disabled=false;
+        aiBtn.innerHTML=PPI18n.t('optimizer.aibtn','&#129504; AI Optimize');
       });
     }catch(e){
       console.warn('[AI Preload] Error:',e.message);
+      aiBtn.style.display='none';
     }
   }
   /* Delay preload: wait for page + all resources to finish loading first */
