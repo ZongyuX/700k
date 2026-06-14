@@ -3788,6 +3788,12 @@ async function redeemCode(){
       return unlockTimed(key, m, 30, 'Pro activated (30 days) — code recognized.');
     }
 
+    if(res.error === 'already_used'){
+      m.className = 'msg err';
+      m.textContent = 'This activation code has already been used.';
+      return;
+    }
+
     if(res.error === 'network'){
       m.className = 'msg err';
       m.textContent = PPI18n.t('activate.network');
@@ -5100,6 +5106,294 @@ runQuickOptimizer = function(){
 <script src="demo-data.js" defer></script>
 <script src="social.js" defer></script>
 <script src="lemonsqueezy.js" defer></script>
+<script>
+/* ============================================================
+   PATCH: Ensure coin-code redemption in the Arcade "Have a coin
+   code? Redeem it" panel can only be used ONCE per code — the
+   same anti-duplicate logic already enforced in the Pro
+   activation modal.
+
+   Strategy (defense in depth):
+   Layer 1 – Patch PPLemon.validateLicense to reject already-used
+             keys at the validation layer (catches ALL callers
+             including fun.js's coin-redeem path).
+   Layer 2 – Patch PPGame.openArcade + DOM observer to inject
+             front-end dupe checks on the redeem button/input.
+   ============================================================ */
+(function(){
+
+  /* ==================================================================
+     LAYER 1: Patch PPLemon.validateLicense
+     After lemonsqueezy.js loads, wrap PPLemon.validateLicense so that
+     it FIRST checks isLicenseUsed(key). If the key was already used,
+     return {ok:false, error:'already_used'} immediately — this
+     prevents fun.js's coin-redeem path from granting coins on a
+     reused code, regardless of how fun.js is implemented.
+     ================================================================== */
+  var _lemonPatchInterval = setInterval(function(){
+    if(!window.PPLemon || typeof PPLemon.validateLicense !== 'function') return;
+    if(PPLemon.validateLicense._antidupePatched) return;
+    clearInterval(_lemonPatchInterval);
+
+    var _origValidate = PPLemon.validateLicense;
+    PPLemon.validateLicense = function(key){
+      var normalizedKey = (key || '').trim().toUpperCase();
+
+      /* Check if the key was already used (localStorage + Firestore) */
+      if(typeof isLicenseUsed === 'function'){
+        var self = this;
+        var args = arguments;
+        return isLicenseUsed(normalizedKey).then(function(used){
+          if(used){
+            console.warn('[PATCH L1] License key already used, blocking at validation layer:', normalizedKey);
+            return { ok: false, error: 'already_used' };
+          }
+          /* Not used yet — proceed to the original Lemon Squeezy validation */
+          return _origValidate.apply(self, args);
+        });
+      }
+
+      /* isLicenseUsed not available — fall through to original */
+      return _origValidate.apply(this, arguments);
+    };
+    PPLemon.validateLicense._antidupePatched = true;
+    console.log('[PATCH L1] PPLemon.validateLicense patched — already-used keys will be rejected at validation.');
+  }, 300);
+
+  /* Also try on load */
+  window.addEventListener('load', function(){
+    setTimeout(function(){
+      if(window.PPLemon && typeof PPLemon.validateLicense === 'function' && !PPLemon.validateLicense._antidupePatched){
+        clearInterval(_lemonPatchInterval);
+        var _origV = PPLemon.validateLicense;
+        PPLemon.validateLicense = function(key){
+          var normalizedKey = (key || '').trim().toUpperCase();
+          if(typeof isLicenseUsed === 'function'){
+            var self = this;
+            var args = arguments;
+            return isLicenseUsed(normalizedKey).then(function(used){
+              if(used){
+                console.warn('[PATCH L1] License key already used (load patch):', normalizedKey);
+                return { ok: false, error: 'already_used' };
+              }
+              return _origV.apply(self, args);
+            });
+          }
+          return _origV.apply(this, arguments);
+        };
+        PPLemon.validateLicense._antidupePatched = true;
+        console.log('[PATCH L1] PPLemon.validateLicense patched (load fallback).');
+      }
+    }, 1500);
+  });
+
+  /* ==================================================================
+     LAYER 2: Patch PPGame.openArcade — watch for the Arcade's
+     coin-redeem UI and inject dupe-checking click handlers.
+     ================================================================== */
+  var _ppGamePatchInterval = setInterval(function(){
+    if(!window.PPGame) return;
+    clearInterval(_ppGamePatchInterval);
+
+    var _origOpenArcade = PPGame.openArcade;
+    PPGame.openArcade = function(){
+      if(typeof _origOpenArcade === 'function') _origOpenArcade.apply(this, arguments);
+      _startArcadeWatch();
+    };
+
+    /* Also patch openProfile if it contains a coin-redeem section */
+    if(PPGame.openProfile){
+      var _origOpenProfile = PPGame.openProfile;
+      PPGame.openProfile = function(){
+        if(typeof _origOpenProfile === 'function') _origOpenProfile.apply(this, arguments);
+        _startArcadeWatch();
+      };
+    }
+
+    function _startArcadeWatch(){
+      /* MutationObserver to catch when fun.js adds the coin-redeem UI */
+      var _observer = new MutationObserver(function(){
+        _scanAndPatch();
+      });
+      _observer.observe(document.body, { childList: true, subtree: true });
+
+      /* Also try at intervals in case the observer misses something */
+      setTimeout(_scanAndPatch, 200);
+      setTimeout(_scanAndPatch, 600);
+      setTimeout(_scanAndPatch, 1200);
+      setTimeout(_scanAndPatch, 2500);
+    }
+
+    function _scanAndPatch(){
+      _patchCoinRedeemUI();
+    }
+
+    function _patchCoinRedeemUI(){
+      /* Find all containers that look like coin-redeem sections */
+      var containers = [];
+      var nodeLists = [
+        document.querySelectorAll('[class*="arcade" i]'),
+        document.querySelectorAll('[id*="arcade" i]'),
+        document.querySelectorAll('[class*="coin" i]'),
+        document.querySelectorAll('[id*="coin" i]'),
+        document.querySelectorAll('[class*="redeem" i]'),
+        document.querySelectorAll('[id*="redeem" i]'),
+        document.querySelectorAll('[class*="shop" i]'),
+        document.querySelectorAll('[id*="shop" i]')
+      ];
+      for(var n = 0; n < nodeLists.length; n++){
+        for(var m = 0; m < nodeLists[n].length; m++){
+          if(containers.indexOf(nodeLists[n][m]) < 0) containers.push(nodeLists[n][m]);
+        }
+      }
+
+      /* Also scan for any element containing "Have a coin code" text */
+      var textNodes = document.querySelectorAll('span, div, p, label, a, button, h1, h2, h3, h4');
+      for(var t = 0; t < textNodes.length; t++){
+        var tn = textNodes[t];
+        if(tn.getAttribute('data-antidupe-scanned')) continue;
+        tn.setAttribute('data-antidupe-scanned', '1');
+        var txt = (tn.textContent || '').toLowerCase();
+        if((txt.indexOf('have a coin') >= 0 || txt.indexOf('coin code') >= 0 ||
+            txt.indexOf('redeem it') >= 0 || txt.indexOf('金币') >= 0) &&
+            tn.closest){
+          var par = tn.closest('[class*="arcade" i], [class*="coin" i], [class*="panel" i], [class*="modal" i], [class*="overlay" i], [class*="popup" i], [class*="shop" i], [class*="redeem" i]');
+          if(par && containers.indexOf(par) < 0){
+            containers.push(par);
+          }
+        }
+      }
+
+      for(var c = 0; c < containers.length; c++){
+        _patchRedeemElementsInContainer(containers[c]);
+      }
+    }
+
+    function _patchRedeemElementsInContainer(container){
+      /* Find input fields for codes */
+      var inputs = container.querySelectorAll('input[type="text"], input[type="password"], input:not([type]), textarea');
+      var buttons = container.querySelectorAll('button, a[role="button"], input[type="submit"]');
+
+      for(var b = 0; b < buttons.length; b++){
+        var btn = buttons[b];
+        if(btn.getAttribute('data-antidupe-patched')) continue;
+        var btnTxt = (btn.textContent || '').toLowerCase();
+        var btnId = (btn.id || '').toLowerCase();
+        var btnClass = (btn.className || '').toLowerCase();
+        var isRedeemBtn = btnTxt.indexOf('redeem') >= 0 || btnTxt.indexOf('兑换') >= 0 ||
+                          btnTxt.indexOf('activate') >= 0 || btnTxt.indexOf('claim') >= 0 ||
+                          btnTxt.indexOf('激活') >= 0 || btnId.indexOf('redeem') >= 0 ||
+                          btnClass.indexOf('redeem') >= 0;
+        if(!isRedeemBtn) continue;
+
+        btn.setAttribute('data-antidupe-patched', '1');
+
+        /* Find the closest input */
+        var pairedInput = null;
+        for(var ii = 0; ii < inputs.length; ii++){
+          if(inputs[ii].closest('div, form') === btn.closest('div, form')){
+            pairedInput = inputs[ii];
+            break;
+          }
+        }
+
+        _installDupeCheck(btn, pairedInput);
+      }
+    }
+
+    function _installDupeCheck(btn, inputEl){
+      /* We use event capture to intercept BEFORE fun.js's handler runs.
+         If the code is already used, we stop propagation so fun.js never
+         sees the click. If the code is new, we mark it used and allow
+         the event to continue to fun.js's handler. */
+      btn.addEventListener('click', function(e){
+        /* Skip if this is a re-dispatch from our own verification */
+        if(e._antidupeVerified) return;
+
+        var code = '';
+        if(inputEl){
+          code = (inputEl.value || '').trim();
+        }
+        if(!code){
+          /* Try dynamic lookup */
+          var c = btn.closest('div, form, section, dialog');
+          if(c){
+            var inp = c.querySelector('input[type="text"], input:not([type]), textarea');
+            if(inp) code = (inp.value || '').trim();
+          }
+        }
+
+        if(!code) return; /* let original handler deal with empty */
+
+        var normalizedKey = code.toUpperCase();
+
+        /* Synchronous localStorage check first (instant) */
+        var usedKeys = [];
+        try{ usedKeys = JSON.parse(localStorage.getItem('pp_used_keys') || '[]'); }catch(ex){ usedKeys = []; }
+        if(usedKeys.indexOf(normalizedKey) >= 0){
+          e.stopImmediatePropagation();
+          e.preventDefault();
+          _showDupeError(btn);
+          return;
+        }
+
+        /* Async Firestore check (if available) */
+        if(typeof isLicenseUsed === 'function' && typeof markLicenseUsed === 'function'){
+          e.stopImmediatePropagation(); /* pause while we check */
+
+          isLicenseUsed(code).then(function(alreadyUsed){
+            if(alreadyUsed){
+              _showDupeError(btn);
+              return;
+            }
+            /* Mark as used first to prevent race conditions */
+            return markLicenseUsed(code).then(function(){
+              /* Re-dispatch the click so fun.js's handler runs normally.
+                 The key is now marked, so even if fun.js re-validates it,
+                 our Layer 1 PPLemon patch will block it from being used
+                 in another session. */
+              var newEvent = new MouseEvent('click', {
+                bubbles: true, cancelable: true,
+                view: window
+              });
+              newEvent._antidupeVerified = true;
+              btn.dispatchEvent(newEvent);
+            });
+          }).catch(function(){
+            _showDupeError(btn, 'Failed to verify code. Please try again.');
+          });
+        }
+      }, true); /* capture phase */
+    }
+
+    function _showDupeError(btn, msg){
+      msg = msg || 'This activation code has already been used.';
+      /* Try to find an existing message element in the same container */
+      var container = btn.closest('div, form, section, dialog') || btn.parentElement;
+      if(container){
+        var existing = container.querySelector('.msg, .error, .err, [class*="message" i]');
+        if(existing){
+          existing.textContent = msg;
+          existing.className = 'msg err';
+          existing.style.color = '#ef4444';
+          existing.style.display = 'block';
+          return;
+        }
+      }
+      /* Fallback: create a temporary error element */
+      var err = document.createElement('div');
+      err.style.cssText = 'color:#ef4444;font-size:13px;margin:6px 0;padding:6px 10px;background:rgba(239,68,68,.12);border-radius:6px;';
+      err.textContent = msg;
+      if(btn.parentElement) btn.parentElement.insertBefore(err, btn.nextSibling);
+      else alert(msg);
+      setTimeout(function(){ if(err.parentElement) err.remove(); }, 5000);
+    }
+
+  }, 300);
+
+})();
+</script>
+
 
 <!-- ============================================================
   FAST LOAD v2: ENGLISH FIRST strategy
