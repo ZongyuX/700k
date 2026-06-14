@@ -3981,10 +3981,11 @@ function wireEvents(){
     if(currentUser) openAccount();
     else openAuth();
   });
-  /* Coin button: opens avatar picker */
+  /* Coin button: opens arcade panel */
   document.getElementById('coinBtn').addEventListener('click',function(e){
     e.stopPropagation();
-    if(typeof window.openAvatarPicker === 'function') window.openAvatarPicker();
+    if(window.PPGame && PPGame.openArcade) PPGame.openArcade();
+    else if(typeof openArcade === 'function') openArcade();
   });
   /* community button */
   document.getElementById('communityBtn').addEventListener('click',()=>{ openCommunityPanel(); });

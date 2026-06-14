@@ -1262,10 +1262,9 @@ function buildPanel(){
 }
 function closePanel(){ if(panel) panel.classList.remove('show'); }
 function openPanel(){
-  /* No longer opens Your progress panel — redirect to avatar picker */
-  if(typeof window.openAvatarPicker === 'function'){
-    window.openAvatarPicker();
-  }
+  if(!panel) buildPanel();
+  paintPanel();
+  panel.classList.add('show');
 }
 function paintPanel(){
   var body = elById('ppPanelBody');
@@ -1347,6 +1346,7 @@ window.PPGame = {
     save(); refresh();
   },
   openPanel: openPanel,
+  openArcade: openArcade,
   openProfile: function(){ openProfile(); },
   paintProfile: function(){ paintProfile(); },
   refresh: refresh,
@@ -1577,7 +1577,7 @@ function startTimer(){
 /* ---- header coin button ---- */
 var arcBtn, arcPanel;
 function buildArcadeBtn(){
-  /* Wire up the existing coinBtn in header to open the avatar picker */
+  /* Wire up the existing coinBtn in header to open the arcade panel */
   var coinBtn=D.getElementById('coinBtn');
   if(coinBtn){
     /* Remove original events by cloning replacement */
@@ -1587,12 +1587,7 @@ function buildArcadeBtn(){
 
     coinBtn.addEventListener('click',function(e){
       e.stopPropagation();
-      /* Open avatar picker instead of arcade */
-      if(typeof window.openAvatarPicker === 'function'){
-        window.openAvatarPicker();
-      } else if(typeof window.PPGame !== 'undefined' && PPGame.openProfile){
-        PPGame.openProfile();
-      }
+      openArcade();
     });
   }
   /* Remove any dynamically created arcade-btn if present */
