@@ -208,6 +208,11 @@ body{background:#050508;color:#e0e0e0;font-family:'Share Tech Mono',monospace;ov
 .shop-card canvas.shop-icon{transition:transform .2s}
 .shop-card:hover canvas.shop-icon{animation:shopIconPulse .6s ease-in-out infinite alternate}
 @keyframes shopIconPulse{0%{transform:scale(1) rotate(0deg)}100%{transform:scale(1.1) rotate(3deg)}}
+@keyframes badgePulse {
+  0% { transform: scale(0.8); opacity: 0; }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); opacity: 1; }
+}
 </style>
 </head>
 <body>
@@ -2246,7 +2251,7 @@ function sitDown(tableNum,seatNum){
   console.log('[MP] sitDown called, myUid:', myUid);
 
   if(!myUid){
-    alert('Unable to identify player. Please refresh the page.');
+    toast('Unable to identify player. Please refresh the page.','info');
     return;
   }
 
@@ -2256,7 +2261,7 @@ function sitDown(tableNum,seatNum){
   }
 
   var rtdb=getRtdb();
-  console.log('[MP] rtdb instance:', rtdb);
+  console.log('[MP] rtdb instance:', rtdb ? 'got it' : 'null');
 
   if(!rtdb){
     toast(_gmT('mp.requireslogin','Multiplayer requires login. Please sign in from the PromptRunic app, or play solo mode.'),'info');
@@ -2287,14 +2292,18 @@ function sitDown(tableNum,seatNum){
     update['mode']=mpMode;
     update['updatedAt']=Date.now();
 
-    console.log('[MP] updating table:', update);
-    tableRef.update(update);
-
-    mpMyTable=tableNum;
-    mpMySeat=seatNum;
-    mpIsReady=false;
-
-    tableRef.child('seat'+seatNum).onDisconnect().remove();
+    console.log('[MP] updating table:', JSON.stringify(update));
+    
+    tableRef.set(update).then(function(){
+      console.log('[MP] Table updated successfully');
+      mpMyTable=tableNum;
+      mpMySeat=seatNum;
+      mpIsReady=false;
+      tableRef.child('seat'+seatNum).onDisconnect().remove();
+    }).catch(function(err){
+      console.error('[MP] Table update error:', err);
+      toast('Could not join table: '+(err.message||'unknown error'),'info');
+    });
   }).catch(function(e){
     console.error('[MP] sitDown error details:', e);
     toast('Could not join table: '+(e.message||'unknown error'),'info');
@@ -2329,9 +2338,15 @@ function standUp(tableNum){
 /* Toggle ready state */
 function toggleReady(tableNum){
   var rtdb=getRtdb();
-  if(!rtdb||mpMySeat<1)return;
+  if(!rtdb||mpMySeat<1){
+    toast('Please sit down first!','info');
+    return;
+  }
   mpIsReady=!mpIsReady;
-  rtdb.ref('lobby/'+mpMode+'/tables/'+tableNum+'/seat'+mpMySeat+'/ready').set(mpIsReady);
+  console.log('[MP] Toggle ready:', mpIsReady);
+  rtdb.ref('lobby/'+mpMode+'/tables/'+tableNum+'/seat'+mpMySeat+'/ready').set(mpIsReady).catch(function(e){
+    console.error('[MP] Set ready error:', e);
+  });
 }
 
 /* Listen to lobby changes via Firebase RTDB */
@@ -2427,40 +2442,57 @@ var _parentFirebase=null;
 
 /* Get RTDB instance from parent */
 function getRtdb(){
-  // 方法1: 从父页面获取
+  // 方法1: 从当前页面尝试获取（优先）
+  if(window.rtdb){
+    console.log('[MP] Using window.rtdb');
+    return window.rtdb;
+  }
+  if(window.firebase && window.firebase.database){
+    console.log('[MP] Using window.firebase.database()');
+    return window.firebase.database();
+  }
+  
+  // 方法2: 尝试从父页面获取
   try{
-    if(window.parent&&window.parent.rtdb){
-      console.log('[MP] Using parent.rtdb');
-      return window.parent.rtdb;
-    }
-    if(window.parent&&window.parent.firebase&&window.parent.firebase.database){
-      console.log('[MP] Using parent.firebase.database()');
-      return window.parent.firebase.database();
+    if(window.parent && window.parent !== window){
+      if(window.parent.rtdb){
+        console.log('[MP] Using parent.rtdb');
+        return window.parent.rtdb;
+      }
+      if(window.parent.firebase && window.parent.firebase.database){
+        console.log('[MP] Using parent.firebase.database()');
+        return window.parent.firebase.database();
+      }
+      if(window.parent.firebaseApp && window.parent.firebaseApp.database){
+        console.log('[MP] Using parent.firebaseApp.database()');
+        return window.parent.firebaseApp.database();
+      }
+      // 尝试从父页面的全局变量获取
+      if(window.parent._firebaseDatabase){
+        console.log('[MP] Using parent._firebaseDatabase');
+        return window.parent._firebaseDatabase;
+      }
+      if(window.parent._rtdb){
+        console.log('[MP] Using parent._rtdb');
+        return window.parent._rtdb;
+      }
     }
   }catch(e){ console.warn('[MP] parent access error:', e); }
-
-  // 方法2: 从当前窗口获取
+  
+  // 方法3: 遍历父窗口链查找
   try{
-    if(window.rtdb){
-      console.log('[MP] Using window.rtdb');
-      return window.rtdb;
-    }
-    if(window.firebase&&window.firebase.database){
-      console.log('[MP] Using window.firebase.database()');
-      return window.firebase.database();
-    }
-  }catch(e){ console.warn('[MP] window access error:', e); }
-
-  // 方法3: 尝试从父页面的全局 Firebase 实例获取
-  try{
-    if(window.parent&&window.parent.firebaseApp){
-      console.log('[MP] Using parent.firebaseApp');
-      return window.parent.firebaseApp.database();
+    var f = window.parent;
+    var maxDepth = 5;
+    while(f && f !== window && maxDepth-- > 0){
+      if(f._firebaseDatabase) return f._firebaseDatabase;
+      if(f._rtdb) return f._rtdb;
+      if(f.firebase && f.firebase.database) return f.firebase.database();
+      f = f.parent;
     }
   }catch(e){}
-
+  
   console.error('[MP] No Firebase RTDB instance found!');
-  toast(_gmT('mp.requireslogin','Multiplayer requires login. Please sign in from the PromptRunic app.'),'info');
+  toast(_gmT('mp.requireslogin','Multiplayer requires login. Please sign in from the PromptRunic app, or play solo mode.'),'info');
   return null;
 }
 
