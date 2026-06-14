@@ -496,7 +496,7 @@
   .consult-fab:hover{transform:scale(1.08);box-shadow:0 6px 28px rgba(124,92,255,.5)}
   .consult-fab .fab-badge{position:absolute;top:-2px;right:-2px;width:14px;height:14px;border-radius:50%;background:var(--good);border:2px solid var(--bg);animation:fabPulse 2s ease infinite}
   @keyframes fabPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}
-  .consult-chat{position:fixed;bottom:90px;right:24px;z-index:190;width:360px;max-width:calc(100vw - 48px);background:var(--panel);border:1px solid var(--border);border-radius:16px;box-shadow:0 12px 48px rgba(0,0,0,.5);display:none;flex-direction:column;overflow:hidden;animation:optOutputIn .3s ease-out}
+  .consult-chat{position:fixed;bottom:24px;right:24px;z-index:190;width:360px;max-width:calc(100vw - 48px);background:var(--panel);border:1px solid var(--border);border-radius:16px;box-shadow:0 12px 48px rgba(0,0,0,.5);display:none;flex-direction:column;overflow:hidden;animation:optOutputIn .3s ease-out}
   .consult-chat.show{display:flex}
   .consult-chat-header{padding:14px 16px;background:linear-gradient(135deg,rgba(124,92,255,.15),rgba(34,211,238,.08));border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
   .consult-chat-header h4{font-size:14px;font-weight:800;color:var(--accent2)}
@@ -1563,7 +1563,8 @@
     <button class="pp-chip" id="communityBtn" data-i18n="header.community" title="Leaderboards & Mood Wall">🏆<span class="btn-hide-sm"> Community</span></button>
     <button class="hbtn-game" id="gameBtn" data-i18n="header.game">🎮<span class="btn-hide-sm"> Game</span></button>
     <button class="pp-chip" id="friendsBtn" title="Friends & Chat">👥<span class="btn-hide-sm"> Friends</span></button>
-    <button class="pp-chip" id="coinBtn" title="Coins & Arcade" onclick="if(window.PPGame&&PPGame.openPanel)PPGame.openPanel();">🪙<span class="btn-hide-sm"> <span id="coinBtnCount">0</span></span></button>
+    <button class="pp-chip" id="coinBtn" title="Coins & Arcade">🪙<span class="btn-hide-sm"> <span id="coinBtnCount">0</span></span></button>
+    <button class="pp-chip" id="assistantBtn" title="PromptRunic Assistant" style="display:none;cursor:pointer" onclick="document.getElementById('consultChat').classList.toggle('show')">💬<span class="btn-hide-sm"> Assistant</span></button>
     <button class="pp-chip" id="accountBtn" title="Account & Profile" style="background:linear-gradient(135deg,rgba(124,92,255,.15),rgba(34,211,238,.08));border:1px solid rgba(124,92,255,.3)">👤<span class="btn-hide-sm"> Account</span></button>
     <span class="badge" id="planBadge">FREE</span>
     <button class="hbtn-user" id="authBtn" data-i18n="header.signin" style="display:none">👤<span class="btn-hide-sm"> Sign in</span></button>
@@ -1752,7 +1753,7 @@
         <textarea class="opt-input" id="optInput" data-i18n="optimizer.placeholder" data-i18n-attr="placeholder" placeholder="Paste your prompt or describe what you need — e.g. 'Write a cover letter for a software engineer role at Google'..."></textarea>
         <div class="opt-btns">
           <button class="opt-btn" id="optQuickBtn" data-i18n="optimizer.quickbtn">&#9889; Quick Optimize</button>
-          <button class="opt-btn opt-ai-btn" id="optAiBtn" data-i18n="optimizer.aibtn" style="display:none">&#129504; AI Optimize</button>
+          <!-- AI Optimize button removed: AI optimization auto-triggers when model is ready -->
         </div>
       </div>
       <!-- AI notice removed: auto-load silently -->
@@ -2093,14 +2094,10 @@
 </div>
 
 <!-- Online Consultation Chat -->
-<button class="consult-fab" id="consultFab" title="Ask about PromptRunic">
-  <span class="fab-badge"></span>
-  &#128172;
-</button>
 <div class="consult-chat" id="consultChat">
   <div class="consult-chat-header">
     <h4 data-i18n="consult.title">PromptRunic Assistant</h4>
-    <button class="ch-close" onclick="document.getElementById('consultChat').classList.remove('show')">&times;</button>
+    <button class="ch-close" id="consultCloseBtn" title="Close">&times;</button>
   </div>
   <div class="consult-chat-body" id="consultBody">
     <div class="consult-msg ai" data-i18n="consult.greeting">Hi! I'm your PromptRunic assistant. Ask me anything about the website — how to use prompts, find categories, optimize your prompts, or navigate the site.</div>
@@ -3861,7 +3858,7 @@ function wireEvents(){
 
   /* optimizer buttons */
   document.getElementById('optQuickBtn').addEventListener('click',runQuickOptimizer);
-  document.getElementById('optAiBtn').addEventListener('click',runAIOptimizer);
+  /* optAiBtn removed — AI optimization auto-triggers when model is ready */
   document.getElementById('optInput').addEventListener('keydown',(e)=>{
     if(e.key==='Enter' && (e.ctrlKey || e.metaKey)){ e.preventDefault(); runQuickOptimizer(); }
   });
@@ -4029,6 +4026,17 @@ function scorePrompt(prompt, keywords){
   catWords.forEach(cw=>{
     if(keywords.some(kw=>kw.includes(cw)||cw.includes(kw))) score+=3;
   });
+  /* Intent-based scoring: check against INTENT_RULES keywords */
+  var lower=(title+' '+desc).toLowerCase();
+  INTENT_RULES.forEach(function(rule){
+    rule.keywords.forEach(function(kw){
+      if(lower.includes(kw)){
+        keywords.forEach(function(ikw){
+          if(rule.keywords.indexOf(ikw)>=0) score+=4;
+        });
+      }
+    });
+  });
   return score;
 }
 
@@ -4128,9 +4136,31 @@ function _renderOptCards(scored,keywords){
   var grid=document.getElementById('optGrid');
   var title=document.getElementById('optResultsTitle');
   if(!scored.length){
-    grid.innerHTML='<div class="empty">'+PPI18n.t('optimizer.nomatch','No relevant prompts found.')+'</div>';
-    title.textContent=PPI18n.t('optimizer.results.none','No matches found');
-    title.classList.add('show');
+    /* Instead of "No matches found", show recommended/popular prompts */
+    var allPrompts=getCurrentPrompts();
+    var recommended=allPrompts.slice(0,6);
+    if(recommended.length){
+      title.textContent=PPI18n.t('optimizer.recommended','Recommended prompts:')+' ('+fmt(recommended.length)+')';
+      title.classList.add('show');
+      grid.innerHTML=recommended.map(function(p){
+        var locked=!isPro && !p.free;
+        var fav=favorites.includes(p.id);
+        var catDisplay=tCat(p.cat);
+        var templateText=p.template||p.desc||'';
+        return '<div class="card '+(locked?'locked':'')+'" data-id="'+p.id+'">'+
+          '<button class="star '+(fav?'on':'')+'" data-star="'+p.id+'">'+(fav?'\u2605':'\u2606')+'</button>'+
+          '<h4>'+esc(p.title)+'</h4><p>'+esc(p.desc)+'</p>'+
+          '<div class="meta"><span class="tag">'+esc(catDisplay)+'</span>'+
+          (locked?'<span class="tag locktag">'+PPI18n.t('grid.locked')+'</span>':(!isPro?'<span class="tag freetag">'+PPI18n.t('grid.free')+'</span>':''))+
+          '<span class="opt-relevance" style="color:var(--muted)">'+PPI18n.t('optimizer.recommended','Recommended')+'</span>'+
+          (templateText?'<button class="opt-card-copy" onclick="event.stopPropagation();copyText(\''+esc(templateText).replace(/'/g,"\\'").replace(/\n/g,' ')+'\');toast(PPI18n.t(\'toast.copied\',\'Copied!\'))" title="'+PPI18n.t('optimizer.copy','Copy')+'">&#128203;</button>':'')+
+          '</div></div>';
+      }).join('');
+    }else{
+      grid.innerHTML='<div class="empty">'+PPI18n.t('optimizer.trydifferent','Try different keywords or a longer description.')+'</div>';
+      title.textContent=PPI18n.t('optimizer.results','Related prompts:');
+      title.classList.add('show');
+    }
   }else{
     title.textContent=PPI18n.t('optimizer.results','Related prompts:')+' ('+fmt(scored.length)+')';
     title.classList.add('show');
@@ -4163,6 +4193,27 @@ function runQuickOptimizer(){
     var prompts=getCurrentPrompts();
     var intent=detectIntent(input);
     var scored=prompts.map(function(p){return{p:p,score:scorePrompt(p,keywords)};}).filter(function(x){return x.score>0;}).sort(function(a,b){return b.score-a.score;}).slice(0,6);
+    /* Fallback: if no matches found, recommend popular prompts from detected-intent category */
+    if(scored.length===0){
+      var fallbackPrompts=[];
+      /* Try to find prompts matching the detected intent category */
+      if(intent){
+        var intentKw=intent.keywords||[];
+        fallbackPrompts=prompts.filter(function(p){
+          var pLower=(p.title+' '+p.desc+' '+p.cat).toLowerCase();
+          return intentKw.some(function(kw){return pLower.includes(kw.toLowerCase());});
+        }).slice(0,6);
+      }
+      /* If still no results, pick popular/recommended prompts */
+      if(fallbackPrompts.length===0){
+        var popularCats=['ai-basics','writing','marketing','coding','career'];
+        fallbackPrompts=prompts.filter(function(p){return popularCats.indexOf(p.cat)>=0;}).slice(0,6);
+      }
+      if(fallbackPrompts.length===0){
+        fallbackPrompts=prompts.slice(0,6);
+      }
+      scored=fallbackPrompts.map(function(p){return{p:p,score:0.5};});
+    }
     var result=buildOptimizedPrompt(input,intent,scored);
     var outputEl=document.getElementById('optOutput');
     var textEl=document.getElementById('optOutputText');
@@ -4188,14 +4239,14 @@ function runQuickOptimizer(){
 async function runAIOptimizer(){
   var input=document.getElementById('optInput').value.trim();
   if(!input){toast(PPI18n.t('optimizer.empty','Please enter a prompt or description.'),'info');return;}
-  var btn=document.getElementById('optAiBtn');
-  btn.disabled=true;
+  var quickBtn=document.getElementById('optQuickBtn');
+  if(quickBtn) quickBtn.disabled=true;
   var progress=document.getElementById('optProgress');
   var fill=document.getElementById('optProgressFill');
   var status=document.getElementById('optAiStatus');
   if(!navigator.gpu){
     toast(PPI18n.t('optimizer.nogpu','Your browser does not support WebGPU. Try Chrome 113+.'),'info');
-    btn.disabled=false;return;
+    if(quickBtn) quickBtn.disabled=false;return;
   }
   progress.classList.add('show');
 
@@ -4221,16 +4272,14 @@ async function runAIOptimizer(){
       /* Show global AI badge */
       document.getElementById('globalAiBadge').classList.add('show');
       /* Show online consultation button */
-      document.getElementById('consultFab').classList.add('show');
+      document.getElementById('assistantBtn').style.display='';
       /* No toast notification for "AI Ready" — silently ready */
-      /* Show the AI Optimize button now that model is ready */
-      document.getElementById('optAiBtn').style.display='';
     }catch(e){
       console.error('AI Optimize error:',e);
       toast(PPI18n.t('optimizer.aierror','AI optimization failed. Falling back to quick optimize.'),'info');
       runQuickOptimizer();
       progress.classList.remove('show');
-      btn.disabled=false;
+      if(quickBtn) quickBtn.disabled=false;
       return;
     }
   }else{
@@ -4337,8 +4386,7 @@ async function runAIOptimizer(){
     runQuickOptimizer();
   }
   progress.classList.remove('show');
-  btn.disabled=false;
-  btn.innerHTML=PPI18n.t('optimizer.aibtn','&#129504; AI Optimize');
+  if(quickBtn) quickBtn.disabled=false;
 }
 
 if(!PROMPTS.length){
@@ -4427,7 +4475,7 @@ async function sendRefineMessage(){
   /* Check if AI engine is available */
   var engine=window.PPLocalAI && window.PPLocalAI.engine ? window.PPLocalAI.engine : null;
   if(!engine){
-    var fallbackMsg='AI model not loaded yet. Click "AI Optimize" first to load the model, or use Quick Optimize for rule-based refinement.';
+    var fallbackMsg='AI model is still loading. Please wait a moment, or use Quick Optimize for rule-based refinement.';
     msgs.innerHTML+='<div class="opt-refine-msg ai">'+esc(fallbackMsg)+'</div>';
     msgs.scrollTop=msgs.scrollHeight;
     return;
@@ -4476,9 +4524,9 @@ async function sendRefineMessage(){
  *  Online Consultation Chat — answer questions about the website
  * ============================================================ */
 var _consultHistory=[];
-document.getElementById('consultFab').addEventListener('click',function(){
-  var chat=document.getElementById('consultChat');
-  chat.classList.toggle('show');
+/* Close button: close the chat window — user reopens via toolbar Assistant button */
+document.getElementById('consultCloseBtn').addEventListener('click',function(){
+  document.getElementById('consultChat').classList.remove('show');
 });
 document.getElementById('consultSendBtn').addEventListener('click',function(){sendConsultMessage();});
 document.getElementById('consultInput').addEventListener('keydown',function(e){
@@ -4491,7 +4539,7 @@ var PP_KNOWLEDGE=[
   'The site supports 3 languages: English, Chinese (中文), and Spanish (Español). Switch languages using the button in the top-right header.',
   'There are 11 AI services you can send prompts to: ChatGPT, Claude, Copilot, Gemini, DeepSeek, Kimi, Z.ai GLM, Grok, Perplexity, Mistral, and Qwen.',
   'Quick Optimize uses rule-based optimization: it detects your intent, finds matching prompts from the library, and builds an optimized prompt with role, method, format, and constraints.',
-  'AI Optimize downloads a local AI model (Qwen2.5-1.5B, ~1GB) that runs entirely in your browser. No data leaves your device. The model is cached after first download.',
+  'The local AI model (Qwen2.5-1.5B, ~1GB) runs entirely in your browser. No data leaves your device. The model is cached after first download.',
   'The Prompt Optimizer supports interactive refinement: after AI Optimize, you can chat with the AI to keep refining your prompt until it\'s perfect.',
   'Categories include: AI Basics, Writing, Marketing, Sales, Career, Coding, Startup, Business, E-commerce, Social, Learning, Personal, Productivity, Research, Image, Support, HR, Finance, Real Estate, Education, Health, Parenting, Travel, and Legal.',
   'Free prompts are available without any code. Pro membership unlocks all 700,000+ prompts. Plans start at $0.99 for 3 days, $7.99/month or $69 lifetime. Account required for Pro.',
@@ -7000,25 +7048,18 @@ saveAccountSettings=async function(){
  *  Downloads the WebLLM model to browser cache without user click
  *  Runs LAST after everything else is loaded
  *  - Silently loads, no popup/notification
- *  - Shows AI Optimize button after load
- *  - On subsequent visits, shows button immediately if cached
+ *  - Auto-triggers AI optimization when model becomes ready
+ *  - On subsequent visits, model is cached and ready instantly
  * ============================================================ */
 (function(){
   function autoPreloadAI(){
     /* Only preload if WebGPU is available and model not already loaded */
     if(!navigator.gpu) return;
     if(window.PPLocalAI && window.PPLocalAI.ready){
-      /* Model already loaded (cached) — show AI button immediately */
-      document.getElementById('optAiBtn').style.display='';
-      document.getElementById('consultFab').classList.add('show');
+      /* Model already loaded (cached) — show toolbar Assistant button */
+      document.getElementById('assistantBtn').style.display='';
       return;
     }
-    
-    /* If model was previously cached, show AI button as loading state immediately */
-    var aiBtn=document.getElementById('optAiBtn');
-    aiBtn.style.display='';
-    aiBtn.disabled=true;
-    aiBtn.innerHTML='<span style="display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:pp-spin .6s linear infinite"></span> '+PPI18n.t('optimizer.aibtn','&#129504; AI Optimize')+' <span style="font-size:10px;opacity:.7">Loading...</span>';
     
     console.log('[AI Preload] Starting background model preload...');
     try{
@@ -7033,31 +7074,23 @@ saveAccountSettings=async function(){
         }).then(function(engine){
           window.PPLocalAI={engine:engine,ready:true,modelName:'Qwen2.5-1.5B-Instruct'};
           console.log('[AI Preload] Model preloaded and cached!');
-          /* Show AI Optimize button and enable it */
-          aiBtn.style.display='';
-          aiBtn.disabled=false;
-          aiBtn.innerHTML=PPI18n.t('optimizer.aibtn','&#129504; AI Optimize');
-          /* Show online consultation button */
-          var fab=document.getElementById('consultFab');
-          if(fab) fab.classList.add('show');
+          /* Show toolbar Assistant button */
+          var assistantBtn=document.getElementById('assistantBtn');
+          if(assistantBtn) assistantBtn.style.display='';
+          /* Auto-trigger AI optimization if there's already input */
+          var optInput=document.getElementById('optInput');
+          if(optInput && optInput.value.trim()){
+            runAIOptimizer();
+          }
           /* No toast notification — silently ready */
         }).catch(function(e){
           console.warn('[AI Preload] Failed:',e.message);
-          /* Hide AI button on failure */
-          aiBtn.style.display='none';
-          aiBtn.disabled=false;
-          aiBtn.innerHTML=PPI18n.t('optimizer.aibtn','&#129504; AI Optimize');
         });
       }).catch(function(e){
         console.warn('[AI Preload] WebLLM import failed:',e.message);
-        /* Hide AI button on failure */
-        aiBtn.style.display='none';
-        aiBtn.disabled=false;
-        aiBtn.innerHTML=PPI18n.t('optimizer.aibtn','&#129504; AI Optimize');
       });
     }catch(e){
       console.warn('[AI Preload] Error:',e.message);
-      aiBtn.style.display='none';
     }
   }
   /* Delay preload: wait for page + all resources to finish loading first */

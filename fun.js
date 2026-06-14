@@ -1576,35 +1576,29 @@ function startTimer(){
 /* ---- header coin button ---- */
 var arcBtn, arcPanel;
 function buildArcadeBtn(){
-  var bar=D.querySelector('.hbtns'); if(!bar) return;
-  /* Remove any existing arcade button first */
-  var existing=bar.querySelector('.arcade-btn');
-  if(existing) existing.remove();
-  arcBtn=D.createElement('button');
-  arcBtn.className='pp-chip arcade-btn';
-  arcBtn.title='Arcade — coins, avatars & battles';
-  arcBtn.style.cursor='pointer';
-  arcBtn.addEventListener('click',function(e){
-    e.stopPropagation();
-    openArcade();
-  });
-  /* Insert after the game button for better visibility, or before authBtn */
-  var gameBtn=bar.querySelector('#gameBtn');
-  var authBtn=bar.querySelector('#authBtn');
-  if(gameBtn && gameBtn.nextSibling){
-    bar.insertBefore(arcBtn, gameBtn.nextSibling);
-  }else if(authBtn){
-    bar.insertBefore(arcBtn, authBtn);
-  }else{
-    bar.appendChild(arcBtn);
+  /* Wire up the existing coinBtn in header to open the arcade panel */
+  var coinBtn=D.getElementById('coinBtn');
+  if(coinBtn){
+    coinBtn.addEventListener('click',function(e){
+      e.stopPropagation();
+      openArcade();
+    });
+  }
+  /* Remove any dynamically created arcade-btn if present */
+  var bar=D.querySelector('.hbtns');
+  if(bar){
+    var existing=bar.querySelector('.arcade-btn');
+    if(existing) existing.remove();
   }
   paintArcadeBtn();
 }
 function paintArcadeBtn(){ 
-  if(arcBtn) arcBtn.innerHTML='<span class="lv">🪙 '+(game.coins||0)+'</span>'; 
-  /* Also update the header coin button if it exists */
+  /* Update the header coin button count */
   var coinBtnCount=D.getElementById('coinBtnCount');
   if(coinBtnCount) coinBtnCount.textContent=game.coins||0;
+  /* Also update the coinBtn tooltip */
+  var coinBtn=D.getElementById('coinBtn');
+  if(coinBtn) coinBtn.title='Coins & Arcade — 🪙 '+(game.coins||0);
 }
 
 /* ---- arcade panel ---- */
