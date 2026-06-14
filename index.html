@@ -3523,45 +3523,93 @@ function openActivate(){
   }
   document.getElementById('actOverlay').classList.add('show');
 }
-async function redeemCode(){
-  const key=document.getElementById('codeInput').value.trim();
-  const m=document.getElementById('actMsg');
-  if(!key){ m.className='msg err'; m.textContent=PPI18n.t('activate.entercode'); return; }
+/* ---- License key usage tracking (cross-account, cross-device) ---- */
+async function isLicenseUsed(key){
+  var normalizedKey = key.trim().toUpperCase();
 
-  /* Require login for Pro activation */
-  if(!currentUser){
-    m.className='msg err';
-    m.textContent=PPI18n.t('activate.login.required');
+  /* 1. Check localStorage (current browser) */
+  var usedKeys = [];
+  try{ usedKeys = JSON.parse(localStorage.getItem('pp_used_keys') || '[]'); }catch(e){ usedKeys = []; }
+  if(usedKeys.indexOf(normalizedKey) >= 0) return true;
+
+  /* 2. Check Firestore global collection (cross-account) */
+  if(fbReady && db){
+    try{
+      var doc = await db.collection('used_license_keys').doc(normalizedKey).get();
+      if(doc.exists) return true;
+    }catch(e){
+      console.warn('check used key error:', e);
+    }
+  }
+
+  return false;
+}
+
+async function markLicenseUsed(key){
+  var normalizedKey = key.trim().toUpperCase();
+
+  /* 1. Write to localStorage */
+  var usedKeys = [];
+  try{ usedKeys = JSON.parse(localStorage.getItem('pp_used_keys') || '[]'); }catch(e){ usedKeys = []; }
+  if(usedKeys.indexOf(normalizedKey) < 0){
+    usedKeys.push(normalizedKey);
+    localStorage.setItem('pp_used_keys', JSON.stringify(usedKeys));
+  }
+
+  /* 2. Write to Firestore global collection (cross-account anti-reuse) */
+  if(fbReady && db && currentUser){
+    try{
+      await db.collection('used_license_keys').doc(normalizedKey).set({
+        key: normalizedKey,
+        usedBy: currentUser.uid,
+        usedAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    }catch(e){
+      console.warn('mark used key error:', e);
+    }
+  }
+}
+
+async function redeemCode(){
+  var key = document.getElementById('codeInput').value.trim();
+  var m = document.getElementById('actMsg');
+  if(!key){
+    m.className = 'msg err';
+    m.textContent = PPI18n.t('activate.entercode');
     return;
   }
 
-  m.className='msg'; m.textContent=PPI18n.t('activate.checking'); m.style.display='block';
+  if(!currentUser){
+    m.className = 'msg err';
+    m.textContent = PPI18n.t('activate.login.required');
+    return;
+  }
+
+  m.className = 'msg';
+  m.textContent = PPI18n.t('activate.checking');
+  m.style.display = 'block';
+
+  var promoKey = key.toUpperCase();
 
   /* ---- Promo codes (advertising / marketing) ---- */
-  const promoKey = key.toUpperCase();
-
-  /* ZXTEST- : test mode — permanent Pro unlock */
   if(promoKey.indexOf('ZXTEST-')===0){
     if(isPromoUsed('ZXTEST')) return promoAlreadyUsed(m,'ZXTEST');
     markPromoUsed('ZXTEST');
-    return unlock(key,m,PPI18n.t('activate.testmode'));
+    return unlock(key, m, PPI18n.t('activate.testmode'));
   }
 
-  /* ZX14D- : free 14-day Pro trial */
   if(promoKey.indexOf('ZX14D-')===0){
     if(isPromoUsed('ZX14D')) return promoAlreadyUsed(m,'ZX14D');
     markPromoUsed('ZX14D');
-    return unlockTimed(key,m,14,PPI18n.t('activate.promo.14d'));
+    return unlockTimed(key, m, 14, PPI18n.t('activate.promo.14d'));
   }
 
-  /* ZX1M- : free 1-month (30-day) Pro */
   if(promoKey.indexOf('ZX1M-')===0){
     if(isPromoUsed('ZX1M')) return promoAlreadyUsed(m,'ZX1M');
     markPromoUsed('ZX1M');
-    return unlockTimed(key,m,30,PPI18n.t('activate.promo.1m'));
+    return unlockTimed(key, m, 30, PPI18n.t('activate.promo.1m'));
   }
 
-  /* ZX5000C- : add 5000 coins */
   if(promoKey.indexOf('ZX5000C-')===0){
     if(isPromoUsed('ZX5000C')) return promoAlreadyUsed(m,'ZX5000C');
     markPromoUsed('ZX5000C');
@@ -3572,37 +3620,115 @@ async function redeemCode(){
   }
 
   if(!window.PPLemon || !PPLemon.validateLicense){
-    m.className='msg err';
-    m.textContent=PPI18n.t('activate.notready');
+    m.className = 'msg err';
+    m.textContent = PPI18n.t('activate.notready');
     return;
   }
+
+  /* Anti-duplicate check for license keys */
+  var alreadyUsed = await isLicenseUsed(key);
+  if(alreadyUsed){
+    m.className = 'msg err';
+    m.textContent = 'This activation code has already been used.';
+    return;
+  }
+
   /* verify the license key with Lemon Squeezy */
   try{
-    const res=await PPLemon.validateLicense(key);
-    if(res.ok && res.kind==='pro'){
-      /* Lifetime (days===0) → permanent; subscription (days>0) → set expiry */
-      if(res.days && res.days > 0){
-        return unlockTimed(key,m,res.days,PPI18n.t('activate.unlocked.sub').replace('{d}',res.days));
+    console.log('[Activation] Validating key with Lemon Squeezy...');
+    var res = await PPLemon.validateLicense(key);
+    console.log('[Activation] Validation result:', JSON.stringify(res));
+
+    /* Coins-type activation code */
+    if(res.ok && res.kind === 'coins'){
+      await markLicenseUsed(key);
+      var coinAmount = res.coins || res.amount || 1200;
+
+      console.log('[Redeem] Coin amount:', coinAmount);
+
+      if(window.PPGame && PPGame.addCoins){
+        PPGame.addCoins(coinAmount);
+        if(typeof PPGame.refresh === 'function') PPGame.refresh();
+      }else{
+        var cur = parseInt(lsGet('pp_coins')||'0',10);
+        lsSet('pp_coins', String(cur + coinAmount));
       }
-      return unlock(key,m,PPI18n.t('activate.unlocked'));
-    }
-    if(res.ok && res.kind==='coins'){
-      if(window.PPGame && PPGame.addCoins) PPGame.addCoins(res.coins);
-      m.className='msg ok';
-      m.textContent=PPI18n.t('activate.coincode').replace('{n}',res.coins);
+
+      var coinBtnCount = document.getElementById('coinBtnCount');
+      if(coinBtnCount){
+        if(window.PPGame && PPGame.exportState){
+          coinBtnCount.textContent = ' ' + (PPGame.exportState().coins || 0);
+        } else {
+          var newTotal = parseInt(lsGet('pp_coins')||'0',10);
+          coinBtnCount.textContent = ' ' + newTotal;
+        }
+      }
+
+      m.className = 'msg ok';
+      m.textContent = 'Successfully added ' + coinAmount.toLocaleString() + ' coins!';
+      if(typeof toast === 'function') toast('+' + coinAmount.toLocaleString() + ' coins!', 'info');
+      setTimeout(function(){ document.getElementById('actOverlay').classList.remove('show'); }, 2000);
       return;
     }
+
+    /* Pro-type activation code */
+    if(res.ok && res.kind === 'pro'){
+      await markLicenseUsed(key);
+      if(res.days && res.days > 0){
+        return unlockTimed(key, m, res.days, PPI18n.t('activate.unlocked.sub').replace('{d}',res.days));
+      }
+      return unlock(key, m, PPI18n.t('activate.unlocked'));
+    }
+
+    /* Credits-type activation code */
+    if(res.ok && res.kind === 'credits'){
+      await markLicenseUsed(key);
+      var creditAmount = res.credits || res.amount || 1200;
+
+      console.log('[Redeem] Credit amount:', creditAmount);
+
+      var curCreds = parseInt(lsGet('pm_unlock_credits')||'0',10);
+      var newCreds = curCreds + creditAmount;
+      lsSet('pm_unlock_credits', String(newCreds));
+      console.log('[Redeem] Credits: ' + curCreds + ' -> ' + newCreds);
+
+      try{
+        var gameFrame = document.getElementById('gameFrame');
+        if(gameFrame && gameFrame.contentWindow){
+          gameFrame.contentWindow.postMessage({
+            type: 'add_credits',
+            amount: creditAmount
+          }, '*');
+        }
+      } catch(e){}
+
+      m.className = 'msg ok';
+      m.textContent = 'Successfully added ' + creditAmount.toLocaleString() + ' game credits!';
+      if(typeof toast === 'function') toast('+' + creditAmount.toLocaleString() + ' credits!', 'info');
+      setTimeout(function(){ document.getElementById('actOverlay').classList.remove('show'); }, 2000);
+      return;
+    }
+
+    /* Unknown type — default to 30-day Pro */
     if(res.ok){
-      m.className='msg err'; m.textContent=PPI18n.t('activate.notpro');
+      console.warn('[Activation] Unknown kind, defaulting to 30-day Pro');
+      await markLicenseUsed(key);
+      return unlockTimed(key, m, 30, 'Pro activated (30 days) — code recognized.');
+    }
+
+    if(res.error === 'network'){
+      m.className = 'msg err';
+      m.textContent = PPI18n.t('activate.network');
       return;
     }
-    if(res.error==='network'){
-      m.className='msg err'; m.textContent=PPI18n.t('activate.network');
-      return;
-    }
-    m.className='msg err'; m.textContent=PPI18n.t('activate.invalid');
+
+    m.className = 'msg err';
+    m.textContent = PPI18n.t('activate.invalid');
+
   }catch(e){
-    m.className='msg err'; m.textContent=PPI18n.t('activate.network');
+    console.error('[Activation] Error:', e);
+    m.className = 'msg err';
+    m.textContent = 'Activation failed: ' + (e.message || 'Unknown error');
   }
 }
 
@@ -3644,17 +3770,28 @@ function unlock(key,m,text){
   setTimeout(()=>document.getElementById('actOverlay').classList.remove('show'),1400);
   toast(PPI18n.t('activate.pro.unlocked'));
 }
-/* Timed unlock: Pro for N days, then reverts to Free */
+/* Timed unlock: Pro for N days, then reverts to Free.
+ * If the user already has Pro time remaining, the new days are ADDED
+ * on top of the existing expiry (stacking), not replaced. */
 function unlockTimed(key,m,days,text){
-  const until=Date.now()+days*86400000;
-  lsSet('pp_pro_code',key);
-  lsSet('pp_pro_until',String(until));
+  var existingUntil = proUntil();
+  var now = Date.now();
+  var base = (existingUntil > now) ? existingUntil : now;
+  var until = base + days * 86400000;
+
+  console.log('[Pro] Stacking: existing=' + new Date(existingUntil).toLocaleString() + ', adding=' + days + 'd, new=' + new Date(until).toLocaleString());
+
+  lsSet('pp_pro_code', key);
+  lsSet('pp_pro_until', String(until));
   isPro=true; proExpired=false;
-  cloudSavePro();
-  m.className='msg ok'; m.textContent=text;
-  refreshBadge(); renderGrid();
-  setTimeout(()=>document.getElementById('actOverlay').classList.remove('show'),1400);
-  toast(PPI18n.t('activate.pro.unlocked'));
+  if(typeof cloudSavePro === 'function') cloudSavePro();
+  m.className='msg ok';
+  var totalDays = Math.round((until - now) / 86400000);
+  m.textContent = text + ' (Total: ' + totalDays + ' days remaining)';
+  if(typeof refreshBadge === 'function') refreshBadge();
+  if(typeof renderGrid === 'function') renderGrid();
+  setTimeout(function(){ document.getElementById('actOverlay').classList.remove('show'); }, 2000);
+  if(typeof toast === 'function') toast('Pro extended! ' + totalDays + ' days remaining.', 'info');
 }
 function startTrial(){
   /* Free trial removed — redirect to Pro plans */
