@@ -516,11 +516,312 @@ if(typeof toast !== 'function'){
   function toast(msg, type){
     var t = document.createElement('div');
     t.textContent = msg;
-    t.style.cssText = 'position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:rgba(124,92,255,.95);color:#fff;padding:10px 24px;border-radius:10px;font-size:13px;z-index:99999;box-shadow:0 4px 16px rgba(0,0,0,.4);transition:opacity .3s';
+    var bg = type==='info'?'rgba(80,180,255,.95)':type==='error'?'rgba(255,68,68,.95)':'rgba(124,92,255,.95)';
+    t.style.cssText = 'position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:'+bg+';color:#fff;padding:10px 24px;border-radius:10px;font-size:13px;z-index:99999;box-shadow:0 4px 16px rgba(0,0,0,.4);transition:opacity .3s;max-width:90vw;text-align:center';
     document.body.appendChild(t);
-    setTimeout(function(){t.style.opacity='0';setTimeout(function(){t.remove();},300);},2500);
+    setTimeout(function(){t.style.opacity='0';setTimeout(function(){t.remove();},300);},3000);
   }
 }
+
+/* ============================================================
+   LocalRTDB — BroadcastChannel-based simulated Firebase RTDB
+   Enables multiplayer across browser tabs without real Firebase
+   ============================================================ */
+(function(){
+  // Try real Firebase first; only create LocalRTDB if no real Firebase available
+  var _realFirebaseChecked = false;
+  var _hasRealFirebase = false;
+
+  function checkRealFirebase(){
+    if(_realFirebaseChecked) return _hasRealFirebase;
+    _realFirebaseChecked = true;
+    try{
+      if(window.parent && window.parent !== window){
+        if(window.parent.rtdb || window.parent.firebase || window.parent._firebaseDatabase || window.parent._rtdb) return (_hasRealFirebase = true);
+      }
+    }catch(e){}
+    try{
+      if(window.rtdb || window.firebase) return (_hasRealFirebase = true);
+    }catch(e){}
+    return (_hasRealFirebase = false);
+  }
+
+  // Deep clone utility
+  function deepClone(obj){
+    if(obj === null || typeof obj !== 'object') return obj;
+    if(obj instanceof Array) return obj.map(deepClone);
+    var out = {};
+    for(var k in obj) if(obj.hasOwnProperty(k)) out[k] = deepClone(obj[k]);
+    return out;
+  }
+
+  // Get value at path from data tree
+  function getPathValue(data, path){
+    var parts = path.split('/').filter(function(p){return p!=='';});
+    var cur = data;
+    for(var i=0;i<parts.length;i++){
+      if(cur === null || cur === undefined || typeof cur !== 'object') return null;
+      cur = cur[parts[i]];
+    }
+    return deepClone(cur);
+  }
+
+  // Set value at path in data tree
+  function setPathValue(data, path, value){
+    var parts = path.split('/').filter(function(p){return p!=='';});
+    if(parts.length === 0) return;
+    var cur = data;
+    for(var i=0;i<parts.length-1;i++){
+      if(cur[parts[i]] === undefined || cur[parts[i]] === null || typeof cur[parts[i]] !== 'object'){
+        cur[parts[i]] = {};
+      }
+      cur = cur[parts[i]];
+    }
+    if(value === null){
+      delete cur[parts[parts.length-1]];
+    } else {
+      cur[parts[parts.length-1]] = deepClone(value);
+    }
+  }
+
+  // Update (merge) value at path
+  function updatePathValue(data, path, value){
+    var parts = path.split('/').filter(function(p){return p!=='';});
+    var cur = data;
+    for(var i=0;i<parts.length;i++){
+      if(cur[parts[i]] === undefined || cur[parts[i]] === null || typeof cur[parts[i]] !== 'object'){
+        cur[parts[i]] = {};
+      }
+      cur = cur[parts[i]];
+    }
+    if(value && typeof value === 'object'){
+      for(var k in value){
+        if(value.hasOwnProperty(k)){
+          if(value[k] === null) delete cur[k];
+          else cur[k] = deepClone(value[k]);
+        }
+      }
+    }
+  }
+
+  // Remove path
+  function removePath(data, path){
+    var parts = path.split('/').filter(function(p){return p!=='';});
+    if(parts.length === 0) return;
+    var cur = data;
+    for(var i=0;i<parts.length-1;i++){
+      if(cur[parts[i]] === undefined || cur[parts[i]] === null) return;
+      cur = cur[parts[i]];
+    }
+    delete cur[parts[parts.length-1]];
+  }
+
+  // ===== LocalRTDB class =====
+  var DB_KEY = 'pm_local_rtdb';
+  var BC_NAME = 'pm_rtdb_channel';
+  var _dbData = null;
+  var _listeners = {};  // path -> [{cb, eventType}]
+  var _bc = null;
+  var _tabId = 'tab_' + Math.random().toString(36).substr(2,8) + '_' + Date.now();
+
+  function loadDB(){
+    try{
+      var raw = localStorage.getItem(DB_KEY);
+      if(raw) _dbData = JSON.parse(raw);
+    }catch(e){}
+    if(!_dbData) _dbData = {};
+  }
+
+  function saveDB(){
+    try{
+      localStorage.setItem(DB_KEY, JSON.stringify(_dbData));
+    }catch(e){}
+  }
+
+  function broadcastChange(path, value, senderTabId){
+    if(!_bc) return;
+    try{
+      _bc.postMessage({type:'change', path:path, value:value, sender:senderTabId});
+    }catch(e){}
+  }
+
+  function broadcastRemove(path, senderTabId){
+    if(!_bc) return;
+    try{
+      _bc.postMessage({type:'remove', path:path, sender:senderTabId});
+    }catch(e){}
+  }
+
+  function notifyListeners(path, eventType){
+    var val = getPathValue(_dbData, path);
+    // Notify listeners on this exact path and parent paths
+    for(var lp in _listeners){
+      if(!_listeners.hasOwnProperty(lp)) continue;
+      // Check if this listener's path matches or is a parent of the changed path
+      if(path === lp || path.indexOf(lp + '/') === 0 || lp.indexOf(path + '/') === 0 || lp === ''){
+        var snap = {val: function(){ return getPathValue(_dbData, lp); }};
+        _listeners[lp].forEach(function(listener){
+          if(listener.eventType === eventType || listener.eventType === 'value'){
+            try{ listener.cb(snap); }catch(e){ console.error('[LocalRTDB] listener error:', e); }
+          }
+        });
+      }
+    }
+  }
+
+  // Initialize BroadcastChannel
+  try{
+    _bc = new BroadcastChannel(BC_NAME);
+    _bc.onmessage = function(ev){
+      var msg = ev.data;
+      if(msg.sender === _tabId) return; // ignore own messages
+      if(msg.type === 'change'){
+        loadDB(); // reload from localStorage
+        // Notify listeners for the changed path
+        notifyListeners(msg.path, 'value');
+      } else if(msg.type === 'remove'){
+        loadDB();
+        notifyListeners(msg.path, 'value');
+      }
+    };
+  }catch(e){
+    console.warn('[LocalRTDB] BroadcastChannel not available, falling back to localStorage polling');
+  }
+
+  // Also poll localStorage for changes (fallback for cross-tab sync)
+  var _lastPollHash = '';
+  setInterval(function(){
+    try{
+      var raw = localStorage.getItem(DB_KEY);
+      var hash = raw || '';
+      if(hash !== _lastPollHash){
+        _lastPollHash = hash;
+        _dbData = raw ? JSON.parse(raw) : {};
+        // Notify all listeners
+        for(var lp in _listeners){
+          if(!_listeners.hasOwnProperty(lp)) continue;
+          var snap = {val: function(){ return getPathValue(_dbData, lp); }};
+          _listeners[lp].forEach(function(listener){
+            try{ listener.cb(snap); }catch(e){}
+          });
+        }
+      }
+    }catch(e){}
+  }, 500);
+
+  // LocalRef class
+  function LocalRef(path){
+    this._path = path || '';
+  }
+  LocalRef.prototype.ref = function(childPath){
+    return new LocalRef(this._path + '/' + childPath);
+  };
+  LocalRef.prototype.child = function(childPath){
+    return new LocalRef(this._path + '/' + childPath);
+  };
+  LocalRef.prototype.set = function(value){
+    var self = this;
+    return new Promise(function(resolve){
+      loadDB();
+      setPathValue(_dbData, self._path, value);
+      saveDB();
+      broadcastChange(self._path, value, _tabId);
+      notifyListeners(self._path, 'value');
+      resolve();
+    });
+  };
+  LocalRef.prototype.update = function(value){
+    var self = this;
+    return new Promise(function(resolve){
+      loadDB();
+      updatePathValue(_dbData, self._path, value);
+      saveDB();
+      broadcastChange(self._path, value, _tabId);
+      notifyListeners(self._path, 'value');
+      resolve();
+    });
+  };
+  LocalRef.prototype.remove = function(){
+    var self = this;
+    return new Promise(function(resolve){
+      loadDB();
+      removePath(_dbData, self._path);
+      saveDB();
+      broadcastRemove(self._path, _tabId);
+      notifyListeners(self._path, 'value');
+      resolve();
+    });
+  };
+  LocalRef.prototype.once = function(eventType){
+    var self = this;
+    return new Promise(function(resolve){
+      loadDB();
+      var val = getPathValue(_dbData, self._path);
+      resolve({val: function(){ return val; }});
+    });
+  };
+  LocalRef.prototype.on = function(eventType, cb){
+    if(!_listeners[this._path]) _listeners[this._path] = [];
+    // Store the original callback so we can return it for off()
+    var wrapper = {eventType: eventType, cb: cb};
+    _listeners[this._path].push(wrapper);
+    // Immediately call with current value
+    loadDB();
+    var val = getPathValue(_dbData, this._path);
+    try{ cb({val: function(){ return val; }}); }catch(e){}
+    return cb; // return the callback as the listener handle
+  };
+  LocalRef.prototype.off = function(eventType, listenerHandle){
+    if(!_listeners[this._path]) return;
+    if(listenerHandle){
+      _listeners[this._path] = _listeners[this._path].filter(function(l){
+        return l.cb !== listenerHandle;
+      });
+    } else {
+      delete _listeners[this._path];
+    }
+  };
+  LocalRef.prototype.onDisconnect = function(){
+    var self = this;
+    return {
+      remove: function(){
+        // Register a beforeunload handler
+        var handler = function(){
+          loadDB();
+          removePath(_dbData, self._path);
+          saveDB();
+          broadcastRemove(self._path, _tabId);
+        };
+        window.addEventListener('beforeunload', handler);
+        // Also store handler for manual cancel
+        self._disconnectHandler = self._disconnectHandler || [];
+        self._disconnectHandler.push(handler);
+      },
+      cancel: function(){
+        if(self._disconnectHandler){
+          self._disconnectHandler.forEach(function(h){
+            window.removeEventListener('beforeunload', h);
+          });
+          self._disconnectHandler = [];
+        }
+      }
+    };
+  };
+
+  // Create the database object
+  var localRtdb = {
+    _isLocal: true,
+    ref: function(path){
+      return new LocalRef(path || '');
+    }
+  };
+
+  // Expose to window
+  window._localRtdb = localRtdb;
+  loadDB();
+
+  console.log('[LocalRTDB] Initialized with BroadcastChannel + localStorage sync');
+})();
 
 
 // ================================================================
@@ -2070,6 +2371,7 @@ function showMultiplayerSelect(){
   document.getElementById('modeScreen').style.display='none';
   document.getElementById('multiplayerScreen').style.display='flex';
   switchLobbyMode('coop');
+  toast('Open another tab to play multiplayer! Each tab is one player.','info');
 }
 
 /* Switch between Co-op and Versus lobby modes */
@@ -2124,16 +2426,18 @@ function buildTableHTML(tableNum,state){
   var seat2Class=seat2?'occupied':'empty';
   var isFull=seat1&&seat2;
   var bothReady=seat1Ready&&seat2Ready&&isFull;
+  var myUid = getMyUid();
 
   /* Determine table border color based on state */
   var borderCol='rgba(255,255,255,0.08)';
   if(bothReady) borderCol=isCoop?'rgba(0,255,136,0.6)':'rgba(255,80,0,0.6)';
   else if(isFull) borderCol=isCoop?'rgba(80,180,255,0.4)':'rgba(255,80,80,0.4)';
+  else if(seat1||seat2) borderCol='rgba(160,80,255,0.25)';
 
   var modeLabel=isCoop?'🤝 Co-op':'⚔️ Versus';
   var modeColor=isCoop?'#50b4ff':'#ff5050';
 
-  var html='<div class="lobby-table" id="table_'+tableNum+'" style="background:rgba(255,255,255,0.02);border:1px solid '+borderCol+';border-radius:10px;padding:.6rem .7rem;transition:all .2s;cursor:default;min-height:90px;position:relative">';
+  var html='<div class="lobby-table" id="table_'+tableNum+'" style="background:rgba(255,255,255,0.02);border:1px solid '+borderCol+';border-radius:10px;padding:.6rem .7rem;transition:all .2s;cursor:default;min-height:100px;position:relative">';
 
   /* Table number + mode badge */
   html+='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.4rem">';
@@ -2144,24 +2448,28 @@ function buildTableHTML(tableNum,state){
   /* Two seats */
   html+='<div style="display:flex;gap:.5rem">';
 
-  /* Seat 1 */
+  /* Seat 1 — always 1P */
   var s1Bg=seat1?(seat1Ready?'rgba(0,255,136,0.08)':'rgba(80,180,255,0.08)'):'rgba(255,255,255,0.02)';
   var s1Border=seat1?(seat1Ready?'rgba(0,255,136,0.4)':'rgba(80,180,255,0.25)'):'rgba(255,255,255,0.06)';
   var s1Color=seat1?(seat1Ready?'#00ff88':'#50b4ff'):'#555';
-  html+='<div onclick="sitDown('+tableNum+',1)" style="flex:1;padding:.35rem .4rem;border-radius:6px;background:'+s1Bg+';border:1px solid '+s1Border+';text-align:center;cursor:'+(seat1?'default':'pointer')+';transition:all .15s;min-height:40px;display:flex;flex-direction:column;justify-content:center" onmouseenter="if(!this.dataset.occupied)this.style.borderColor=\'rgba(0,255,136,0.4)\'" onmouseleave="if(!this.dataset.occupied)this.style.borderColor=\''+s1Border+'\'" data-occupied="'+(seat1?'1':'0')+'">';
+  var s1IsMe=seat1&&seat1.uid===myUid;
+  html+='<div onclick="sitDown('+tableNum+',1)" style="flex:1;padding:.35rem .4rem;border-radius:6px;background:'+s1Bg+';border:1px solid '+s1Border+';text-align:center;cursor:'+(seat1?'default':'pointer')+';transition:all .15s;min-height:48px;display:flex;flex-direction:column;justify-content:center;position:relative" onmouseenter="if(!this.dataset.occupied)this.style.borderColor=\'rgba(0,255,136,0.4)\'" onmouseleave="if(!this.dataset.occupied)this.style.borderColor=\''+s1Border+'\'" data-occupied="'+(seat1?'1':'0')+'">';
+  html+='<div style="font-size:.4rem;color:#ffd700;margin-bottom:1px;font-weight:700;letter-spacing:.05em">1P</div>';
   html+='<div style="font-size:.5rem;color:'+s1Color+';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(seat1?(seat1Ready?'✅ ':'👤 ')+seat1Name:'🪑 Sit')+'</div>';
-  if(seat1&&!seat1Ready&&seat1.uid===getMyUid()){
+  if(seat1&&!seat1Ready&&s1IsMe){
     html+='<button onclick="event.stopPropagation();toggleReady('+tableNum+')" style="margin-top:4px;padding:4px 12px;border-radius:6px;background:linear-gradient(135deg,#ffd700,#ffaa00);color:#050508;font-size:.55rem;font-weight:700;cursor:pointer;border:none;font-family:\'Orbitron\',sans-serif;letter-spacing:.05em">✋ READY</button>';
   }
   html+='</div>';
 
-  /* Seat 2 */
+  /* Seat 2 — always 2P */
   var s2Bg=seat2?(seat2Ready?'rgba(0,255,136,0.08)':'rgba(255,150,80,0.08)'):'rgba(255,255,255,0.02)';
   var s2Border=seat2?(seat2Ready?'rgba(0,255,136,0.4)':'rgba(255,150,80,0.25)'):'rgba(255,255,255,0.06)';
   var s2Color=seat2?(seat2Ready?'#00ff88':'#ff9650'):'#555';
-  html+='<div onclick="sitDown('+tableNum+',2)" style="flex:1;padding:.35rem .4rem;border-radius:6px;background:'+s2Bg+';border:1px solid '+s2Border+';text-align:center;cursor:'+(seat2?'default':'pointer')+';transition:all .15s;min-height:40px;display:flex;flex-direction:column;justify-content:center" onmouseenter="if(!this.dataset.occupied)this.style.borderColor=\'rgba(0,255,136,0.4)\'" onmouseleave="if(!this.dataset.occupied)this.style.borderColor=\''+s2Border+'\'" data-occupied="'+(seat2?'1':'0')+'">';
+  var s2IsMe=seat2&&seat2.uid===myUid;
+  html+='<div onclick="sitDown('+tableNum+',2)" style="flex:1;padding:.35rem .4rem;border-radius:6px;background:'+s2Bg+';border:1px solid '+s2Border+';text-align:center;cursor:'+(seat2?'default':'pointer')+';transition:all .15s;min-height:48px;display:flex;flex-direction:column;justify-content:center;position:relative" onmouseenter="if(!this.dataset.occupied)this.style.borderColor=\'rgba(0,255,136,0.4)\'" onmouseleave="if(!this.dataset.occupied)this.style.borderColor=\''+s2Border+'\'" data-occupied="'+(seat2?'1':'0')+'">';
+  html+='<div style="font-size:.4rem;color:#ff9650;margin-bottom:1px;font-weight:700;letter-spacing:.05em">2P</div>';
   html+='<div style="font-size:.5rem;color:'+s2Color+';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+(seat2?(seat2Ready?'✅ ':'👤 ')+seat2Name:'🪑 Sit')+'</div>';
-  if(seat2&&!seat2Ready&&seat2.uid===getMyUid()){
+  if(seat2&&!seat2Ready&&s2IsMe){
     html+='<button onclick="event.stopPropagation();toggleReady('+tableNum+')" style="margin-top:4px;padding:4px 12px;border-radius:6px;background:linear-gradient(135deg,#ffd700,#ffaa00);color:#050508;font-size:.55rem;font-weight:700;cursor:pointer;border:none;font-family:\'Orbitron\',sans-serif;letter-spacing:.05em">✋ READY</button>';
   }
   html+='</div>';
@@ -2169,7 +2477,7 @@ function buildTableHTML(tableNum,state){
   html+='</div>';
 
   /* Status bar + Solo button */
-  var amSeated=(seat1&&seat1.uid===getMyUid())||(seat2&&seat2.uid===getMyUid());
+  var amSeated=s1IsMe||s2IsMe;
   var onlyMeSeated=amSeated&&!isFull;
   if(bothReady){
     html+='<div style="text-align:center;margin-top:.3rem;font-size:.45rem;color:#00ff88;font-weight:700;animation:sPulse 1s ease-in-out infinite">▶ STARTING...</div>';
@@ -2273,7 +2581,7 @@ function sitDown(tableNum,seatNum){
   console.log('[MP] tableRef path:', 'lobby/'+mpMode+'/tables/'+tableNum);
 
   tableRef.once('value').then(function(snap){
-    console.log('[MP] table data:', snap.val());
+    console.log('[MP] table data:', JSON.stringify(snap.val()));
     var data=snap.val()||{};
     var seat1=data.seat1||null;
     var seat2=data.seat2||null;
@@ -2287,19 +2595,21 @@ function sitDown(tableNum,seatNum){
       return;
     }
 
-    var update={};
-    update['seat'+seatNum]={uid:myUid,name:getMyName(),ready:false};
-    update['mode']=mpMode;
-    update['updatedAt']=Date.now();
+    // Use update() to merge — preserves the other seat's data
+    var updateData={};
+    updateData['seat'+seatNum]={uid:myUid,name:getMyName(),ready:false,seatNum:seatNum};
+    updateData['mode']=mpMode;
+    updateData['updatedAt']=Date.now();
 
-    console.log('[MP] updating table:', JSON.stringify(update));
+    console.log('[MP] updating table:', JSON.stringify(updateData));
     
-    tableRef.set(update).then(function(){
+    tableRef.update(updateData).then(function(){
       console.log('[MP] Table updated successfully');
       mpMyTable=tableNum;
       mpMySeat=seatNum;
       mpIsReady=false;
       tableRef.child('seat'+seatNum).onDisconnect().remove();
+      toast('You sat down at Table '+tableNum+' — Seat '+seatNum+(seatNum===1?' (1P)':' (2P)'),'info');
     }).catch(function(err){
       console.error('[MP] Table update error:', err);
       toast('Could not join table: '+(err.message||'unknown error'),'info');
@@ -2440,7 +2750,7 @@ function leaveLobby(){
 /* Global reference to parent's firebase object, if available */
 var _parentFirebase=null;
 
-/* Get RTDB instance from parent */
+/* Get RTDB instance — tries real Firebase, falls back to LocalRTDB */
 function getRtdb(){
   // 方法1: 从当前页面尝试获取（优先）
   if(window.rtdb){
@@ -2467,7 +2777,6 @@ function getRtdb(){
         console.log('[MP] Using parent.firebaseApp.database()');
         return window.parent.firebaseApp.database();
       }
-      // 尝试从父页面的全局变量获取
       if(window.parent._firebaseDatabase){
         console.log('[MP] Using parent._firebaseDatabase');
         return window.parent._firebaseDatabase;
@@ -2490,6 +2799,12 @@ function getRtdb(){
       f = f.parent;
     }
   }catch(e){}
+  
+  // 方法4: 使用 LocalRTDB (BroadcastChannel + localStorage 跨标签页同步)
+  if(window._localRtdb){
+    console.log('[MP] Using LocalRTDB (cross-tab sync via BroadcastChannel + localStorage)');
+    return window._localRtdb;
+  }
   
   console.error('[MP] No Firebase RTDB instance found!');
   toast(_gmT('mp.requireslogin','Multiplayer requires login. Please sign in from the PromptRunic app, or play solo mode.'),'info');
@@ -2549,6 +2864,8 @@ function returnToLobbyFromSolo(tableNum){
 }
 
 var _mpGameStarting=false;
+var _mpDiffSelected=-1; // difficulty selected by 1P for MP game
+var _mpDiffWaitEl=null;  // waiting overlay for 2P
 
 /* Start a multiplayer game when both players are ready */
 function startMultiplayerGame(tableNum,uid1,uid2){
@@ -2563,7 +2880,7 @@ function startMultiplayerGame(tableNum,uid1,uid2){
     if(myUid===uid1) savedMode='defense';
     else savedMode='attack';
   }
-  /* Determine host status and opponent */
+  /* Determine host status and opponent — first player (seat 1) is 1P/host */
   mpIsHost=(myUid===uid1);
   mpOpponentUid=mpIsHost?uid2:uid1;
   /* Generate a unique game ID and create RTDB game state node */
@@ -2576,6 +2893,7 @@ function startMultiplayerGame(tableNum,uid1,uid2){
       players:{},
       currentWave:0,
       gameStatus:'waiting',
+      difficulty:-1,  // 1P will select
       map:selectedMap||'verdant',
       mode:mpMode,
       lastUpdate:Date.now()
@@ -2604,8 +2922,6 @@ function startMultiplayerGame(tableNum,uid1,uid2){
     };
     mpGameStateRef.set(initialState).then(function(){
       console.log('[MP] Game state initialized:',mpGameId);
-      /* Mark my player as ready once the game actually starts */
-      mpGameStateRef.child('players/'+myUid+'/ready').set(true);
       /* Start listening for opponent state changes */
       listenToOpponentState();
       /* Set up disconnect cleanup: remove player on disconnect */
@@ -2623,9 +2939,202 @@ function startMultiplayerGame(tableNum,uid1,uid2){
   mpMyTable=-1;mpMySeat=-1;mpIsReady=false;
   mpSyncTimer=0;
   stopLobbyListener();
-  /* Hide lobby, show map selection before difficulty */
+
+  /* Hide lobby */
   document.getElementById('multiplayerScreen').style.display='none';
-  document.getElementById('mapSelectScreen').style.display='flex';
+
+  /* 1P (host) picks difficulty; 2P waits */
+  if(mpIsHost){
+    console.log('[MP] You are 1P (host) — select difficulty');
+    showMPDiffSelect();
+  }else{
+    console.log('[MP] You are 2P — waiting for 1P to select difficulty');
+    showMPDiffWaiting();
+  }
+}
+
+/* Show difficulty selection for 1P in multiplayer */
+function showMPDiffSelect(){
+  document.getElementById('mapSelectScreen').style.display='none';
+  // Reuse the existing diffScreen but modify onclick handlers temporarily
+  var diffScreen = document.getElementById('diffScreen');
+  diffScreen.style.display='flex';
+  // Add a title indicating 1P is selecting
+  var existingTitle = document.getElementById('mpDiffTitle');
+  if(!existingTitle){
+    var titleEl = document.createElement('div');
+    titleEl.id = 'mpDiffTitle';
+    titleEl.style.cssText = 'text-align:center;margin-bottom:0.5rem;position:relative;z-index:10';
+    titleEl.innerHTML = '<div style="font-family:\'Orbitron\',sans-serif;font-size:.9rem;font-weight:700;color:#ffd700;letter-spacing:.1em">🎮 1P — SELECT DIFFICULTY</div><div style="font-size:.6rem;color:#888;margin-top:.3rem">Your opponent is waiting...</div>';
+    diffScreen.insertBefore(titleEl, diffScreen.firstChild);
+  }else{
+    existingTitle.style.display = 'block';
+  }
+  // Temporarily replace the diff card onclick handlers
+  var diffCards = diffScreen.querySelectorAll('.diff-card');
+  diffCards.forEach(function(card, idx){
+    card.setAttribute('data-diff-idx', idx);
+    card.onclick = function(){
+      selectMPDifficulty(idx);
+    };
+  });
+  // Change back button to go back to lobby
+  var backBtn = diffScreen.querySelector('button[onclick*="backToModeSelect"]');
+  if(backBtn){
+    backBtn.setAttribute('data-orig-onclick', backBtn.getAttribute('onclick'));
+    backBtn.onclick = function(){
+      cancelMPDiffSelect();
+    };
+    backBtn.textContent = '← Cancel';
+  }
+}
+
+/* Cancel multiplayer difficulty selection and return to lobby */
+function cancelMPDiffSelect(){
+  _mpGameStarting = false;
+  // Restore diff screen
+  var diffScreen = document.getElementById('diffScreen');
+  diffScreen.style.display = 'none';
+  var mpTitle = document.getElementById('mpDiffTitle');
+  if(mpTitle) mpTitle.style.display = 'none';
+  // Restore original onclick handlers
+  var diffCards = diffScreen.querySelectorAll('.diff-card');
+  diffCards.forEach(function(card, idx){
+    card.onclick = function(){ startGame(savedMode, idx); };
+  });
+  var backBtn = diffScreen.querySelector('button[onclick*="backToModeSelect"], button[data-orig-onclick]');
+  if(backBtn && backBtn.getAttribute('data-orig-onclick')){
+    backBtn.setAttribute('onclick', backBtn.getAttribute('data-orig-onclick'));
+    backBtn.removeAttribute('data-orig-onclick');
+    backBtn.textContent = '← Back';
+  }
+  // Clean up game state
+  if(mpGameId) cleanupMpGameState();
+  // Return to lobby
+  document.getElementById('multiplayerScreen').style.display='flex';
+  initLobby();
+}
+
+/* 1P selects difficulty for multiplayer game */
+function selectMPDifficulty(diffIdx){
+  console.log('[MP] 1P selected difficulty:', diffIdx);
+  _mpDiffSelected = diffIdx;
+  // Write difficulty to game state in RTDB so 2P gets notified
+  var rtdb = getRtdb();
+  if(rtdb && mpGameStateRef){
+    mpGameStateRef.update({
+      difficulty: diffIdx,
+      gameStatus: 'starting',
+      lastUpdate: Date.now()
+    });
+  }
+  // Hide diff screen
+  document.getElementById('diffScreen').style.display = 'none';
+  var mpTitle = document.getElementById('mpDiffTitle');
+  if(mpTitle) mpTitle.style.display = 'none';
+  // Restore original onclick handlers
+  var diffScreen = document.getElementById('diffScreen');
+  var diffCards = diffScreen.querySelectorAll('.diff-card');
+  diffCards.forEach(function(card, idx){
+    card.onclick = function(){ startGame(savedMode, idx); };
+  });
+  var backBtn = diffScreen.querySelector('button[data-orig-onclick]');
+  if(backBtn && backBtn.getAttribute('data-orig-onclick')){
+    backBtn.setAttribute('onclick', backBtn.getAttribute('data-orig-onclick'));
+    backBtn.removeAttribute('data-orig-onclick');
+    backBtn.textContent = '← Back';
+  }
+  // Start the game for 1P
+  launchMPGame(diffIdx);
+}
+
+/* Show waiting overlay for 2P while 1P selects difficulty */
+function showMPDiffWaiting(){
+  // Remove any existing overlay
+  var existing = document.getElementById('mpDiffWaitOverlay');
+  if(existing) existing.remove();
+
+  var overlay = document.createElement('div');
+  overlay.id = 'mpDiffWaitOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(160deg,#060610,#0a0612,#060610)';
+  overlay.innerHTML = '<div style="text-align:center;position:relative;z-index:10">'
+    + '<div style="font-size:3rem;margin-bottom:1rem">🎮</div>'
+    + '<div style="font-family:\'Orbitron\',sans-serif;font-size:1.2rem;font-weight:700;color:#ffd700;letter-spacing:.1em;margin-bottom:.5rem">WAITING FOR 1P</div>'
+    + '<div style="font-size:.8rem;color:#888;margin-bottom:2rem">The host is selecting difficulty...</div>'
+    + '<div style="width:200px;height:4px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden;margin:0 auto">'
+    + '<div style="width:40%;height:100%;background:linear-gradient(90deg,#ffd700,#ffaa00);border-radius:2px;animation:mpWaitSlide 1.5s ease-in-out infinite"></div>'
+    + '</div>'
+    + '</div>';
+  document.body.appendChild(overlay);
+
+  // Add waiting animation if not already defined
+  if(!document.getElementById('mpWaitStyle')){
+    var style = document.createElement('style');
+    style.id = 'mpWaitStyle';
+    style.textContent = '@keyframes mpWaitSlide{0%{transform:translateX(-100%)}100%{transform:translateX(350%)}}';
+    document.head.appendChild(style);
+  }
+
+  // Listen for difficulty selection from 1P
+  if(mpGameStateRef){
+    mpGameStateRef.child('difficulty').on('value', function(snap){
+      var diff = snap.val();
+      if(diff !== null && diff !== undefined && diff >= 0){
+        console.log('[MP] 2P received difficulty from 1P:', diff);
+        _mpDiffSelected = diff;
+        // Remove waiting overlay
+        var ov = document.getElementById('mpDiffWaitOverlay');
+        if(ov) ov.remove();
+        // Start the game for 2P
+        launchMPGame(diff);
+      }
+    });
+  }
+}
+
+/* Launch the multiplayer game with the selected difficulty */
+function launchMPGame(diffIdx){
+  console.log('[MP] Launching MP game with difficulty:', diffIdx, 'mode:', mpMode);
+  gDifficulty = diffIdx !== undefined ? diffIdx : 1;
+
+  // Set game mode based on multiplayer mode
+  if(mpMode === 'coop'){
+    savedMode = 'defense';
+  } else {
+    // Versus: 1P defends, 2P attacks
+    savedMode = mpIsHost ? 'defense' : 'attack';
+  }
+  gMode = savedMode;
+  chI = 0;
+  score = 0;
+  const chk = document.getElementById('unlimitedGoldCheck');
+  unlimitedGold = chk && chk.checked;
+
+  // Hide all screens
+  document.getElementById('diffScreen').style.display='none';
+  document.getElementById('modeScreen').style.display='none';
+  document.getElementById('gameOverScreen').style.display='none';
+  document.getElementById('mapSelectScreen').style.display='none';
+  var mpOverlay = document.getElementById('mpDiffWaitOverlay');
+  if(mpOverlay) mpOverlay.remove();
+  document.getElementById('multiplayerScreen').style.display='none';
+
+  // Show game screen
+  document.getElementById('gameScreen').style.display='flex';
+  gState='playing';
+
+  // Mark my player as ready in game state
+  if(mpGameStateRef){
+    mpGameStateRef.child('players/'+getMyUid()+'/ready').set(true);
+    mpGameStateRef.update({gameStatus:'playing', lastUpdate:Date.now()});
+  }
+
+  SFX.resume();startBGM();
+  initCh(0);
+  /* Reset multiplayer starting flag after game has started */
+  setTimeout(function(){ _mpGameStarting=false; },5000);
+
+  toast(mpMode==='coop' ? '🤝 Co-op game started!' : (mpIsHost ? '🛡️ You are defending (1P)' : '⚔️ You are attacking (2P)'), 'info');
 }
 
 /* ====== GAME STATE SYNC (Step 5 & 6) ====== */
