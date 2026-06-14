@@ -3981,10 +3981,10 @@ function wireEvents(){
     if(currentUser) openAccount();
     else openAuth();
   });
-  /* Coin button: opens arcade panel */
+  /* Coin button: opens avatar picker */
   document.getElementById('coinBtn').addEventListener('click',function(e){
     e.stopPropagation();
-    if(window.PPGame && PPGame.openPanel) PPGame.openPanel();
+    if(typeof window.openAvatarPicker === 'function') window.openAvatarPicker();
   });
   /* community button */
   document.getElementById('communityBtn').addEventListener('click',()=>{ openCommunityPanel(); });
@@ -5290,9 +5290,7 @@ document.addEventListener('DOMContentLoaded',function(){
   if(badge){
     badge.style.cursor='pointer';
     badge.addEventListener('click',function(){
-      if(window.PPGame && PPGame.exportState){
-        openAvatarPicker();
-      }
+      openActivate();
     });
   }
 });
