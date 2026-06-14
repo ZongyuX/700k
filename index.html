@@ -3550,20 +3550,16 @@ async function isLicenseUsed(key){
 async function markLicenseUsed(key){
   var normalizedKey = key.trim().toUpperCase();
 
-  /* 1. Check if already exists in Firestore (prevent concurrency) */
+  // 1. 先检查是否已存在（防止并发）
   if(fbReady && db){
-    try{
-      var existing = await db.collection('used_license_keys').doc(normalizedKey).get();
-      if(existing.exists){
-        console.warn('[License] Key already marked in Firestore:', normalizedKey);
-        return; // already exists, no need to mark again
-      }
-    }catch(e){
-      console.warn('[License] Check existing error:', e);
+    var existing = await db.collection('used_license_keys').doc(normalizedKey).get();
+    if(existing.exists){
+      console.warn('[License] Key already marked in Firestore:', normalizedKey);
+      return; // 已经存在，不需要再次标记
     }
   }
 
-  /* 2. Write to localStorage */
+  // 2. 写入 localStorage
   var usedKeys = [];
   try{ usedKeys = JSON.parse(localStorage.getItem('pp_used_keys') || '[]'); }catch(e){ usedKeys = []; }
   if(usedKeys.indexOf(normalizedKey) < 0){
@@ -3571,7 +3567,7 @@ async function markLicenseUsed(key){
     localStorage.setItem('pp_used_keys', JSON.stringify(usedKeys));
   }
 
-  /* 3. Write to Firestore (idempotent via set on doc ID) */
+  // 3. 写入 Firestore（使用 set 而不是 add，确保幂等）
   if(fbReady && db && currentUser){
     try{
       await db.collection('used_license_keys').doc(normalizedKey).set({
@@ -3581,7 +3577,7 @@ async function markLicenseUsed(key){
       });
     }catch(e){
       console.error('[License] Failed to mark key in Firestore:', e);
-      throw e; // propagate so caller knows marking failed
+      throw e; // 抛出错误，让上层知道标记失败
     }
   }
 }
@@ -3655,22 +3651,20 @@ async function redeemCode(){
     var res = await PPLemon.validateLicense(key);
     console.log('[Activation] Validation result:', JSON.stringify(res));
 
-    /* Coins-type activation code */
+    // Coins-type activation code
     if(res.ok && res.kind === 'coins'){
-      /* Atomic check: re-verify not already used before granting coins */
-      var coinsAlreadyUsed = await isLicenseUsed(key);
-      if(coinsAlreadyUsed){
+      // 原子性检查：先查是否已使用
+      var alreadyUsed = await isLicenseUsed(key);
+      if(alreadyUsed){
         m.className = 'msg err';
         m.textContent = 'This activation code has already been used.';
         return;
       }
-
-      /* Mark as used first — must succeed before granting coins */
+      
+      // 标记为已使用（必须成功才能继续）
       await markLicenseUsed(key);
-
+      
       var coinAmount = res.coins || res.amount || 1200;
-
-      console.log('[Redeem] Coin amount:', coinAmount);
 
       if(window.PPGame && PPGame.addCoins){
         PPGame.addCoins(coinAmount);
@@ -3692,8 +3686,10 @@ async function redeemCode(){
 
       m.className = 'msg ok';
       m.textContent = 'Successfully added ' + coinAmount.toLocaleString() + ' coins!';
-      if(typeof toast === 'function') toast('+' + coinAmount.toLocaleString() + ' coins!', 'info');
-      setTimeout(function(){ document.getElementById('actOverlay').classList.remove('show'); }, 2000);
+      toast('+' + coinAmount.toLocaleString() + ' coins!', 'info');
+      setTimeout(function(){ 
+        document.getElementById('actOverlay').classList.remove('show'); 
+      }, 2000);
       return;
     }
 
