@@ -3,7 +3,7 @@
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <!-- ========================================== -->
-  <!-- 首页及多语言版本 -->
+  <!-- 第一部分：首页及核心入口（优先级最高）-->
   <!-- ========================================== -->
   
   <url>
@@ -30,8 +30,74 @@
     <priority>0.95</priority>
   </url>
 
+  <!-- 功能锚点页面 -->
+  <url>
+    <loc>https://promptrunic.bbroot.com/#templates</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/#guide</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/#optimizer</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/#pro</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/#about</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/#universe</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <!-- 法律页面 -->
+  <url>
+    <loc>https://promptrunic.bbroot.com/privacy.html</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/terms.html</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <!-- 游戏页面 -->
+  <url>
+    <loc>https://promptrunic.bbroot.com/game-pm.html</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
   <!-- ========================================== -->
-  <!-- 🎯 核心关键词落地页 - 700K Prompt 相关 -->
+  <!-- 第二部分：数量关键词（700K/100K/10K Prompt）-->
   <!-- ========================================== -->
   
   <url>
@@ -49,14 +115,212 @@
   </url>
   
   <url>
-    <loc>https://promptrunic.bbroot.com/?q=ai+prompt+library</loc>
+    <loc>https://promptrunic.bbroot.com/?q=700k+ai+prompts</loc>
     <lastmod>2026-06-14</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   
   <url>
+    <loc>https://promptrunic.bbroot.com/?q=100k+prompts</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?q=100000+prompts</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?q=100k+ai+prompts</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?q=10k+prompts</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?q=10000+prompts</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?q=10k+ai+prompts</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?q=10k+prompt+base</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?q=100k+prompt+base</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?q=700k+prompt+base</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- ========================================== -->
+  <!-- 第三部分：AI核心关键词（AI use tools, AI mate, AI user）-->
+  <!-- ========================================== -->
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?q=ai+use+tools</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?q=ai+mate</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?q=ai+user</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?q=ai+user+tools</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?q=ai+helper</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?q=ai+assistant+tools</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?q=ai+companion</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?q=ai+buddy</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?q=ai+sidekick</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?q=ai+coach</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?q=ai+tools</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <!-- ========================================== -->
+  <!-- 第四部分：AI提示词基础关键词（中英西三语）-->
+  <!-- ========================================== -->
+  
+  <!-- 英文 -->
+  <url>
+    <loc>https://promptrunic.bbroot.com/?q=ai+prompt</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.95</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?q=ai+prompts</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.95</priority>
+  </url>
+  
+  <url>
     <loc>https://promptrunic.bbroot.com/?q=ai+prompt+generator</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.95</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?q=ai+prompt+library</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.95</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?q=ai+prompt+templates</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.95</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?q=ai+prompt+maker</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?q=ai+prompt+finder</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?q=ai+prompt+optimizer</loc>
     <lastmod>2026-06-14</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
@@ -77,13 +341,6 @@
   </url>
   
   <url>
-    <loc>https://promptrunic.bbroot.com/?q=ai+prompt+templates</loc>
-    <lastmod>2026-06-14</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.9</priority>
-  </url>
-  
-  <url>
     <loc>https://promptrunic.bbroot.com/?q=prompt+engineering</loc>
     <lastmod>2026-06-14</lastmod>
     <changefreq>daily</changefreq>
@@ -91,31 +348,194 @@
   </url>
   
   <url>
-    <loc>https://promptrunic.bbroot.com/?q=ai+helper</loc>
+    <loc>https://promptrunic.bbroot.com/?q=prompt+library</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?q=prompt+database</loc>
     <lastmod>2026-06-14</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
   
   <url>
-    <loc>https://promptrunic.bbroot.com/?q=ai+mate</loc>
+    <loc>https://promptrunic.bbroot.com/?q=prompt+catalog</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <!-- 中文 -->
+  <url>
+    <loc>https://promptrunic.bbroot.com/?lang=zh&amp;q=AI提示词</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?lang=zh&amp;q=AI提示词生成器</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?lang=zh&amp;q=AI提示词库</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?lang=zh&amp;q=AI提示词模板</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?lang=zh&amp;q=ChatGPT提示词</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?lang=zh&amp;q=AI写作助手</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?lang=zh&amp;q=AI编程助手</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?lang=zh&amp;q=AI帮手</loc>
     <lastmod>2026-06-14</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
   
   <url>
-    <loc>https://promptrunic.bbroot.com/?q=ai+assistant+prompts</loc>
+    <loc>https://promptrunic.bbroot.com/?lang=zh&amp;q=AI伙伴</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?lang=zh&amp;q=70万+提示词</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?lang=zh&amp;q=10万+提示词</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?lang=zh&amp;q=1万+提示词</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <!-- 西班牙语 -->
+  <url>
+    <loc>https://promptrunic.bbroot.com/?lang=es&amp;q=prompts+ia</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?lang=es&amp;q=generador+de+prompts+ia</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?lang=es&amp;q=plantillas+de+prompts+ia</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?lang=es&amp;q=biblioteca+de+prompts+ia</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?lang=es&amp;q=prompts+para+chatgpt</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?lang=es&amp;q=asistente+ia</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?lang=es&amp;q=ayudante+ia</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?lang=es&amp;q=compañero+ia</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?lang=es&amp;q=700k+prompts</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?lang=es&amp;q=100k+prompts</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?lang=es&amp;q=10k+prompts</loc>
     <lastmod>2026-06-14</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
   </url>
 
   <!-- ========================================== -->
-  <!-- 🤖 各AI平台专用Prompt搜索页 -->
+  <!-- 第五部分：各AI平台专用Prompt搜索页 -->
   <!-- ========================================== -->
   
-  <!-- ChatGPT Prompts -->
+  <!-- ChatGPT -->
   <url>
     <loc>https://promptrunic.bbroot.com/?q=chatgpt+prompts</loc>
     <lastmod>2026-06-14</lastmod>
@@ -125,13 +545,6 @@
   
   <url>
     <loc>https://promptrunic.bbroot.com/?q=chatgpt+prompt+generator</loc>
-    <lastmod>2026-06-14</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.85</priority>
-  </url>
-  
-  <url>
-    <loc>https://promptrunic.bbroot.com/?q=chatgpt+prompt+templates</loc>
     <lastmod>2026-06-14</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.85</priority>
@@ -151,14 +564,7 @@
     <priority>0.8</priority>
   </url>
   
-  <url>
-    <loc>https://promptrunic.bbroot.com/?q=chatgpt+prompts+for+business</loc>
-    <lastmod>2026-06-14</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  
-  <!-- Claude Prompts -->
+  <!-- Claude -->
   <url>
     <loc>https://promptrunic.bbroot.com/?q=claude+prompts</loc>
     <lastmod>2026-06-14</lastmod>
@@ -173,14 +579,7 @@
     <priority>0.8</priority>
   </url>
   
-  <url>
-    <loc>https://promptrunic.bbroot.com/?q=claude+prompt+library</loc>
-    <lastmod>2026-06-14</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  
-  <!-- Gemini Prompts -->
+  <!-- Gemini -->
   <url>
     <loc>https://promptrunic.bbroot.com/?q=gemini+prompts</loc>
     <lastmod>2026-06-14</lastmod>
@@ -195,14 +594,7 @@
     <priority>0.8</priority>
   </url>
   
-  <url>
-    <loc>https://promptrunic.bbroot.com/?q=gemini+prompt+generator</loc>
-    <lastmod>2026-06-14</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  
-  <!-- Copilot Prompts -->
+  <!-- Copilot -->
   <url>
     <loc>https://promptrunic.bbroot.com/?q=copilot+prompts</loc>
     <lastmod>2026-06-14</lastmod>
@@ -217,14 +609,7 @@
     <priority>0.8</priority>
   </url>
   
-  <url>
-    <loc>https://promptrunic.bbroot.com/?q=github+copilot+prompts</loc>
-    <lastmod>2026-06-14</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  
-  <!-- DeepSeek Prompts -->
+  <!-- DeepSeek -->
   <url>
     <loc>https://promptrunic.bbroot.com/?q=deepseek+prompts</loc>
     <lastmod>2026-06-14</lastmod>
@@ -232,14 +617,7 @@
     <priority>0.85</priority>
   </url>
   
-  <url>
-    <loc>https://promptrunic.bbroot.com/?q=deepseek+prompt+generator</loc>
-    <lastmod>2026-06-14</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  
-  <!-- Perplexity Prompts -->
+  <!-- Perplexity -->
   <url>
     <loc>https://promptrunic.bbroot.com/?q=perplexity+prompts</loc>
     <lastmod>2026-06-14</lastmod>
@@ -247,7 +625,7 @@
     <priority>0.8</priority>
   </url>
   
-  <!-- Grok Prompts -->
+  <!-- Grok -->
   <url>
     <loc>https://promptrunic.bbroot.com/?q=grok+prompts</loc>
     <lastmod>2026-06-14</lastmod>
@@ -255,7 +633,7 @@
     <priority>0.8</priority>
   </url>
   
-  <!-- Mistral Prompts -->
+  <!-- Mistral -->
   <url>
     <loc>https://promptrunic.bbroot.com/?q=mistral+prompts</loc>
     <lastmod>2026-06-14</lastmod>
@@ -263,7 +641,7 @@
     <priority>0.8</priority>
   </url>
   
-  <!-- Qwen Prompts -->
+  <!-- Qwen -->
   <url>
     <loc>https://promptrunic.bbroot.com/?q=qwen+prompts</loc>
     <lastmod>2026-06-14</lastmod>
@@ -271,7 +649,7 @@
     <priority>0.8</priority>
   </url>
   
-  <!-- Kimi Prompts -->
+  <!-- Kimi -->
   <url>
     <loc>https://promptrunic.bbroot.com/?q=kimi+prompts</loc>
     <lastmod>2026-06-14</lastmod>
@@ -280,7 +658,7 @@
   </url>
 
   <!-- ========================================== -->
-  <!-- ✍️ 写作类Prompt搜索词 -->
+  <!-- 第六部分：写作类Prompt搜索词 -->
   <!-- ========================================== -->
   
   <url>
@@ -333,20 +711,6 @@
   </url>
   
   <url>
-    <loc>https://promptrunic.bbroot.com/?q=script+writing+ai+prompts</loc>
-    <lastmod>2026-06-14</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.75</priority>
-  </url>
-  
-  <url>
-    <loc>https://promptrunic.bbroot.com/?q=poetry+prompts+ai</loc>
-    <lastmod>2026-06-14</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.7</priority>
-  </url>
-  
-  <url>
     <loc>https://promptrunic.bbroot.com/?q=newsletter+prompts+ai</loc>
     <lastmod>2026-06-14</lastmod>
     <changefreq>daily</changefreq>
@@ -359,23 +723,9 @@
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
-  
-  <url>
-    <loc>https://promptrunic.bbroot.com/?q=linkedin+post+prompts</loc>
-    <lastmod>2026-06-14</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  
-  <url>
-    <loc>https://promptrunic.bbroot.com/?q=twitter+thread+prompts</loc>
-    <lastmod>2026-06-14</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.75</priority>
-  </url>
 
   <!-- ========================================== -->
-  <!-- 💼 商业/营销类Prompt -->
+  <!-- 第七部分：商业/营销类Prompt -->
   <!-- ========================================== -->
   
   <url>
@@ -414,20 +764,6 @@
   </url>
   
   <url>
-    <loc>https://promptrunic.bbroot.com/?q=facebook+ad+prompts</loc>
-    <lastmod>2026-06-14</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.75</priority>
-  </url>
-  
-  <url>
-    <loc>https://promptrunic.bbroot.com/?q=google+ads+prompts</loc>
-    <lastmod>2026-06-14</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.75</priority>
-  </url>
-  
-  <url>
     <loc>https://promptrunic.bbroot.com/?q=email+marketing+prompts</loc>
     <lastmod>2026-06-14</lastmod>
     <changefreq>daily</changefreq>
@@ -442,35 +778,14 @@
   </url>
   
   <url>
-    <loc>https://promptrunic.bbroot.com/?q=product+description+prompts</loc>
-    <lastmod>2026-06-14</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.75</priority>
-  </url>
-  
-  <url>
     <loc>https://promptrunic.bbroot.com/?q=sales+prompts+ai</loc>
     <lastmod>2026-06-14</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
-  
-  <url>
-    <loc>https://promptrunic.bbroot.com/?q=landing+page+prompts</loc>
-    <lastmod>2026-06-14</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.75</priority>
-  </url>
-  
-  <url>
-    <loc>https://promptrunic.bbroot.com/?q=conversion+optimization+prompts</loc>
-    <lastmod>2026-06-14</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
 
   <!-- ========================================== -->
-  <!-- 💻 编程/开发类Prompt -->
+  <!-- 第八部分：编程/开发类Prompt -->
   <!-- ========================================== -->
   
   <url>
@@ -509,13 +824,6 @@
   </url>
   
   <url>
-    <loc>https://promptrunic.bbroot.com/?q=react+prompts+ai</loc>
-    <lastmod>2026-06-14</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.75</priority>
-  </url>
-  
-  <url>
     <loc>https://promptrunic.bbroot.com/?q=debugging+prompts+ai</loc>
     <lastmod>2026-06-14</lastmod>
     <changefreq>daily</changefreq>
@@ -535,30 +843,9 @@
     <changefreq>daily</changefreq>
     <priority>0.75</priority>
   </url>
-  
-  <url>
-    <loc>https://promptrunic.bbroot.com/?q=api+development+prompts</loc>
-    <lastmod>2026-06-14</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.7</priority>
-  </url>
-  
-  <url>
-    <loc>https://promptrunic.bbroot.com/?q=data+science+prompts</loc>
-    <lastmod>2026-06-14</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.75</priority>
-  </url>
-  
-  <url>
-    <loc>https://promptrunic.bbroot.com/?q=machine+learning+prompts</loc>
-    <lastmod>2026-06-14</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.75</priority>
-  </url>
 
   <!-- ========================================== -->
-  <!-- 📄 简历/求职类Prompt -->
+  <!-- 第九部分：简历/求职类Prompt -->
   <!-- ========================================== -->
   
   <url>
@@ -602,23 +889,9 @@
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
-  
-  <url>
-    <loc>https://promptrunic.bbroot.com/?q=job+search+prompts+ai</loc>
-    <lastmod>2026-06-14</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.75</priority>
-  </url>
-  
-  <url>
-    <loc>https://promptrunic.bbroot.com/?q=salary+negotiation+prompts</loc>
-    <lastmod>2026-06-14</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.7</priority>
-  </url>
 
   <!-- ========================================== -->
-  <!-- 🎓 教育/学习类Prompt -->
+  <!-- 第十部分：教育/学习类Prompt -->
   <!-- ========================================== -->
   
   <url>
@@ -650,35 +923,14 @@
   </url>
   
   <url>
-    <loc>https://promptrunic.bbroot.com/?q=math+prompts+ai</loc>
-    <lastmod>2026-06-14</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.7</priority>
-  </url>
-  
-  <url>
-    <loc>https://promptrunic.bbroot.com/?q=language+learning+prompts</loc>
-    <lastmod>2026-06-14</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.75</priority>
-  </url>
-  
-  <url>
     <loc>https://promptrunic.bbroot.com/?q=translation+prompts+ai</loc>
     <lastmod>2026-06-14</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
-  
-  <url>
-    <loc>https://promptrunic.bbroot.com/?q=teaching+prompts+ai</loc>
-    <lastmod>2026-06-14</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.75</priority>
-  </url>
 
   <!-- ========================================== -->
-  <!-- 🏥 健康/生活类Prompt -->
+  <!-- 第十一部分：健康/生活/旅游类Prompt -->
   <!-- ========================================== -->
   
   <url>
@@ -703,20 +955,6 @@
   </url>
   
   <url>
-    <loc>https://promptrunic.bbroot.com/?q=fitness+prompts+ai</loc>
-    <lastmod>2026-06-14</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.7</priority>
-  </url>
-  
-  <url>
-    <loc>https://promptrunic.bbroot.com/?q=meal+plan+prompts+ai</loc>
-    <lastmod>2026-06-14</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.7</priority>
-  </url>
-  
-  <url>
     <loc>https://promptrunic.bbroot.com/?q=travel+plan+prompts+ai</loc>
     <lastmod>2026-06-14</lastmod>
     <changefreq>daily</changefreq>
@@ -724,7 +962,7 @@
   </url>
 
   <!-- ========================================== -->
-  <!-- 🧠 生产力/效率类Prompt -->
+  <!-- 第十二部分：生产力/效率类Prompt -->
   <!-- ========================================== -->
   
   <url>
@@ -761,17 +999,136 @@
     <changefreq>daily</changefreq>
     <priority>0.75</priority>
   </url>
-  
-  <url>
-    <loc>https://promptrunic.bbroot.com/?q=decision+making+prompts</loc>
-    <lastmod>2026-06-14</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.7</priority>
-  </url>
 
   <!-- ========================================== -->
-  <!-- 🎨 创意/设计类Prompt -->
+  <!-- 第十三部分：分类页面（完整分类列表）-->
   <!-- ========================================== -->
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?cat=ai-basics</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?cat=sales</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?cat=startup</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?cat=business</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?cat=ecommerce</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.75</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?cat=social</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?cat=learning</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?cat=personal</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.75</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?cat=research</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?cat=image</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?cat=support</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.65</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?cat=hr</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?cat=finance</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.75</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?cat=realestate</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?cat=legal</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.65</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?cat=product-management</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?cat=data-science</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?cat=cybersecurity</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.65</priority>
+  </url>
   
   <url>
     <loc>https://promptrunic.bbroot.com/?cat=design</loc>
@@ -779,6 +1136,197 @@
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?cat=email-marketing</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.75</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?cat=content-creation</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?cat=creative-writing</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?cat=translation</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.75</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?cat=interview-prep</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?cat=resume-writing</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <!-- ========================================== -->
+  <!-- 第十四部分：中文长尾搜索词 -->
+  <!-- ========================================== -->
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?lang=zh&amp;q=简历+提示词</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?lang=zh&amp;q=求职信+AI</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?lang=zh&amp;q=营销文案+AI</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?lang=zh&amp;q=邮件写作+AI</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?lang=zh&amp;q=代码调试+AI</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?lang=zh&amp;q=学习助手+AI</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?lang=zh&amp;q=翻译+AI提示词</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- ========================================== -->
+  <!-- 第十五部分：西班牙语长尾搜索词 -->
+  <!-- ========================================== -->
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?lang=es&amp;q=prompts+para+redactar+curriculum</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?lang=es&amp;q=prompts+para+marketing+digital</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?lang=es&amp;q=prompts+para+programar+con+ia</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?lang=es&amp;q=escribir+email+con+ia+prompts</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?lang=es&amp;q=traduccion+con+ia+prompts</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- ========================================== -->
+  <!-- 第十六部分：AI工具类扩展关键词 -->
+  <!-- ========================================== -->
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?q=ai+writing+tools</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?q=ai+productivity+tools</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?q=ai+coding+tools</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?q=ai+marketing+tools</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?q=ai+research+tools</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?q=ai+design+tools</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?q=prompt+engineering+tools</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <!-- ========================================== -->
+  <!-- 第十七部分：创意/设计类Prompt -->
+  <!-- ========================================== -->
   
   <url>
     <loc>https://promptrunic.bbroot.com/?q=ai+design+prompts</loc>
@@ -809,10 +1357,21 @@
   </url>
 
   <!-- ========================================== -->
-  <!-- 💰 金融/投资类Prompt -->
+  <!-- 第十八部分：金融/投资类Prompt -->
   <!-- ========================================== -->
   
   <url>
-    <loc>https://promptrunic.bbroot.com/?cat=finance</loc>
+    <loc>https://promptrunic.bbroot.com/?q=investment+prompts+ai</loc>
     <lastmod>2026-06-14</lastmod>
-    <changefreq
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://promptrunic.bbroot.com/?q=financial+analysis+prompts</loc>
+    <lastmod>2026-06-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+</urlset>

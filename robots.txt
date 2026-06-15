@@ -1,0 +1,140 @@
+# ==========================================
+# robots.txt for PromptRunic
+# 网站: https://promptrunic.bbroot.com
+# 生成日期: 2026-06-14
+# ==========================================
+
+User-agent: *
+Allow: /
+
+# ==========================================
+# 禁止爬取的文件和目录
+# ==========================================
+
+# 禁止爬取敏感文件
+Disallow: /favicon.ico
+Disallow: /apple-touch-icon.png
+Disallow: /logo-boot.png
+Disallow: /logo-header.png
+
+# 禁止爬取隐私和法律页面（这些页面仍然可以被索引，但限制爬取频率）
+Disallow: /privacy.html?print=true
+Disallow: /terms.html?print=true
+
+# 禁止爬取临时或重复内容
+Disallow: /*?utm_
+Disallow: /*?ref=
+Disallow: /*?source=
+Disallow: /*?fbclid=
+Disallow: /*?gclid=
+
+# 禁止爬取管理路径
+Disallow: /admin
+Disallow: /wp-admin
+Disallow: /cgi-bin
+
+# 禁止爬取内部功能页面
+Disallow: /game-pm.html?debug=true
+Disallow: /?q=*&page=*
+
+# ==========================================
+# 爬取延迟 - 避免服务器过载
+# ==========================================
+
+Crawl-delay: 1
+
+# ==========================================
+# 指定 sitemap 位置
+# ==========================================
+
+Sitemap: https://promptrunic.bbroot.com/sitemap.xml
+
+# ==========================================
+# Google 专用指令
+# ==========================================
+
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0.5
+
+# ==========================================
+# 百度爬虫
+# ==========================================
+
+User-agent: Baiduspider
+Allow: /
+Crawl-delay: 2
+
+# ==========================================
+# Bing 爬虫
+# ==========================================
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+# ==========================================
+# Yandex 爬虫
+# ==========================================
+
+User-agent: Yandex
+Allow: /
+Crawl-delay: 1
+
+# ==========================================
+# 其他常见爬虫
+# ==========================================
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: FacebookBot
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /
+
+User-agent: Pinterestbot
+Allow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+# ==========================================
+# 阻止垃圾爬虫
+# ==========================================
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: AlphaBot
+Disallow: /
+
+User-agent: DataForSeoBot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+# ==========================================
+# 主搜索引擎爬虫允许访问所有内容
+# ==========================================
+
+User-agent: *
+Allow: /
+
+# ==========================================
+# 结束
+# ==========================================
